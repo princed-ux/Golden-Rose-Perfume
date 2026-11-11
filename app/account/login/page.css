@@ -1,0 +1,904 @@
+
+/* GOLDEN ROSE — SCENT OF ELEGANCE LOGIN */
+
+.gr-login {
+  --login-gold: #dbb978;
+  --login-gold-light: #f2daa7;
+  --login-background: #0d0b09;
+  --login-surface: rgba(20, 18, 15, 0.88);
+  --login-text: #faf4e8;
+  --login-muted: #a99d8c;
+  --login-border: rgba(219, 185, 120, 0.26);
+
+  position: relative;
+  display: block;
+  min-height: 100svh;
+  padding: 0;
+  overflow: hidden;
+  color: var(--login-text);
+  background: var(--login-background);
+  isolation: isolate;
+}
+
+.gr-login *,
+.gr-login *::before,
+.gr-login *::after {
+  box-sizing: border-box;
+}
+
+.gr-login a {
+  text-decoration: none;
+}
+
+.gr-login a:focus-visible,
+.gr-login button:focus-visible,
+.gr-login input:focus-visible {
+  outline: 2px solid var(--login-gold-light);
+  outline-offset: 4px;
+}
+
+/* NAVIGATION */
+
+.gr-login__header {
+  position: absolute;
+  z-index: 20;
+  inset: 0 0 auto;
+  height: 94px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 clamp(24px, 4vw, 75px);
+
+  border-bottom: 1px solid
+    rgba(220, 185, 122, 0.14);
+}
+
+.gr-login__brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #efd4a0;
+}
+
+.gr-login__logo {
+  width: 47px;
+  height: 53px;
+  object-fit: contain;
+}
+
+.gr-login__brand > span {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  font: 400 19px Georgia, serif;
+  letter-spacing: 0.11em;
+}
+
+.gr-login__brand small {
+  font: 600 8px Arial, sans-serif;
+  letter-spacing: 0.24em;
+  color: #c5a877;
+}
+
+.gr-login__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+
+  color: #decaab;
+  font-size: 12px;
+  transition: color 250ms ease;
+}
+
+.gr-login__back:hover {
+  color: #fff1d1;
+}
+
+/* MAIN LAYOUT */
+
+.gr-login__layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+  min-height: 100svh;
+}
+
+/* FRAGRANCE PHOTOGRAPHY */
+
+.gr-login__visual {
+  position: relative;
+  min-height: 740px;
+  overflow: hidden;
+  background: #090705;
+}
+
+.gr-login__photography {
+  object-fit: cover;
+  object-position: 76% center;
+
+  transform: scale(1.045);
+  animation: gr-login-breathe 15s ease-in-out infinite alternate;
+}
+
+.gr-login__visual-shade {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(7, 6, 5, 0.58),
+      rgba(7, 6, 5, 0.03) 85%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(7, 6, 5, 0.95),
+      transparent 68%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(5, 4, 3, 0.54),
+      transparent 30%
+    );
+}
+
+.gr-login__visual-copy {
+  position: absolute;
+  z-index: 5;
+  left: clamp(30px, 6vw, 105px);
+  bottom: 115px;
+
+  max-width: 650px;
+}
+
+.gr-login__eyebrow {
+  margin: 0 0 25px;
+
+  color: #e8c68d;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+}
+
+.gr-login__visual-copy h2 {
+  margin: 0;
+
+  font: 400 clamp(53px, 5vw, 88px)/1.04 Georgia, serif;
+  letter-spacing: -0.047em;
+
+  color: #fff9ed;
+}
+
+.gr-login__visual-copy h2 em {
+  color: #ebc88e;
+  font-weight: 400;
+}
+
+.gr-login__visual-copy > p:not(.gr-login__eyebrow) {
+  margin-top: 24px;
+  color: #e0d4c3;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.gr-login__visual-line {
+  display: block;
+  width: 100px;
+  height: 1px;
+
+  margin-top: 33px;
+  background: linear-gradient(
+    90deg,
+    #e6c78a,
+    transparent
+  );
+}
+
+.gr-login__visual-corner {
+  position: absolute;
+  z-index: 5;
+  left: 40px;
+  bottom: 28px;
+
+  color: #c2a87b;
+  font-size: 9px;
+  letter-spacing: 0.21em;
+}
+
+/* ANIMATED SCENT LAYER */
+
+.gr-login__scent {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gr-login__scent-svg {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: visible;
+  opacity: 0.85;
+}
+
+/* Blurred vapour follows the perfume trails */
+
+.gr-login__mist path {
+  stroke-dasharray: 30 70;
+  stroke-dashoffset: 100;
+
+  opacity: 0.23;
+
+  animation: gr-login-whoosh 14s linear infinite;
+}
+
+.gr-login__mist path:nth-child(2) {
+  animation-duration: 17s;
+  animation-delay: -5s;
+}
+
+.gr-login__mist path:nth-child(3) {
+  animation-duration: 20s;
+  animation-delay: -10s;
+}
+
+/* Thin illuminated scent lines */
+
+.gr-login__trails path {
+  stroke-linecap: round;
+  stroke-dasharray: 23 77;
+  stroke-dashoffset: 100;
+
+  opacity: 0.65;
+
+  animation: gr-login-whoosh 11s linear infinite;
+}
+
+.gr-login__trails path:nth-child(2) {
+  animation-duration: 15s;
+  animation-delay: -5s;
+  opacity: 0.48;
+}
+
+.gr-login__trails path:nth-child(3) {
+  animation-duration: 18s;
+  animation-delay: -8s;
+  opacity: 0.58;
+}
+
+/* Floating fragrance particles */
+
+.gr-login__particle {
+  position: absolute;
+  display: block;
+
+  width: 4px;
+  height: 4px;
+
+  border-radius: 50%;
+  background: #f8d79c;
+
+  box-shadow:
+    0 0 9px rgba(255, 216, 149, 0.7),
+    0 0 25px rgba(231, 169, 82, 0.3);
+
+  opacity: 0;
+
+  animation: gr-login-particle 9s ease-in-out infinite;
+}
+
+.gr-login__particle--1 {
+  left: 35%;
+  top: 72%;
+  animation-delay: 0s;
+}
+
+.gr-login__particle--2 {
+  left: 47%;
+  top: 58%;
+  animation-delay: -2s;
+}
+
+.gr-login__particle--3 {
+  left: 53%;
+  top: 36%;
+  animation-delay: -4s;
+}
+
+.gr-login__particle--4 {
+  left: 62%;
+  top: 78%;
+  animation-delay: -6s;
+}
+
+.gr-login__particle--5 {
+  left: 76%;
+  top: 25%;
+  animation-delay: -1s;
+}
+
+.gr-login__particle--6 {
+  left: 20%;
+  top: 45%;
+  animation-delay: -3s;
+}
+
+.gr-login__particle--7 {
+  left: 88%;
+  top: 62%;
+  animation-delay: -7s;
+}
+
+.gr-login__particle--8 {
+  left: 68%;
+  top: 17%;
+  animation-delay: -5s;
+}
+
+.gr-login__particle--9 {
+  left: 43%;
+  top: 84%;
+  animation-delay: -8s;
+}
+
+/* Golden atmosphere behind the form */
+
+.gr-login__aura {
+  position: absolute;
+
+  right: -220px;
+  top: 7%;
+
+  width: 550px;
+  height: 550px;
+
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    rgba(180, 118, 47, 0.13),
+    transparent 68%
+  );
+
+  filter: blur(55px);
+
+  animation: gr-login-aura 12s ease-in-out infinite alternate;
+}
+
+/* LOGIN SIDE */
+
+.gr-login__entry {
+  position: relative;
+  z-index: 6;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 125px clamp(28px, 5vw, 90px) 80px;
+
+  background: var(--login-background);
+}
+
+.gr-login__entry::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at 15% 52%,
+      rgba(166, 111, 51, 0.095),
+      transparent 55%
+    );
+}
+
+.gr-login__card {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+  max-width: 455px;
+
+  padding: 37px 0;
+
+  color: var(--login-text);
+}
+
+.gr-login__card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 45px;
+
+  color: var(--login-gold);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.21em;
+}
+
+.gr-login__symbol {
+  font-size: 22px;
+}
+
+.gr-login__card-line {
+  width: 33px;
+  height: 1px;
+  background: var(--login-gold);
+  opacity: 0.7;
+}
+
+.gr-login__welcome {
+  color: var(--login-gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+}
+
+.gr-login__card h1 {
+  margin: 20px 0 20px;
+
+  font: 400 clamp(60px, 5.4vw, 88px)/0.98 Georgia, serif;
+  letter-spacing: -0.057em;
+
+  color: var(--login-text);
+}
+
+.gr-login__card h1 em {
+  color: var(--login-gold);
+  font-weight: 400;
+}
+
+.gr-login__description {
+  max-width: 355px;
+  margin-bottom: 37px;
+
+  color: var(--login-muted);
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+/* EXISTING AUTH FORM */
+
+.gr-login__form {
+  width: 100%;
+}
+
+.gr-login__form form {
+  width: 100%;
+}
+
+.gr-login__form label {
+  color: var(--login-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gr-login__form input:not([type="checkbox"]):not([type="hidden"]) {
+  width: 100%;
+  min-height: 54px;
+
+  padding: 13px 16px;
+
+  color: var(--login-text);
+  background: var(--login-surface);
+
+  border: 1px solid var(--login-border);
+  border-radius: 9px;
+
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.gr-login__form input::placeholder {
+  color: #8b8071;
+}
+
+.gr-login__form input:focus {
+  border-color: var(--login-gold);
+  box-shadow: 0 0 0 3px rgba(219, 185, 120, 0.12);
+}
+
+/* Submit button */
+
+.gr-login__form button[type="submit"] {
+  width: 100%;
+  min-height: 55px;
+
+  margin-top: 10px;
+
+  color: #18110a;
+  background: linear-gradient(
+    110deg,
+    #c79a52,
+    #f3dba7 50%,
+    #d4ac68
+  );
+
+  border: 0;
+  border-radius: 9px;
+
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+
+  cursor: pointer;
+
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    filter 200ms ease;
+}
+
+.gr-login__form button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(198, 155, 83, 0.19);
+  filter: brightness(1.08);
+}
+
+.gr-login__form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ACCOUNT LINKS */
+
+.gr-login__links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 25px;
+
+  margin-top: 28px;
+}
+
+.gr-login__links > a {
+  color: var(--login-gold);
+  font-size: 12px;
+}
+
+.gr-login__links p {
+  color: var(--login-muted);
+  font-size: 12px;
+}
+
+.gr-login__links p a {
+  color: var(--login-gold-light);
+  font-weight: 700;
+}
+
+.gr-login__links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.gr-login__card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+
+  margin-top: 60px;
+
+  color: #9b835f;
+  font-size: 9px;
+  letter-spacing: 0.19em;
+}
+
+/* FOOTER */
+
+.gr-login__footer {
+  position: absolute;
+  z-index: 15;
+
+  bottom: 18px;
+  right: 28px;
+
+  display: flex;
+  gap: 25px;
+
+  color: #8e7d65;
+  font-size: 10px;
+}
+
+/* ANIMATIONS */
+
+@keyframes gr-login-whoosh {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.6;
+  }
+
+  70% {
+    opacity: 0.8;
+  }
+
+  100% {
+    stroke-dashoffset: -100;
+    opacity: 0;
+  }
+}
+
+@keyframes gr-login-particle {
+  0% {
+    transform: translate3d(0, 40px, 0) scale(0.4);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 0.8;
+  }
+
+  70% {
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translate3d(35px, -90px, 0) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes gr-login-breathe {
+  from {
+    transform: scale(1.045);
+  }
+
+  to {
+    transform: scale(1.13);
+  }
+}
+
+@keyframes gr-login-aura {
+  from {
+    transform: translate(-30px, 30px) scale(0.9);
+  }
+
+  to {
+    transform: translate(30px, -20px) scale(1.15);
+  }
+}
+
+/* LIGHT MODE */
+
+html[data-theme="light"] .gr-login,
+html.light .gr-login {
+  --login-background: #f7f2e9;
+  --login-surface: #ffffff;
+  --login-text: #272019;
+  --login-muted: #736858;
+  --login-border: rgba(130, 100, 58, 0.25);
+  --login-gold: #986d36;
+  --login-gold-light: #8b5a22;
+}
+
+html[data-theme="light"] .gr-login__entry,
+html.light .gr-login__entry {
+  background: var(--login-background);
+}
+
+html[data-theme="light"] .gr-login__form input::placeholder,
+html.light .gr-login__form input::placeholder {
+  color: #968a7e;
+}
+
+html[data-theme="light"] .gr-login__back,
+html.light .gr-login__back {
+  color: #e6c48a;
+}
+
+/* TABLET */
+
+@media (max-width: 1100px) {
+  .gr-login__layout {
+    grid-template-columns: 50% 50%;
+  }
+
+  .gr-login__entry {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .gr-login__visual-copy {
+    left: 40px;
+  }
+
+  .gr-login__visual-copy h2 {
+    font-size: 56px;
+  }
+
+  .gr-login__card h1 {
+    font-size: 67px;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 800px) {
+  .gr-login__layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gr-login__header {
+    height: 80px;
+    padding: 0 22px;
+  }
+
+  .gr-login__brand > span {
+    font-size: 15px;
+  }
+
+  .gr-login__brand small {
+    font-size: 7px;
+  }
+
+  .gr-login__logo {
+    width: 38px;
+    height: 43px;
+  }
+
+  .gr-login__back {
+    font-size: 10px;
+  }
+
+  .gr-login__visual {
+    min-height: 410px;
+  }
+
+  .gr-login__photography {
+    object-position: 72% center;
+  }
+
+  .gr-login__visual-copy {
+    left: 29px;
+    bottom: 57px;
+  }
+
+  .gr-login__visual-copy h2 {
+    font-size: clamp(44px, 8vw, 62px);
+  }
+
+  .gr-login__visual-copy > p:not(.gr-login__eyebrow) {
+    display: none;
+  }
+
+  .gr-login__visual-line {
+    margin-top: 20px;
+  }
+
+  .gr-login__visual-corner {
+    display: none;
+  }
+
+  .gr-login__entry {
+    padding: 40px 25px 75px;
+  }
+
+  .gr-login__card {
+    padding: 15px 0;
+  }
+
+  .gr-login__card-top {
+    margin-bottom: 30px;
+  }
+
+  .gr-login__card h1 {
+    font-size: 65px;
+  }
+
+  .gr-login__scent-svg {
+    height: 550px;
+    top: 70px;
+  }
+
+  .gr-login__footer {
+    position: relative;
+    right: auto;
+    bottom: auto;
+
+    padding: 0 25px 28px;
+
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+
+    text-align: center;
+  }
+}
+
+/* SMALL MOBILE */
+
+@media (max-width: 380px) {
+  .gr-login__header {
+    padding: 0 16px;
+  }
+
+  .gr-login__brand {
+    gap: 6px;
+  }
+
+  .gr-login__brand > span {
+    font-size: 13px;
+  }
+
+  .gr-login__brand small {
+    font-size: 6px;
+  }
+
+  .gr-login__back {
+    gap: 5px;
+    font-size: 9px;
+  }
+
+  .gr-login__visual {
+    min-height: 370px;
+  }
+
+  .gr-login__visual-copy {
+    left: 22px;
+    bottom: 49px;
+  }
+
+  .gr-login__visual-copy h2 {
+    font-size: 43px;
+  }
+
+  .gr-login__entry {
+    padding: 35px 19px 70px;
+  }
+
+  .gr-login__card h1 {
+    font-size: 58px;
+  }
+
+  .gr-login__description {
+    font-size: 13px;
+  }
+}
+
+/* ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+  .gr-login__photography {
+    animation: none;
+    transform: none;
+  }
+
+  .gr-login__mist path,
+  .gr-login__trails path {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
+
+  .gr-login__particle,
+  .gr-login__aura {
+    animation: none;
+  }
+
+  .gr-login__form button[type="submit"] {
+    transition: none;
+  }
+}
+
+
+

@@ -24,3 +24,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Shared theme tokens only. Page layouts remain in their page.css files. */
+:root, .gr-theme-root {
+  --gr-theme-bg: #f7f5ef; --gr-theme-surface: #fffefa; --gr-theme-surface-alt: #eee9dd;
+  --gr-theme-text: #292820; --gr-theme-muted: #686354; --gr-theme-border: #d8d1c1;
+  --gr-theme-gold: #846029; --gr-theme-input: #faf8f2; --gr-theme-danger: #a52927;
+  --gr-theme-on-gold: #19130d; --gr-theme-button: #d8b575;
+}
+.gr-theme-root[data-theme="dark"] {
+  --gr-theme-bg: #0b0908; --gr-theme-surface: #17130f; --gr-theme-surface-alt: #262018;
+  --gr-theme-text: #faf4e9; --gr-theme-muted: #c0b29e; --gr-theme-border: #5e4e36;
+  --gr-theme-gold: #d8b575; --gr-theme-input: #100d0a; --gr-theme-danger: #ffb1a5;
+  color-scheme: dark;
+}
+.gr-theme-root[data-theme="light"] { color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  .gr-theme-root[data-theme="system"] {
+    --gr-theme-bg: #0b0908; --gr-theme-surface: #17130f; --gr-theme-surface-alt: #262018;
+    --gr-theme-text: #faf4e9; --gr-theme-muted: #c0b29e; --gr-theme-border: #5e4e36;
+    --gr-theme-gold: #d8b575; --gr-theme-input: #100d0a; --gr-theme-danger: #ffb1a5;
+    color-scheme: dark;
+  }
+}
+.gr-theme-root { min-height: 100svh; color: var(--gr-theme-text); background: var(--gr-theme-bg); --ink: var(--gr-theme-text); --muted: var(--gr-theme-muted); --cream: var(--gr-theme-bg); --white: var(--gr-theme-surface); --stroke: var(--gr-theme-border); }
+.gr-theme-control { position: fixed; z-index: 50; right: 16px; bottom: 14px; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--gr-theme-border); border-radius: 7px; background: var(--gr-theme-surface); color: var(--gr-theme-muted); box-shadow: 0 3px 16px #0002; font: 500 11px Arial, sans-serif; }
+.gr-theme-control select { min-height: 32px; border: 0; background: var(--gr-theme-surface); color: var(--gr-theme-text); font: inherit; cursor: pointer; }
+.gr-theme-control select:focus-visible { outline: 2px solid var(--gr-theme-gold); outline-offset: 3px; }

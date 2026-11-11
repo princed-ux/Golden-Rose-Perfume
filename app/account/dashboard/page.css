@@ -1,0 +1,59 @@
+/* Dashboard palette inherits the shared theme; all presentation stays scoped here. */
+.gr-customer-dashboard { --account-bg: var(--gr-theme-bg); --account-panel: var(--gr-theme-surface); --account-soft: var(--gr-theme-surface-alt); --account-text: var(--gr-theme-text); --account-muted: var(--gr-theme-muted); --account-gold: var(--gr-theme-gold); --account-border: #b8975a46; --account-rose: #977037; background: var(--account-bg); color: var(--account-text); font-family: Arial, Helvetica, sans-serif; }
+.gr-theme-root[data-theme='dark'] .gr-customer-dashboard { --account-bg: #141414; --account-panel: #1c1c1b; --account-soft: #242422; --account-text: #f3eee3; --account-muted: #b9b6ad; --account-gold: #e2c68f; --account-border: #b9975952; --account-rose: #ba914b; }
+@media (prefers-color-scheme: dark) { .gr-theme-root[data-theme='system'] .gr-customer-dashboard { --account-bg: #141414; --account-panel: #1c1c1b; --account-soft: #242422; --account-text: #f3eee3; --account-muted: #b9b6ad; --account-gold: #e2c68f; --account-border: #b9975952; --account-rose: #ba914b; } }
+.gr-customer-dashboard h1, .gr-customer-dashboard h2, .gr-customer-dashboard h3, .gr-customer-dashboard p, .gr-customer-dashboard dd { margin-bottom: 0; }
+.gr-customer-dashboard .gr-account-gold, .gr-customer-dashboard a.gr-account-text-link { color: var(--account-gold); }
+.gr-customer-dashboard .gr-account-muted { color: var(--account-muted); }
+.gr-account-soft, .gr-order-detail { background: var(--account-soft); }
+.gr-account-divider { border-color: var(--account-border); }
+.gr-account-header { border-bottom: 1px solid var(--account-border); background: var(--account-panel); }
+.gr-account-wordmark { color: var(--account-gold); }
+.gr-account-search { border: 1px solid var(--account-border); color: var(--account-muted); background: var(--account-bg); }
+.gr-account-preview { background: var(--account-soft); color: var(--account-muted); border-bottom: 1px solid var(--account-border); line-height: 1.6; }
+.gr-account-sidebar { border-right: 1px solid var(--account-border); background: linear-gradient(140deg, var(--account-panel), var(--account-bg)); }
+.gr-account-rule { background: var(--account-gold); }
+.gr-customer-dashboard a.gr-account-nav-link { color: var(--account-muted); border: 1px solid transparent; }
+.gr-customer-dashboard a.gr-account-nav-link:hover { color: var(--account-gold); background: #b9975910; }
+.gr-customer-dashboard a.gr-account-nav-link[aria-current='location'] { color: var(--account-text); border-color: #b9975970; background: linear-gradient(105deg, #b9975937, #b9975915); }
+.gr-account-nav-link[aria-current='location'] svg { color: var(--account-gold); }
+.gr-account-panel { border: 1px solid var(--account-border); background: linear-gradient(140deg, var(--account-panel), var(--account-bg)); box-shadow: 0 5px 18px #00000005; }
+.gr-account-active { border-color: #b997597d; }
+.gr-account-avatar { background: #b997592a; color: var(--account-gold); }
+.gr-account-button { min-height: 44px; border: 1px solid #b99759; border-radius: 6px; background: linear-gradient(110deg, #e4cb98, #c5a269); color: #251d12; }
+.gr-account-outline { min-height: 36px; border: 1px solid var(--account-border); border-radius: 5px; color: var(--account-gold); background: transparent; }
+.gr-customer-dashboard button:disabled { cursor: not-allowed; opacity: .65; }
+.gr-customer-dashboard a:focus-visible, .gr-customer-dashboard button:focus-visible, .gr-customer-dashboard summary:focus-visible { outline: 2px solid var(--account-gold); outline-offset: 4px; }
+.gr-customer-dashboard a, .gr-customer-dashboard button { transition: color .2s, background-color .2s, border-color .2s; }
+.gr-wishlist-heart { background: #171512d9; color: #e2c68f; border: 1px solid #e2c68f6b; }
+.gr-wishlist-heart:hover { background: #3e3021; }
+.gr-order-badge { display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: fit-content; padding: 4px 8px; border: 1px solid #b9975959; border-radius: 20px; background: #b9975917; color: var(--account-gold); font-size: 9px; line-height: 1.4; }
+.gr-order-badge[data-status='delivered'] { color: var(--account-text); background: #7f965820; border-color: #7f96584d; }
+.gr-account-orders thead { background: var(--account-soft); color: var(--account-muted); }
+.gr-account-orders tbody tr { border-bottom: 1px solid var(--account-border); }
+.gr-account-orders tbody tr:last-child { border: 0; }
+/* Reusable, theme-tinted botanical asset. Keep this rose in both themes. */
+.gr-sidebar-botanical { color: var(--account-rose); }
+.gr-dashboard-rose { height: 330px; width: calc(100% + 32px); margin-left: -16px; background: var(--account-rose); mask: url('/assets/decor/sidebar-rose.svg') center bottom / contain no-repeat; opacity: .72; }
+.gr-customer-tracking { display: grid; grid-template-columns: 1fr; list-style: none; padding: 0; margin: 0; }
+.gr-customer-tracking li { position: relative; display: flex; gap: 12px; padding-bottom: 21px; }
+.gr-customer-tracking li:not(:last-child)::after { content: ''; position: absolute; width: 1px; top: 25px; bottom: 0; left: 10px; background: var(--account-border); }
+.gr-customer-tracking li:last-child { padding-bottom: 0; }
+.gr-customer-tracking__marker { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; height: 22px; width: 22px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--account-border); background: var(--account-panel); color: var(--account-muted); }
+.gr-customer-tracking [data-state='complete'] .gr-customer-tracking__marker, .gr-customer-tracking [data-state='current'] .gr-customer-tracking__marker { background: #d8b575; color: #21170f; border-color: #d8b575; }
+.gr-customer-tracking [data-state='current'] .gr-customer-tracking__marker { box-shadow: 0 0 0 4px #c5a16b20; }
+.gr-customer-tracking li > div span:first-child { color: var(--account-text); font-size: 10px; }
+.gr-customer-tracking li > div span:nth-child(2), .gr-customer-tracking + p { color: var(--account-muted); font-size: 9px; }
+@media (min-width: 640px) { .gr-customer-tracking { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; } .gr-customer-tracking li { flex-direction: column; padding-bottom: 0; gap: 9px; } .gr-customer-tracking li:not(:last-child)::after { height: 1px; width: calc(100% - 18px); top: 10px; bottom: auto; left: 26px; } }
+@media (min-width: 1024px) { .gr-account-sidebar { min-height: calc(100svh - 112px); } }
+@media (max-width: 1023px) { .gr-account-sidebar { border-right: 0; border-bottom: 1px solid var(--account-border); } }
+@media (max-width: 639px) { .gr-account-orders table, .gr-account-orders tbody { display: block; } .gr-account-orders thead { display: none; } .gr-account-orders tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 14px 0; } .gr-account-orders td { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 4px 0; } .gr-account-orders td::before { content: attr(data-label); font-size: 9px; color: var(--account-muted); } .gr-account-orders td:last-child { grid-column: 1 / -1; } .gr-account-orders td:last-child::before { display: none; } }
+@media (prefers-reduced-motion: reduce) { .gr-customer-dashboard *, .gr-customer-dashboard *::before, .gr-customer-dashboard *::after { transition-duration: 0s !important; animation: none !important; scroll-behavior: auto; } }
+/* Keep the approved rose in view below navigation, independent of page length. */
+@media (min-width: 1024px) {
+  .gr-account-sidebar { position: sticky; top: 0; align-self: start; height: calc(100svh - 112px); min-height: 0; }
+  .gr-dashboard-rose { height: clamp(100px, calc(100svh - 640px), 280px); }
+  .gr-sidebar-botanical { padding-top: 24px; }
+}
+.gr-customer-dashboard button.gr-account-outline { font: 400 10px/1.4 Arial, sans-serif; }
+.gr-customer-dashboard button.gr-account-button { font: 500 11px/1.4 Arial, sans-serif; }

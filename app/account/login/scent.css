@@ -1,0 +1,116 @@
+
+/* Golden Rose — perfume scent animation */
+
+.gr-login {
+  display: block;
+  padding: 0;
+}
+
+.gr-login__headline {
+  font: 400 clamp(56px, 5.5vw, 88px)/0.98 Georgia, serif;
+  letter-spacing: -0.055em;
+}
+
+.gr-login__photo {
+  animation: rose-breathe 15s ease-in-out infinite alternate;
+}
+
+.gr-login__scent path {
+  fill: none;
+  stroke: url(#rose-scent-gradient);
+  stroke-linecap: round;
+  stroke-dasharray: 25 75;
+  stroke-dashoffset: 100;
+}
+
+.gr-login__mist path {
+  stroke-width: 28;
+  filter: blur(13px);
+  opacity: 0.25;
+  animation: rose-whoosh 14s linear infinite;
+}
+
+.gr-login__trails path {
+  stroke-width: 2;
+  opacity: 0.7;
+  animation: rose-whoosh 11s linear infinite;
+}
+
+.gr-login__mist path:nth-child(2),
+.gr-login__trails path:nth-child(2) {
+  animation-delay: -5s;
+  animation-duration: 17s;
+}
+
+.gr-login__mist path:nth-child(3),
+.gr-login__trails path:nth-child(3) {
+  animation-delay: -8s;
+  animation-duration: 19s;
+}
+
+.gr-login__particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffe0a4;
+  box-shadow: 0 0 14px #f2c67d;
+  opacity: 0;
+  animation: rose-float 9s ease-in-out infinite;
+}
+
+.gr-login .gr-auth-input-wrap input {
+  border-radius: 10px;
+}
+
+.gr-login .gr-auth-submit {
+  border-radius: 10px;
+  background: linear-gradient(110deg, #c89b55, #f1d9a5, #d1a35d);
+}
+
+@keyframes rose-whoosh {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.7;
+  }
+  100% {
+    stroke-dashoffset: -100;
+    opacity: 0;
+  }
+}
+
+@keyframes rose-float {
+  0% {
+    transform: translateY(40px) scale(0.4);
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(35px, -90px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes rose-breathe {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gr-login__photo,
+  .gr-login__particle {
+    animation: none;
+  }
+
+  .gr-login__scent path {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    opacity: 0.25;
+  }
+}

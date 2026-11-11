@@ -1,0 +1,10 @@
+@import '../account/page.css';
+
+/* Professional staff access, separate from the customer storefront. */
+.gr-auth--staff { --auth-bg: #f2f0eb; --auth-panel: #fffefa; --auth-text: #29251f; --auth-muted: #655e52; --auth-gold: #80602c; --auth-border: #c4b8a4; --auth-input: #faf8f3; --auth-error: #a52927; padding: 0 24px; border-top: 6px solid #b18a46; }
+.gr-auth--staff .gr-auth-header { background: #15120e; padding: 14px 25px; margin-top: 22px; }
+.gr-auth--staff .gr-auth-back { color: #e1c58f; }
+.gr-auth--staff .gr-auth-panel { width: min(100%, 510px); }
+@media (max-width: 540px) { .gr-auth--staff { padding: 0 16px; } .gr-auth--staff .gr-auth-header { padding: 12px 16px; } }
+
+.gr-auth--staff { --auth-bg: var(--gr-theme-bg); --auth-panel: var(--gr-theme-surface); --auth-text: var(--gr-theme-text); --auth-muted: var(--gr-theme-muted); --auth-gold: var(--gr-theme-gold); --auth-border: var(--gr-theme-border); --auth-input: var(--gr-theme-input); --auth-error: var(--gr-theme-danger); }
