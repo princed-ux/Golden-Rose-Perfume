@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import AuthForm from '@/src/components/auth-form';
+import { Suspense } from 'react';
+import { CustomerAuthForm } from '@/src/components/customer-auth-form';
+import { AuthNotice } from '../auth-notice';
 import '../page.css';
 
 export const metadata: Metadata = { title: "A fresh start. — Customer account" };
 
-export default function Page() {
+export default function Page({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
   return (
     <main className="gr-auth">
       <header className="gr-auth-header">
@@ -19,13 +21,13 @@ export default function Page() {
       <section className="gr-auth-panel" aria-labelledby="auth-title">
         <p className="gr-auth-kicker">ACCOUNT RECOVERY</p>
         <h1 id="auth-title">A fresh start.</h1>
-        <p className="gr-auth-intro">Enter your email to prepare a password reset request.</p>
-        <AuthForm mode="forgot-password" />
+        <p className="gr-auth-intro">Enter your account email to request a password reset link.</p>
+        <Suspense><AuthNotice searchParams={searchParams} /></Suspense>
+        <CustomerAuthForm mode="forgot-password" />
         <nav className="gr-auth-links" aria-label="Customer authentication">
           <Link href="/account/login">Return to customer sign in</Link>
           <Link href="/account/register">Create a customer account</Link>
         </nav>
-        <p className="gr-auth-footnote">Recovery emails will be available when authentication is connected.</p>
       </section>
       <footer className="gr-auth-footer">Golden Rose Perfume · Beauty Of Fragrance</footer>
     </main>

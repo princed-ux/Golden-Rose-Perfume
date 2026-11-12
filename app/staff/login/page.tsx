@@ -1,12 +1,26 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import AuthForm from '@/src/components/auth-form';
+import { Suspense } from 'react';
+import { StaffLoginForm } from './form';
 import '../page.css';
 
 export const metadata: Metadata = { title: "Business access — Staff" };
 
-export default function Page() {
+const notices: Record<string, string> = {
+  session: 'Sign in to access the business workspace.',
+  denied: 'This account does not have active staff access. Contact your owner or manager.',
+  unavailable: 'Staff access could not be verified. Try signing in again.',
+  signout: 'Sign-out could not be confirmed. Try again from the workspace.',
+};
+
+async function AccessNotice({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
+  const { reason } = await searchParams;
+  const message = typeof reason === 'string' && Object.hasOwn(notices, reason) ? notices[reason] : null;
+  return message ? <p className="gr-auth-notice" role="status">{message}</p> : null;
+}
+
+export default function Page({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
   return (
     <main className="gr-auth gr-auth--staff">
       <header className="gr-auth-header">
@@ -20,7 +34,8 @@ export default function Page() {
         <p className="gr-auth-kicker">GOLDEN ROSE · STAFF</p>
         <h1 id="auth-title">Business access</h1>
         <p className="gr-auth-intro">The workspace for your store, your team and daily operations.</p>
-        <AuthForm mode="staff-login" />
+        <Suspense><AccessNotice searchParams={searchParams} /></Suspense>
+        <StaffLoginForm />
         <nav className="gr-auth-links" aria-label="Staff access">
           <Link href="/staff/accept-invite">Have an invitation? Accept it here</Link>
         </nav>

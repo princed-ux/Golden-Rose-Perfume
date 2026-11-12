@@ -26,8 +26,9 @@
 .gr-brand { display: inline-flex; align-items: center; flex: 0 0 auto; }
 .gr-brand__logo { display: block; width: auto; height: 80px; object-fit: contain; }
 .gr-nav { display: flex; align-items: center; gap: clamp(16px, 2.7vw, 39px); }
-.gr-nav a, .gr-header__staff { color: #ded1ba !important; font-size: 11px; font-weight: 600; letter-spacing: .05em; white-space: nowrap; transition: color .2s ease; }
-.gr-nav a:hover, .gr-header__staff:hover { color: #f7db9c !important; }
+.gr-nav a, .gr-header__account { color: #ded1ba !important; font-size: 11px; font-weight: 600; letter-spacing: .05em; white-space: nowrap; transition: color .2s ease; }
+.gr-nav a:hover, .gr-header__account:hover { color: #f7db9c !important; }
+.gr-header__account { display: inline-flex; gap: 6px; align-items: center; justify-content: center; min-height: 44px; min-width: 38px; }
 .gr-header__right { display: flex; align-items: center; gap: 25px; }
 .gr-header__bag { color: #e8cf9e !important; display: inline-flex; }
 .gr-header__shop { display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 13px 17px; border: 1px solid rgba(216,181,117,.65); font: 700 10px/1 Arial, sans-serif; text-transform: uppercase; letter-spacing: .09em; transition: background .2s, color .2s; white-space: nowrap; }
@@ -128,7 +129,7 @@
 @media (max-width: 1150px) {
   .gr-header__inner { width: calc(100% - 60px); }
   .gr-header__right { gap: 16px; }
-  .gr-header__staff { display: none; }
+  .gr-header__account span { display: none; }
   .gr-wrap { width: calc(100% - 70px); }
   .gr-hero__body { width: calc(100% - 85px); }
   .gr-edit { min-height: 430px; }

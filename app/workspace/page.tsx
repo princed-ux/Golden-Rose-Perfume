@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { ArrowRight, ArrowUpRight, CalendarDays, ChartNoAxesCombined, CircleDollarSign, Clock3, Package, ReceiptText, ShoppingBag, ShoppingCart, Sparkles, TriangleAlert, UsersRound, Wallet } from 'lucide-react';
 
 // Entirely fictional fixtures. These values are never read from business records.
@@ -41,7 +42,8 @@ const points = sales.map((sale, index) => ({ x: 20 + index * 100, y: 184 - (sale
 const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ');
 const pendingOrders = transactions.filter(transaction => !transaction.paid);
 
-export default function WorkspaceOverview() {
+export default async function WorkspaceOverview() {
+  await requireStaff();
   return (
     <div className="gr-dashboard">
       <header className="gr-dashboard-heading">

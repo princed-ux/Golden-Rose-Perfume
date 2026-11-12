@@ -55,7 +55,7 @@ export function WorkspaceSidebar() {
           </div>
         ))}
       </nav>
-      <div className="sidebar-bottom"><BookOpenText size={18}/><div><strong>Demo environment</strong><span>No live records connected</span></div></div>
+      <div className="sidebar-bottom"><BookOpenText size={18}/><div><strong>Golden Rose operations</strong><span>Products and inventory</span></div></div>
     </aside>
   );
 }

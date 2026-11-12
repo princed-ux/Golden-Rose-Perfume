@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import AuthForm from '@/src/components/auth-form';
+import { CustomerAuthForm } from '@/src/components/customer-auth-form';
 import '../page.css';
 
 export const metadata: Metadata = { title: "Make it yours. — Customer account" };
@@ -19,12 +19,11 @@ export default function Page() {
       <section className="gr-auth-panel" aria-labelledby="auth-title">
         <p className="gr-auth-kicker">JOIN THE GOLDEN ROSE WORLD</p>
         <h1 id="auth-title">Make it yours.</h1>
-        <p className="gr-auth-intro">Create your customer account for future orders and personal preferences.</p>
-        <AuthForm mode="register" />
+        <p className="gr-auth-intro">Create your Golden Rose customer account.</p>
+        <CustomerAuthForm mode="register" />
         <nav className="gr-auth-links" aria-label="Customer authentication">
           <Link href="/account/login">Already have an account? Sign in</Link>
         </nav>
-        <p className="gr-auth-footnote">Public registration is for customers only. Staff access requires an invitation.</p>
       </section>
       <footer className="gr-auth-footer">Golden Rose Perfume · Beauty Of Fragrance</footer>
     </main>

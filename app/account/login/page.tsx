@@ -2,7 +2,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import AuthForm from "@/src/components/auth-form";
+import { Suspense } from "react";
+import { CustomerAuthForm } from "@/src/components/customer-auth-form";
+import { AuthNotice } from "../auth-notice";
 
 import "../page.css";
 import "./scent.css";
@@ -21,7 +23,7 @@ const particles = [
   { left: "25%", top: "33%", delay: "-5s" },
 ];
 
-export default function LoginPage() {
+export default function LoginPage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
   return (
     <main className="gr-auth gr-login relative isolate min-h-svh overflow-hidden">
       {/* BRAND HEADER */}
@@ -203,7 +205,8 @@ export default function LoginPage() {
             </p>
 
             <div className="w-full">
-              <AuthForm mode="login" />
+              <Suspense><AuthNotice searchParams={searchParams} /></Suspense>
+              <CustomerAuthForm mode="login" />
             </div>
 
             <nav

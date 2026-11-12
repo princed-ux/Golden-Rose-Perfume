@@ -207,7 +207,6 @@ h1, h2, h3 { font-weight: 500; }
 }
 @media (max-width: 800px) {
   .container { width: min(100% - 32px,1200px); }
-  .site-nav a:last-child { display: none; }
   .product-card__art { height: 280px; }
   .detail-layout { gap: 25px; }
   .workspace-shell { display: block; }

@@ -1,6 +1,27 @@
+import { Suspense } from 'react';
+import { connection } from 'next/server';
 import Link from 'next/link';
-import { ShoppingBag, ArrowLeft } from 'lucide-react';
 import { SiteHeader } from '@/src/components/site-header';
+import { ShoppingBagScreen } from '@/src/components/shopping-bag';
+import { listCatalog } from '@/src/lib/golden-rose/edge';
+import './bag.css';
 
-export default function CartPage() { return <><div className="preview-ribbon">PREVIEW · No checkout transactions</div><SiteHeader/><main className="container empty-flow"><div className="empty-flow__icon"><ShoppingBag size={30}/></div><span className="overline">CUSTOMER JOURNEY</span><h1>Your future shopping bag.</h1><p>Cart state, inventory validation, discounts and checkout will be connected after the product database and payment policy are approved.</p><div className="empty-flow__actions"><Link href="/shop" className="button button--dark"><ArrowLeft size={17}/> Continue exploring</Link><Link href="/checkout" className="button button--outline">See checkout plan</Link></div></main></>; }
+async function Bag() {
+  await connection();
+  const products = await listCatalog().catch(() => null);
+  return <ShoppingBagScreen products={products} />;
+}
 
+export default function CartPage() {
+  return <>
+    <SiteHeader />
+    <main className="container page-spacing gr-bag-page">
+      <header>
+        <Link href="/shop" className="text-link">← Continue shopping</Link>
+        <h1>Your shopping bag.</h1>
+        <p>Review your fragrances before requesting your order on WhatsApp.</p>
+      </header>
+      <Suspense fallback={<p role="status">Loading your bag…</p>}><Bag /></Suspense>
+    </main>
+  </>;
+}

@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useSyncExternalStore, type FormEvent } from 'react';
 
 type AuthMode = 'login' | 'register' | 'forgot-password' | 'staff-login' | 'accept-invite';
 type Field = 'email' | 'password' | 'confirmPassword' | 'inviteCode';
@@ -20,13 +19,14 @@ export function validateAuthValues(mode: AuthMode, values: AuthValues) {
   return errors;
 }
 
+const subscribe = () => () => {};
+const clientReady = () => true;
+const serverReady = () => false;
+
 export default function AuthForm({ mode }: { mode: AuthMode }) {
-  const router = useRouter();
-  const [interactive, setInteractive] = useState(false);
+  const interactive = useSyncExternalStore(subscribe, clientReady, serverReady);
   const [showPassword, setShowPassword] = useState(false);
 
-  // A UI-only preview must not submit credentials before JavaScript is ready.
-  useEffect(() => { setInteractive(true); }, []);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [status, setStatus] = useState('');
   const createsPassword = mode === 'register' || mode === 'accept-invite';
@@ -62,12 +62,11 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     // Do not retain passwords after validation. The future server must set roles itself.
     form.reset();
     setShowPassword(false);
-    if (mode === 'login') router.push('/account/dashboard');
   }
 
   return (
     <form className="gr-auth-form" onSubmit={handleSubmit} noValidate>
-      <p className="gr-auth-notice">{mode === 'login' ? 'Customer preview: valid inputs open the dashboard without signing you in. Nothing is sent or saved.' : 'UI preview only. Authentication is not connected; this form does not send or save your details.'}</p>
+      <p className="gr-auth-notice">This invitation preview does not send or save your details.</p>
       {fields.map(field => {
         const id = mode + '-' + field.name;
         const passwordField = field.name === 'password' || field.name === 'confirmPassword';

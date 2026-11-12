@@ -44,3 +44,7 @@
 
 .gr-auth { --auth-bg: var(--gr-theme-bg); --auth-panel: var(--gr-theme-surface); --auth-text: var(--gr-theme-text); --auth-muted: var(--gr-theme-muted); --auth-gold: var(--gr-theme-gold); --auth-border: var(--gr-theme-border); --auth-input: var(--gr-theme-input); --auth-error: var(--gr-theme-danger); padding-bottom: 62px; }
 .gr-auth:not(.gr-auth--staff) .gr-auth-brand > span { color: var(--gr-theme-gold); }
+.gr-auth .gr-auth-google { justify-content: center; gap: 12px; font-size: 14px; }
+.gr-auth-google-mark { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: #1c4ea5; font-weight: 700; }
+.gr-auth-divider { display: flex; align-items: center; gap: 12px; margin: 0; color: var(--auth-muted); font-size: 11px; }
+.gr-auth-divider::before, .gr-auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--auth-border); }

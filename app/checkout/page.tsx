@@ -1,6 +1,30 @@
+import { Suspense } from 'react';
+import { connection } from 'next/server';
 import Link from 'next/link';
-import { CreditCard, MessageCircle, ArrowLeft } from 'lucide-react';
 import { SiteHeader } from '@/src/components/site-header';
+import { ShoppingBagScreen } from '@/src/components/shopping-bag';
+import { listCatalog } from '@/src/lib/golden-rose/edge';
+import { getCustomer } from '@/src/lib/customer/session';
+import { getWhatsAppNumber } from '@/src/lib/customer/bag';
+import '@/app/cart/bag.css';
 
-export default function CheckoutPage() { return <><div className="preview-ribbon">PREVIEW · No payment collection</div><SiteHeader/><main className="container page-spacing checkout-preview"><Link href="/cart" className="text-link"><ArrowLeft size={16}/> Cart</Link><span className="overline">CHECKOUT WORKFLOW</span><h1>Two ways to order.</h1><p>The production checkout will offer both secure online payment and WhatsApp inquiry routing. These are design placeholders only.</p><div className="checkout-options"><div className="option-card"><CreditCard size={30}/><h2>Pay online</h2><p>Provider verified on the server, with order reservation and payment reconciliation.</p><span>Integration pending</span></div><div className="option-card"><MessageCircle size={30}/><h2>Checkout on WhatsApp</h2><p>One of three configured business numbers receives a prepared order summary.</p><span>Integration pending</span></div></div></main></>; }
+async function Checkout() {
+  await connection();
+  const [products, customer] = await Promise.all([listCatalog().catch(() => null), getCustomer().catch(() => null)]);
+  return <ShoppingBagScreen products={products} checkout configured={Boolean(getWhatsAppNumber())}
+    profile={customer ? { name: customer.name, email: customer.email } : null} />;
+}
 
+export default function CheckoutPage() {
+  return <>
+    <SiteHeader />
+    <main className="container page-spacing gr-bag-page">
+      <header>
+        <Link href="/cart" className="text-link">← Back to shopping bag</Link>
+        <h1>WhatsApp checkout.</h1>
+        <p>Prepare your order request for the Golden Rose boutique.</p>
+      </header>
+      <Suspense fallback={<p role="status">Checking your selections…</p>}><Checkout /></Suspense>
+    </main>
+  </>;
+}

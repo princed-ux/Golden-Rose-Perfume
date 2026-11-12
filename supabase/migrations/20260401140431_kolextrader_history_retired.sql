@@ -1,0 +1,5 @@
+-- Historical marker only.
+-- Migration 20260401140431 ran on the reused Supabase project in April 2026.
+-- KolexTrader's old public tables and functions were retired by the Golden Rose
+-- migration 20261112003607. Do not recreate them on new local databases.
+-- This empty file preserves the historical version for Supabase CLI comparisons.

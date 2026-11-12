@@ -1,28 +1,21 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { CustomerSignOut } from '@/src/components/customer-auth-form';
+import { requireCustomer } from '@/src/lib/customer/session';
 
 export const metadata: Metadata = { title: 'Account settings' };
 
-export default function AccountSettingsPage() {
+export default async function AccountSettingsPage() {
+  const customer = await requireCustomer();
   return (
-    <div className="flex flex-col items-start gap-6">
-      <span className="overline">CUSTOMER ACCOUNT</span>
-      <h1 className="text-3xl">Account settings</h1>
-      <p className="max-w-2xl text-sm leading-7 text-[#77706c]">
-        Manage your personal details and preferences when customer accounts become available.
-      </p>
-      <dl className="grid w-full gap-6 rounded border border-[#e9e3db] p-6 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <dt className="font-medium">Profile and contact details</dt>
-          <dd className="text-sm leading-6 text-[#77706c]">Name and contact information will be available after sign-in.</dd>
-        </div>
-        <div className="flex flex-col gap-2">
-          <dt className="font-medium">Communication preferences</dt>
-          <dd className="text-sm leading-6 text-[#77706c]">Account preferences will be available after sign-in.</dd>
-        </div>
+    <section className="flex flex-col items-start gap-6">
+      <h1 className="font-serif text-3xl">Account settings</h1>
+      <dl className="grid w-full gap-6 rounded border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] p-6 sm:grid-cols-2">
+        <div><dt className="font-medium">Name</dt><dd className="break-words text-[var(--gr-theme-muted)]">{customer.name || '—'}</dd></div>
+        <div><dt className="font-medium">Email address</dt><dd className="break-words text-[var(--gr-theme-muted)]">{customer.email ?? '—'}</dd></div>
       </dl>
-      <p className="text-sm text-[#77706c]">This preview does not collect or save personal information.</p>
-      <Link href="/account" className="text-link">Back to your account</Link>
-    </div>
+      <Link href="/account/forgot-password" className="text-link">Request a password reset</Link>
+      <CustomerSignOut />
+    </section>
   );
 }

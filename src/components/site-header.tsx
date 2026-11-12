@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowUpRight, ShoppingBag, UserRound } from 'lucide-react';
+import { ShoppingBag, UserRound } from 'lucide-react';
 
 export function SiteHeader() {
   return (
@@ -12,11 +12,10 @@ export function SiteHeader() {
         <nav className="site-nav" aria-label="Customer site navigation">
           <Link href="/shop">Shop perfumes</Link>
           <Link href="/#collections">Collections</Link>
-          <Link href="/workspace">Business workspace <ArrowUpRight size={14} /></Link>
         </nav>
         <div className="flex items-center gap-5">
           <Link href="/account" className="header-action"><UserRound size={19} aria-hidden="true" /><span>Account</span></Link>
-          <Link href="/cart" className="header-action" aria-label="View cart preview"><ShoppingBag size={19} /><span>Cart</span></Link>
+          <Link href="/cart" className="header-action" aria-label="Shopping bag"><ShoppingBag size={19} aria-hidden="true" /><span>Bag</span></Link>
         </div>
       </div>
     </header>

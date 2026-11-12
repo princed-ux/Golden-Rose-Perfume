@@ -1,7 +1,7 @@
 import './page.css';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowUpRight, Flower2, ShoppingBag, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Flower2, ShoppingBag, Sparkles, UserRound } from 'lucide-react';
 import HeroSlideshow from './HeroSlideshow';
 
 const edits = [
@@ -28,8 +28,8 @@ export default async function HomePage() {
             <a href="#gr-story">Our Story</a>
           </nav>
           <div className="gr-header__right">
-            <Link className="gr-header__staff" href="/staff/sign-in">Staff access</Link>
-            <Link className="gr-header__bag" href="/cart" aria-label="View cart"><ShoppingBag size={19} strokeWidth={1.5}/></Link>
+            <Link className="gr-header__account" href="/account" aria-label="Customer account or sign in"><UserRound size={18} strokeWidth={1.5} aria-hidden="true" /><span>Account</span></Link>
+            <Link className="gr-header__bag" href="/cart" aria-label="Shopping bag"><ShoppingBag size={19} strokeWidth={1.5} aria-hidden="true" /></Link>
             <Link className="gr-header__shop" href="/shop">Shop now <ArrowUpRight size={16}/></Link>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default async function HomePage() {
         <section className="gr-promise gr-wrap" aria-label="Golden Rose experience">
           <div><Sparkles size={24} strokeWidth={1.2} /><strong>Thoughtfully selected</strong><p>Discover perfumes for your every mood and moment.</p></div>
           <div><Flower2 size={24} strokeWidth={1.2} /><strong>Made for self-expression</strong><p>From subtle everyday signatures to bold statements.</p></div>
-          <div><ShoppingBag size={24} strokeWidth={1.2} /><strong>Shop your way</strong><p>Browse online, with checkout options as they become available.</p></div>
+          <div><ShoppingBag size={24} strokeWidth={1.2} /><strong>Shop your way</strong><p>Build your bag online and confirm your order with us on WhatsApp.</p></div>
         </section>
 
         <section className="gr-last-call">
@@ -93,10 +93,10 @@ export default async function HomePage() {
       <footer className="gr-footer">
         <div className="gr-wrap gr-footer__top">
           <div><span className="gr-footer__brand">GOLDEN ROSE</span><span className="gr-footer__subtitle">PERFUME · BEAUTY OF FRAGRANCE</span><p>Beautiful scents. Memorable moments.</p></div>
-          <div className="gr-footer__links"><Link href="/shop">Shop</Link><a href="#collections">Collections</a><a href="#gr-story">Our Story</a><Link href="/staff/sign-in">Staff</Link></div>
+          <div className="gr-footer__links"><Link href="/shop">Shop</Link><a href="#collections">Collections</a><Link href="/account">Account</Link><Link href="/cart">Shopping bag</Link></div>
           <div className="gr-footer__icon"><Flower2 size={64} strokeWidth={.65} aria-hidden="true" /></div>
         </div>
-        <div className="gr-wrap gr-footer__bottom"><span>© {new Date().getFullYear()} Golden Rose Perfume</span><span>Designed for Golden Rose · <Link href="/workspace">Business workspace</Link></span></div>
+        <div className="gr-wrap gr-footer__bottom"><span>© {new Date().getFullYear()} Golden Rose Perfume</span></div>
       </footer>
     </div>
   );

@@ -1,0 +1,27 @@
+.gr-bag-page { padding-bottom: 92px; }
+.gr-bag-page > header { margin-bottom: 25px; }
+.gr-bag-page h1 { margin: 12px 0 8px; font: 400 clamp(35px,5vw,60px)/1.1 Georgia,serif; }
+.gr-bag-page h2 { font: 400 clamp(20px,3vw,28px)/1.2 Georgia,serif; }
+.gr-bag-page p { color: var(--gr-theme-muted); line-height: 1.6; }
+.gr-bag-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,350px),1fr)); align-items: start; gap: 20px; }
+.gr-bag-panel { min-width: 0; padding: clamp(16px,3vw,27px); border: 1px solid var(--gr-theme-border); border-radius: 10px; background: var(--gr-theme-surface); }
+.gr-bag-empty { min-height: 235px; display: grid; align-content: center; justify-items: center; gap: 14px; text-align: center; }
+.gr-bag-empty h2 { margin: 0; }
+.gr-bag-empty svg { color: var(--gr-theme-gold); }
+.gr-bag-item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-top: 1px solid var(--gr-theme-border); overflow-wrap: anywhere; }
+.gr-bag-item p { margin-bottom: 4px; font-size: 13px; }
+.gr-bag-item .gr-bag-item-name { color: var(--gr-theme-text); font: 400 19px Georgia,serif; }
+.gr-bag-quantity { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.gr-bag-quantity span { min-width: 1.5em; text-align: center; }
+.gr-bag-quantity button, .gr-bag-item > button { min-height: 36px; min-width: 36px; padding: 4px 8px; border: 1px solid var(--gr-theme-border); border-radius: 4px; background: var(--gr-theme-surface); color: var(--gr-theme-text); font-size: 12px; }
+.gr-bag-total { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 15px 0; border-top: 1px solid var(--gr-theme-border); }
+.gr-bag-total strong { color: var(--gr-theme-text); }
+.gr-bag-form { display: grid; justify-items: start; gap: 12px; min-width: 0; }
+.gr-bag-form fieldset { padding: 0; margin: 0; width: 100%; border: 0; }
+.gr-bag-form label { display: grid; gap: 6px; width: 100%; font-size: 13px; }
+.gr-bag-form :is(input,select,textarea) { width: 100%; min-height: 43px; padding: 8px 11px; border: 1px solid var(--gr-theme-border); border-radius: 4px; color: var(--gr-theme-text); background: var(--gr-theme-surface); font: inherit; font-size: 16px; }
+.gr-bag-form input[name="quantity"] { max-width: 7rem; }
+.gr-bag-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 15px; min-height: 44px; border-radius: 5px; border: 1px solid #bb985c; background: #d8b575; color: #21170f !important; font-size: 13px; font-weight: 600; text-align: center; }
+.gr-bag-primary:hover { background: #e7c98e; }
+.gr-bag-primary:disabled, .gr-bag-quantity button:disabled { opacity: .55; cursor: not-allowed; }
+.gr-bag-prepared { margin-top: 18px; padding-top: 13px; border-top: 1px solid var(--gr-theme-border); }
