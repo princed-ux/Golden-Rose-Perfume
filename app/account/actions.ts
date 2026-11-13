@@ -11,6 +11,15 @@ import {
 
 const failure = (message: string): AuthResult => ({ message, error: true });
 
+// Server-side diagnostics only: never log email addresses, passwords, tokens, or raw responses.
+function logAuthFailure(operation: string, error: { status?: number; code?: string; name?: string } | null) {
+  console.error('[Golden Rose auth]', operation, {
+    status: error?.status ?? null,
+    code: error?.code ?? 'missing_session_or_transport',
+    type: error?.name ?? 'unknown',
+  });
+}
+
 function field(form: FormData, key: string) {
   const value = form.get(key);
   return typeof value === 'string' ? value : '';
@@ -69,11 +78,14 @@ export async function submitCustomerAuth(mode: CustomerAuthMode, _: AuthResult, 
     if (mode === 'login') {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error || !data.session) {
+        logAuthFailure('customer_password_sign_in', error);
         if (error?.code === 'email_not_confirmed') return failure('Check your email to confirm your account before signing in.');
         if (error?.status === 429) return failure('Too many sign-in attempts. Wait and try again.');
-        if (!error?.status || error.status >= 500) return failure('Sign-in is temporarily unavailable.');
+        if (!error?.status) return failure('Could not connect to Golden Rose sign-in. Check your internet connection and try again.');
+        if (error.status >= 500) return failure('Golden Rose sign-in is having a service issue. Please try again shortly.');
         return failure('Your email or password was not accepted.');
       }
+      destination = '/account/dashboard?notice=signed-in';
     } else if (mode === 'register') {
       const emailRedirectTo = await callbackUrl('confirm');
       if (!emailRedirectTo) return failure('Account registration is unavailable on this website address.');
@@ -110,8 +122,9 @@ export async function submitCustomerAuth(mode: CustomerAuthMode, _: AuthResult, 
       store.delete(RECOVERY_COOKIE);
       destination = '/account/dashboard?notice=password-updated';
     }
-  } catch {
-    return failure('Account services are temporarily unavailable. Try again.');
+  } catch (error) {
+    console.error('[Golden Rose auth] customer action exception', { type: error instanceof Error ? error.name : 'unknown' });
+    return failure('Account services are temporarily unavailable. Check your connection and try again.');
   }
   redirect(destination);
 }
