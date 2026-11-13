@@ -17,10 +17,17 @@ export async function signInStaff(_: OperationResult, form: FormData): Promise<O
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error || !data.session) {
+      // Metadata only: never log credentials or authentication tokens.
+      console.error('[Golden Rose staff auth] password sign-in failed', {
+        status: error?.status ?? null,
+        code: error?.code ?? 'missing_session_or_transport',
+        type: error?.name ?? 'unknown',
+      });
       const message = error?.status === 429 ? 'Too many attempts. Wait a moment before trying again.'
         : error?.code === 'email_not_confirmed' ? 'Confirm your email before signing in.'
-          : !error || (error.status ?? 0) >= 500 || !error.status ? 'Sign-in is temporarily unavailable. Try again.'
-            : 'Your email or password was not accepted.';
+          : !error?.status ? 'Could not connect to Golden Rose sign-in. Check your connection and try again.'
+            : error.status >= 500 ? 'Golden Rose sign-in is having a service issue. Try again shortly.'
+              : 'Your email or password was not accepted.';
       return { status: 'error', message };
     }
 
@@ -33,10 +40,11 @@ export async function signInStaff(_: OperationResult, form: FormData): Promise<O
       await supabase.auth.signOut({ scope: 'local' });
       return { status: 'error', message: 'Staff access could not be verified. Try again.' };
     }
-  } catch {
-    return { status: 'error', message: 'Sign-in is temporarily unavailable. Try again.' };
+  } catch (error) {
+    console.error('[Golden Rose staff auth] request exception', { type: error instanceof Error ? error.name : 'unknown' });
+    return { status: 'error', message: 'Staff sign-in could not complete. Check your connection and try again.' };
   }
-  redirect('/workspace');
+  redirect('/workspace?notice=signed-in');
 }
 
 export async function signOutStaff() {
