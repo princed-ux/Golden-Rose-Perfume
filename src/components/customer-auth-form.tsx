@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
+import { AuthToast } from '@/src/components/auth-toast';
 import { signInWithGoogle, submitCustomerAuth, signOutCustomer } from '@/app/account/actions';
-import { INITIAL_AUTH_RESULT, MIN_NEW_PASSWORD_LENGTH, type AuthResult, type CustomerAuthMode } from '@/src/lib/customer/auth-policy';
+import { INITIAL_AUTH_RESULT, MIN_NEW_PASSWORD_LENGTH, type CustomerAuthMode } from '@/src/lib/customer/auth-policy';
 
 const labels: Record<CustomerAuthMode, string> = {
   login: 'Sign in with email',
@@ -11,11 +12,6 @@ const labels: Record<CustomerAuthMode, string> = {
   'forgot-password': 'Email me a reset link',
   'reset-password': 'Save new password',
 };
-
-function AuthMessage({ result }: { result: AuthResult }) {
-  if (!result.message) return null;
-  return <p className={result.error ? 'gr-auth-error' : 'gr-auth-status'} role={result.error ? 'alert' : 'status'}>{result.message}</p>;
-}
 
 function GoogleMark() {
   return (
@@ -32,34 +28,39 @@ export function CustomerAuthForm({ mode }: { mode: CustomerAuthMode }) {
   const [result, action, pending] = useActionState(submitCustomerAuth.bind(null, mode), INITIAL_AUTH_RESULT);
   const [googleResult, googleAction, googlePending] = useActionState(signInWithGoogle, INITIAL_AUTH_RESULT);
   const [show, setShow] = useState(false);
+  const [lastAction, setLastAction] = useState<'email' | 'google'>('email');
+  const [edited, setEdited] = useState(false);
+  const notice = lastAction === 'google' ? googleResult : result;
+  const credentialError = !edited && lastAction === 'email' && result.error && /email|password/i.test(result.message);
   const newPassword = mode === 'register' || mode === 'reset-password';
   const busy = pending || googlePending;
 
   return (
     <div className="gr-auth-form">
+      <AuthToast result={notice} />
       {(mode === 'login' || mode === 'register') && <>
-        <form action={googleAction} className="gr-auth-form">
+        <form action={googleAction} className="gr-auth-form" onSubmit={() => setLastAction('google')}>
           <button className="gr-auth-submit gr-auth-google" type="submit" disabled={busy}>
             <GoogleMark />
             {googlePending ? 'Opening Google…' : 'Continue with Google'}
           </button>
-          <AuthMessage result={googleResult} />
         </form>
         <p className="gr-auth-divider">or continue with email</p>
       </>}
-      <form action={action} className="gr-auth-form" aria-busy={pending}>
+      <form action={action} className="gr-auth-form" aria-busy={pending}
+        onSubmit={() => { setLastAction('email'); setEdited(false); }} onChange={() => setEdited(true)}>
         {mode === 'register' && <label className="gr-auth-field">Name (optional)
           <span className="gr-auth-input-wrap"><input name="name" autoComplete="name" maxLength={120} /></span>
         </label>}
         {mode !== 'reset-password' && <label className="gr-auth-field">Email address
-          <span className="gr-auth-input-wrap"><input name="email" type="email" required autoComplete="email" maxLength={254} /></span>
+          <span className="gr-auth-input-wrap"><input name="email" type="email" required autoComplete="email" maxLength={254} aria-invalid={credentialError} /></span>
         </label>}
         {mode !== 'forgot-password' && <div className="gr-auth-field">
           <label htmlFor="customer-password">{mode === 'reset-password' ? 'New password' : 'Password'}</label>
           <div className="gr-auth-input-wrap">
             <input id="customer-password" name="password" type={show ? 'text' : 'password'} required
               minLength={newPassword ? MIN_NEW_PASSWORD_LENGTH : undefined} maxLength={newPassword ? 128 : 256}
-              autoComplete={newPassword ? 'new-password' : 'current-password'} />
+              autoComplete={newPassword ? 'new-password' : 'current-password'} aria-invalid={credentialError} />
             <button type="button" className="gr-auth-reveal" onClick={() => setShow(value => !value)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</button>
           </div>
           {newPassword && <small>Use at least {MIN_NEW_PASSWORD_LENGTH} characters.</small>}
@@ -70,7 +71,6 @@ export function CustomerAuthForm({ mode }: { mode: CustomerAuthMode }) {
         <button type="submit" className="gr-auth-submit" disabled={busy}>
           {pending ? 'Please wait…' : labels[mode]}<ArrowUpRight className="gr-auth-submit-arrow" size={17} aria-hidden="true" />
         </button>
-        <AuthMessage result={result} />
       </form>
     </div>
   );
