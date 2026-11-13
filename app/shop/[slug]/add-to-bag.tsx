@@ -5,14 +5,15 @@ import { ShoppingBag } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { formatPrice, UUID, type CatalogVariant } from '@/src/lib/golden-rose/contracts';
 import { MAX_QUANTITY, setBagQuantity } from '@/src/lib/customer/bag';
-import { updateShoppingBag } from '@/src/components/use-shopping-bag';
+import { useShoppingBag } from '@/src/components/use-shopping-bag';
 
 export function AddToBag({ variants }: { variants: CatalogVariant[] }) {
   const [notice, setNotice] = useState('');
+  const { ready, unavailable, deviceOnly, pending, error, retry, update } = useShoppingBag();
   const options = variants.filter(variant => variant.currency === 'NGN' && UUID.test(variant.id) &&
     Number.isSafeInteger(variant.priceMinor) && variant.priceMinor >= 0);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const id = String(form.get('variant'));
@@ -21,12 +22,13 @@ export function AddToBag({ variants }: { variants: CatalogVariant[] }) {
       setNotice('Choose a variant and a valid quantity.');
       return;
     }
-    const changed = updateShoppingBag(lines => {
+    const changed = await update(lines => {
       const previous = lines.find(line => line.variantId === id)?.quantity ?? 0;
       if (previous + quantity > MAX_QUANTITY) return lines;
       return setBagQuantity(lines, id, previous + quantity);
-    });
-    setNotice(changed ? 'Added to your shopping bag.' : 'Your bag has reached its limit for this fragrance or for distinct items.');
+    }, id);
+    setNotice(changed ? (deviceOnly ? 'Added to the bag on this device.' : 'Added to your shopping bag.')
+      : 'Unable to add this selection. Check your bag and quantity.');
   }
 
   if (!options.length) return <p>This fragrance is currently unavailable to add to your bag.</p>;
@@ -43,10 +45,13 @@ export function AddToBag({ variants }: { variants: CatalogVariant[] }) {
       </label>
       <label>Quantity<input name="quantity" type="number" defaultValue={1} min={1} max={MAX_QUANTITY} step={1} required /></label>
       <div className="flex flex-wrap items-center gap-4">
-        <button type="submit" className="gr-bag-primary"><ShoppingBag size={16} aria-hidden="true" /> Add to bag</button>
+        <button type="submit" className="gr-bag-primary" disabled={!ready || unavailable || pending}>
+          <ShoppingBag size={16} aria-hidden="true" /> {pending ? 'Saving…' : 'Add to bag'}
+        </button>
         <Link className="text-link" href="/cart">View bag</Link>
       </div>
-      {notice && <p role="status">{notice}</p>}
+      {unavailable ? <p role="status">Your bag could not be synced. <button type="button" className="text-link" onClick={retry}>Try again</button></p> :
+        (error || notice) && <p role="status">{error || notice}</p>}
     </form>
   );
 }

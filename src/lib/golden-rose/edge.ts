@@ -70,16 +70,35 @@ async function* readPages<T>(loadPage: (offset: number) => Promise<{ items: T[] 
   throw new EdgeError(502, 'This list exceeds the catalogue service limit.');
 }
 
-function catalogPages() {
-  return readPages(offset => callEdge<{ items: CatalogProduct[] }>('catalog-public', { params: pageParams(offset) }));
+export async function getCatalogPage(offset: number, limit: number, search = '') {
+  const params = new URLSearchParams({ offset: String(offset), limit: String(limit) });
+  if (search) params.set('search', search);
+  const page = await callEdge<{ items: CatalogProduct[]; newArrivals?: CatalogProduct[]; categories?: string[] }>('catalog-public', { params });
+  return {
+    items: itemsOf(page),
+    newArrivals: Array.isArray(page.newArrivals) ? page.newArrivals : [],
+    categories: Array.isArray(page.categories) ? page.categories.filter(value => typeof value === 'string') : [],
+  };
 }
 
-export async function listCatalog() {
-  const products = new Map<string, CatalogProduct>();
+export function catalogPages(search = '') {
+  return readPages(offset => getCatalogPage(offset, PAGE_SIZE, search));
+}
+
+export async function findCatalogProducts(ids: string[], byVariant = false) {
+  const remaining = new Set(ids);
+  const products: CatalogProduct[] = [];
+  if (!remaining.size) return products;
   for await (const page of catalogPages()) {
-    for (const product of page) products.set(product.id, product);
+    for (const product of page) {
+      const matches = byVariant
+        ? product.variants.map(variant => variant.id).filter(id => remaining.delete(id)).length > 0
+        : remaining.delete(product.id);
+      if (matches) products.push(product);
+    }
+    if (!remaining.size) break;
   }
-  return [...products.values()];
+  return products;
 }
 
 export async function findCatalogProduct(idOrSlug: string) {

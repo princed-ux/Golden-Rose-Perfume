@@ -1,0 +1,34 @@
+.gr-import { display: grid; min-width: 0; gap: 14px; }
+.gr-import-heading { display: flex; justify-content: space-between; gap: 12px; padding: 10px 3px; }
+.gr-import-heading h1 { margin: 3px 0 5px; color: var(--owner-ink); font: 400 clamp(31px, 4vw, 48px)/1.06 Georgia, serif; }
+.gr-import-heading p:last-child, .gr-import-panel > p { color: var(--owner-muted); }
+.gr-import-panel { padding: clamp(13px, 2vw, 21px); }
+.gr-import-panel h2 { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: var(--owner-ink); font: 600 20px Georgia, serif; }
+.gr-import-panel h2 svg, .gr-import-meta svg { flex: none; color: var(--owner-gold); }
+.gr-import-upload, .gr-import-fields { display: grid; gap: 12px; align-items: end; min-width: 0; margin-top: 14px; border: 0; padding: 0; }
+.gr-import-upload { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); }
+.gr-import-fields { grid-template-columns: repeat(auto-fit, minmax(min(100%, 172px), 1fr)); }
+.gr-import :is(fieldset, label, input, select) { min-width: 0; }
+.gr-import label { display: grid; gap: 5px; font-size: 12px; font-weight: 650; }
+.gr-import :is(input, select) { width: 100%; min-height: 44px; padding: 7px; border: 1px solid var(--owner-line); border-radius: 7px; background: #fcfafb; color: var(--owner-ink); font: 400 13px "Segoe UI", sans-serif; }
+.gr-import input::file-selector-button { margin-right: 5px; padding: 4px 6px; border-radius: 5px; background: var(--owner-gold-soft); color: var(--owner-wine); }
+.gr-import-button, .gr-import-secondary { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 6px; padding: 7px 11px; border: 1px solid var(--owner-line); border-radius: 7px; text-align: center; font-size: 12px; font-weight: 700; }
+.gr-import-button { background: var(--owner-wine); color: #fff; }
+.gr-import-secondary { background: var(--owner-paper); color: var(--owner-wine); overflow-wrap: anywhere; }
+.gr-import :is(button,input,select):disabled { opacity: .6; cursor: default; }
+.gr-import-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; color: var(--owner-muted); font-size: 12px; }
+.gr-import-notice, .gr-import-error { padding: 10px 13px; border: 1px solid #e4ceaa; border-left: 3px solid var(--owner-gold); border-radius: 7px; background: #fcf2df; color: #663f1a; font-size: 13px; }
+.gr-import-error { background: #fbede9; border-color: #9b3a3a; color: #78282c; }
+.gr-import-counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 85px), 1fr)); gap: 7px; }
+.gr-import-counts > div { padding: 8px; border: 1px solid var(--owner-line); border-radius: 7px; background: #faf7f8; }
+.gr-import-counts dt { color: var(--owner-muted); font-size: 11px; text-transform: capitalize; }
+.gr-import-counts dd { margin: 0; font: 600 23px Georgia, serif; }
+.gr-import-table { max-width: 100%; margin-top: 12px; overflow: auto; }
+.gr-import-table table { width: 100%; min-width: 420px; border-collapse: collapse; text-align: left; font-size: 12px; }
+.gr-import-table caption { padding: 6px 0; color: var(--owner-muted); text-align: left; }
+.gr-import-table th, .gr-import-table td { padding: 8px; border-bottom: 1px solid var(--owner-line); overflow-wrap: anywhere; }
+.gr-import-table th { background: #faf5f7; }
+.gr-import-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.gr-import-job { display: grid; gap: 6px; margin-bottom: 12px; padding: 10px; border: 1px solid var(--owner-line); border-radius: 7px; overflow-wrap: anywhere; }
+.gr-import-job progress { width: 100%; accent-color: var(--owner-wine); }
+.gr-import-jobs { display: grid; gap: 5px; padding: 0; list-style: none; }

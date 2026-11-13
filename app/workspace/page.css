@@ -253,6 +253,23 @@
 
 /* Shared theme tokens change colors without changing the dashboard layout. */
 .gr-workspace { --grd-ink: var(--gr-theme-text); --grd-muted: var(--gr-theme-muted); --grd-line: var(--gr-theme-border); --grd-gold: var(--gr-theme-gold); --workspace-bg: var(--gr-theme-bg); background: var(--gr-theme-bg); color: var(--gr-theme-text); }
+.gr-workspace {
+  color-scheme: light;
+  --gr-theme-bg: #f7f5ef;
+  --gr-theme-surface: #fffefa;
+  --gr-theme-surface-alt: #eee9dd;
+  --gr-theme-text: #292820;
+  --gr-theme-muted: #686354;
+  --gr-theme-border: #d8d1c1;
+  --gr-theme-gold: #846029;
+  --gr-theme-input: #faf8f2;
+  --gr-theme-danger: #a52927;
+  --ink: var(--gr-theme-text);
+  --muted: var(--gr-theme-muted);
+  --cream: var(--gr-theme-bg);
+  --white: var(--gr-theme-surface);
+  --stroke: var(--gr-theme-border);
+}
 .gr-workspace .workspace-topbar, .gr-dashboard-metric, .gr-dashboard-card:not(.gr-dashboard-quick) { background: var(--gr-theme-surface); border-color: var(--gr-theme-border); }
 .gr-workspace .workspace-topbar__breadcrumb, .gr-dashboard .gr-dashboard-metric-note, .gr-dashboard .gr-dashboard-section-note, .gr-dashboard-heading > div > p:last-child, .gr-dashboard .gr-dashboard-eyebrow, .gr-dashboard-metric h2 { color: var(--gr-theme-muted); }
 .gr-dashboard h1, .gr-dashboard .gr-dashboard-metric-value, .gr-dashboard-chart-summary strong, .gr-dashboard-card:not(.gr-dashboard-quick) h2, .gr-dashboard-card:not(.gr-dashboard-quick) strong { color: var(--gr-theme-text); }

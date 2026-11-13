@@ -1,91 +1,462 @@
+
 import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, House, Package, Settings2, ShoppingBag, UserRound } from 'lucide-react';
-import { requireCustomer } from '@/src/lib/customer/session';
-import { CustomerSignOut } from '@/src/components/customer-auth-form';
-import { AuthNotice } from '../auth-notice';
-import './page.css';
+import type { Metadata } from 'next';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  Flower2,
+  Heart,
+  MessageCircle,
+  ShoppingBag,
+  Sparkles,
+  UserRound,
+} from 'lucide-react';
 
-const navigation = [
-  { label: 'Overview', href: '/account/dashboard', Icon: House },
-  { label: 'My orders', href: '/account/orders', Icon: Package },
-  { label: 'Account settings', href: '/account/settings', Icon: Settings2 },
+import { CustomerAccountShell } from '@/src/components/customer-account-shell';
+import { requireCustomer } from '@/src/lib/customer/session';
+import { getCatalogPage } from '@/src/lib/golden-rose/edge';
+import { ProductCard } from '@/src/components/product-card';
+import { AuthNotice } from '../auth-notice';
+
+export const metadata: Metadata = {
+  title: 'My Account — Golden Rose Perfume',
+  description:
+    'Your personal Golden Rose fragrance experience.',
+};
+
+const editorialCollections = [
+  {
+    number: '01',
+    title: 'The Rose Edit',
+    subtitle: 'Delicate & romantic',
+    image: '/assets/hero/hero-01.png',
+  },
+  {
+    number: '02',
+    title: 'Golden Hour',
+    subtitle: 'Warm & radiant',
+    image: '/assets/hero/hero-02.png',
+  },
+  {
+    number: '03',
+    title: 'After Dark',
+    subtitle: 'Bold & unforgettable',
+    image: '/assets/hero/hero-03.png',
+  },
 ];
 
-async function CustomerOverview({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
-  const customer = await requireCustomer();
+async function CustomerDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ notice?: string }>;
+}) {
+  const [customer, catalogue] = await Promise.all([requireCustomer(), getCatalogPage(0, 6).catch(() => null)]);
+  const newArrivals = catalogue?.newArrivals ?? [];
+  const products = newArrivals.length ? newArrivals : catalogue?.items ?? [];
+
+  const firstName =
+    customer.name.trim().split(/\s+/)[0] || 'there';
 
   return (
-    <div className="gr-customer-dashboard min-h-screen pb-20">
-      <header className="gr-account-header">
-        <div className="mx-auto flex min-h-20 max-w-[1600px] flex-wrap items-center justify-between gap-4 px-4 sm:px-7 lg:px-9">
-          <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Golden Rose Perfume homepage">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#b89554]/60 bg-black p-1">
-              <Image src="/assets/brand/golden-rose-logo.png" alt="" width={42} height={46} className="h-full w-auto object-contain" />
-            </span>
-            <span className="gr-account-wordmark flex min-w-0 flex-col gap-1 font-serif text-[15px] tracking-[.1em] sm:text-xl">
-              GOLDEN ROSE<small className="font-sans text-[7px] tracking-[.23em]">BEAUTY OF FRAGRANCE</small>
-            </span>
-          </Link>
-          <nav aria-label="Store navigation" className="flex items-center gap-4 sm:gap-7">
-            <Link href="/shop" className="flex min-h-11 items-center gap-2 text-xs">Shop</Link>
-            <Link href="/cart" aria-label="Shopping bag" className="flex min-h-11 items-center gap-2 text-xs">
-              <ShoppingBag size={18} aria-hidden="true" /><span className="hidden sm:inline">Bag</span>
-            </Link>
-          </nav>
+    <CustomerAccountShell
+      active="overview"
+      name={customer.name}
+    >
+      <div className="grc-dashboard">
+        <div className="grc-dashboard__topline">
+          <div>
+            <p className="grc-eyebrow">
+              YOUR GOLDEN ROSE WORLD
+            </p>
+
+            <p className="grc-dashboard__welcome">
+              Welcome back, {firstName}.
+              <span aria-hidden="true"> ✦</span>
+            </p>
+          </div>
+
+          <span className="grc-dashboard__member-label">
+            <CheckCircle2
+              size={15}
+              aria-hidden="true"
+            />
+            CUSTOMER ACCOUNT
+          </span>
         </div>
-      </header>
-      <div className="mx-auto grid max-w-[1600px] grid-cols-1 lg:grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="gr-account-sidebar flex min-w-0 flex-col px-3 py-3 lg:px-4 lg:pt-7">
-          <div className="hidden px-3 lg:block"><h2 className="font-serif text-2xl">My Account</h2><span className="gr-account-rule mt-4 mb-6 block h-px w-9" /></div>
-          <nav aria-label="Customer account navigation" className="flex flex-wrap gap-1.5 lg:flex-col">
-            {navigation.map(({ label, href, Icon }, index) =>
-              <Link key={href} href={href} aria-current={index === 0 ? 'location' : undefined}
-                className="gr-account-nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 py-3 text-xs">
-                <Icon size={18} strokeWidth={1.4} aria-hidden="true" />{label}
-              </Link>
-            )}
-          </nav>
-          <div className="gr-sidebar-botanical pointer-events-none mt-auto hidden select-none pt-12 lg:block" aria-hidden="true">
-            <div className="gr-dashboard-rose" />
-          </div>
-        </aside>
-        <main className="min-w-0 px-4 pt-6 sm:px-6 lg:px-7 lg:pt-7 xl:px-8">
-          <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <h1 className="max-w-full break-words font-serif text-3xl sm:text-4xl">Welcome{customer.name ? ', ' + customer.name : ' back'}.</h1>
-            <CustomerSignOut />
-          </header>
+
+        <Suspense fallback={null}>
           <AuthNotice searchParams={searchParams} />
-          <div className="grid gap-5 xl:grid-cols-2">
-            <section className="gr-account-panel min-w-0 rounded-xl p-5 sm:p-6" aria-labelledby="profile-heading">
-              <h2 id="profile-heading" className="flex items-center gap-3 font-serif text-xl">
-                <UserRound size={21} className="gr-account-gold" aria-hidden="true" /> Your account
-              </h2>
-              <dl className="mt-4 grid gap-3 text-sm">
-                {customer.name && <div><dt className="gr-account-muted">Name</dt><dd className="break-words">{customer.name}</dd></div>}
-                {customer.email && <div><dt className="gr-account-muted">Signed-in email</dt><dd className="break-all">{customer.email}</dd></div>}
-              </dl>
-              <Link href="/account/settings" className="gr-account-text-link mt-4 inline-flex items-center gap-2 text-sm">
-                Account settings <ArrowRight size={15} aria-hidden="true" />
-              </Link>
-            </section>
-            <section className="gr-account-panel rounded-xl p-5 sm:p-6">
-              <h2 className="font-serif text-xl">Order updates</h2>
-              <p className="gr-account-muted mt-3 text-sm leading-7">For orders requested through WhatsApp, check your conversation with Golden Rose for confirmation and delivery updates.</p>
-              <Link href="/shop" className="gr-account-text-link mt-4 inline-flex items-center gap-2 text-sm">
-                Explore fragrances <ArrowRight size={15} aria-hidden="true" />
-              </Link>
-            </section>
+        </Suspense>
+
+        {/* PERSONAL BOUTIQUE HERO */}
+        <section
+          className="grc-hero"
+          aria-labelledby="grc-hero-title"
+        >
+          <div className="grc-hero__visual">
+            <Image
+              src="/assets/hero/hero-02.png"
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 900px) 100vw, 55vw"
+              className="grc-hero__image"
+            />
           </div>
-        </main>
+
+          <div className="grc-hero__shade" />
+
+          <div className="grc-hero__content">
+            <p className="grc-hero__kicker">
+              THE ART OF BEING UNFORGETTABLE
+            </p>
+
+            <h1 id="grc-hero-title">
+              Your signature
+              <br />
+              <em>awaits.</em>
+            </h1>
+
+            <p>
+              A world of beautifully selected fragrances,
+              made for the moments that become memories.
+            </p>
+
+            <div className="grc-hero__actions">
+              <Link
+                href="/shop"
+                className="grc-button grc-button--gold"
+              >
+                Explore perfumes
+                <ArrowUpRight
+                  size={17}
+                  aria-hidden="true"
+                />
+              </Link>
+
+              <Link
+                href="/cart"
+                className="grc-button grc-button--outline"
+              >
+                My fragrance bag
+              </Link>
+            </div>
+          </div>
+
+          <span className="grc-hero__number">
+            GR — 001
+          </span>
+        </section>
+
+        {/* ACCOUNT QUICK ACTIONS */}
+        <div className="grc-quick-grid">
+          <Link
+            href="/cart"
+            className="grc-quick-card"
+          >
+            <span className="grc-quick-card__icon">
+              <ShoppingBag
+                size={23}
+                strokeWidth={1.3}
+              />
+            </span>
+
+            <div>
+              <h2>Your fragrance bag</h2>
+              <p>
+                Continue with the scents you&apos;ve selected.
+              </p>
+            </div>
+
+            <ArrowUpRight
+              className="grc-quick-card__arrow"
+              size={18}
+            />
+          </Link>
+
+          <Link
+            href="/account/orders"
+            className="grc-quick-card"
+          >
+            <span className="grc-quick-card__icon">
+              <MessageCircle
+                size={23}
+                strokeWidth={1.3}
+              />
+            </span>
+
+            <div>
+              <h2>Order enquiries</h2>
+              <p>
+                Understand how WhatsApp orders work.
+              </p>
+            </div>
+
+            <ArrowUpRight
+              className="grc-quick-card__arrow"
+              size={18}
+            />
+          </Link>
+
+          <Link
+            href="/account/settings"
+            className="grc-quick-card"
+          >
+            <span className="grc-quick-card__icon">
+              <UserRound
+                size={23}
+                strokeWidth={1.3}
+              />
+            </span>
+
+            <div>
+              <h2>My preferences</h2>
+              <p>
+                Manage your account and appearance.
+              </p>
+            </div>
+
+            <ArrowUpRight
+              className="grc-quick-card__arrow"
+              size={18}
+            />
+          </Link>
+        </div>
+
+        {/* REAL PUBLISHED FRAGRANCES */}
+        <section
+          className="grc-section"
+          aria-labelledby="grc-products-title"
+        >
+          <div className="grc-section__heading">
+            <div>
+              <p className="grc-eyebrow">
+                DISCOVER YOUR NEXT FAVOURITE
+              </p>
+
+              <h2 id="grc-products-title">
+                {newArrivals.length ? <>New <em>arrivals.</em></> : <>Explore our <em>collection.</em></>}
+              </h2>
+
+              <p>
+                Explore fragrances currently available
+                in the Golden Rose collection.
+              </p>
+            </div>
+
+            <Link
+              href="/shop"
+              className="grc-text-link"
+            >
+              View all perfumes
+              <ArrowRight size={17} />
+            </Link>
+          </div>
+
+          {!catalogue ? (
+            <div
+              className="grc-empty"
+              role="status"
+            >
+              <span className="grc-empty__icon">
+                <Flower2 size={30} />
+              </span>
+
+              <div>
+                <h3>
+                  The collection couldn&apos;t be loaded.
+                </h3>
+
+                <p>
+                  Please try again. Your account and
+                  shopping bag are still available.
+                </p>
+              </div>
+
+              <Link
+                href="/account/dashboard"
+                className="grc-text-link"
+              >
+                Retry
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          ) : products.length ? (
+            <div className="grc-product-grid">
+              {products.map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  compact
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grc-empty grc-empty--collection">
+              <span className="grc-empty__icon">
+                <Flower2 size={31} strokeWidth={1.2} />
+              </span>
+
+              <div>
+                <span className="grc-eyebrow">
+                  THE COLLECTION IS COMING TOGETHER
+                </span>
+
+                <h3>
+                  Something beautiful is on its way.
+                </h3>
+
+                <p>
+                  Golden Rose has not published its
+                  fragrance catalogue yet. Once products
+                  are available, you&apos;ll discover them here.
+                </p>
+              </div>
+
+              <Link
+                href="/shop"
+                className="grc-button grc-button--soft"
+              >
+                Explore the shop
+                <ArrowUpRight size={16} />
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* CAMPAIGN / EDITORIAL DISCOVERY */}
+        <section
+          className="grc-section grc-section--editorial"
+          aria-labelledby="grc-edits-title"
+        >
+          <div className="grc-section__heading">
+            <div>
+              <p className="grc-eyebrow">
+                MORE THAN A FRAGRANCE
+              </p>
+
+              <h2 id="grc-edits-title">
+                Find your <em>feeling.</em>
+              </h2>
+
+              <p>
+                Discover the different moods of
+                the Golden Rose world.
+              </p>
+            </div>
+          </div>
+
+          <div className="grc-editorial-grid">
+            {editorialCollections.map(collection => (
+              <Link
+                href="/shop"
+                key={collection.number}
+                className="grc-editorial-card"
+              >
+                <Image
+                  src={collection.image}
+                  alt=""
+                  fill
+                  sizes="(max-width: 650px) 100vw, (max-width: 1080px) 50vw, 33vw"
+                />
+
+                <div className="grc-editorial-card__shade" />
+
+                <span className="grc-editorial-card__number">
+                  {collection.number} / EDIT
+                </span>
+
+                <div className="grc-editorial-card__text">
+                  <small>{collection.subtitle}</small>
+
+                  <h3>{collection.title}</h3>
+
+                  <span className="grc-editorial-card__circle">
+                    <ArrowUpRight
+                      size={19}
+                      aria-hidden="true"
+                    />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <p className="grc-editorial-caption">
+            Campaign collections are inspiration;
+            individual fragrances and availability
+            appear in the live shop.
+          </p>
+        </section>
+
+        {/* WHATSAPP CHECKOUT EXPLANATION */}
+        <section className="grc-order-story">
+          <div className="grc-order-story__icon">
+            <Heart
+              size={26}
+              strokeWidth={1.3}
+            />
+          </div>
+
+          <div>
+            <p className="grc-eyebrow">
+              PERSONAL SERVICE, BEAUTIFULLY SIMPLE
+            </p>
+
+            <h2>
+              Your fragrance journey,
+              <br />
+              <em>our personal touch.</em>
+            </h2>
+
+            <p>
+              Add your favourites to your bag and
+              continue on WhatsApp. Golden Rose will
+              confirm availability, your final total,
+              and delivery details directly.
+            </p>
+          </div>
+
+          <Link
+            href="/cart"
+            className="grc-button grc-button--gold"
+          >
+            View my bag
+            <ArrowUpRight size={16} />
+          </Link>
+        </section>
+
+        <div className="grc-dashboard__footnote">
+          <Sparkles size={14} />
+          <span>
+            Your account is private to you.
+            Your fragrances, your experience.
+          </span>
+        </div>
       </div>
-    </div>
+    </CustomerAccountShell>
   );
 }
 
-export default function Dashboard({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
-  return <Suspense fallback={<p className="container page-spacing" role="status">Loading your account…</p>}>
-    <CustomerOverview searchParams={searchParams} />
-  </Suspense>;
+export default function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ notice?: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="grc-loading" role="status">
+          Preparing your Golden Rose experience…
+        </div>
+      }
+    >
+      <CustomerDashboard
+        searchParams={searchParams}
+      />
+    </Suspense>
+  );
 }

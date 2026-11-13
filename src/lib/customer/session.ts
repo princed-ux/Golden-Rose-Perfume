@@ -4,6 +4,7 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { createClient } from '@/src/lib/supabase/server';
+import { normalizeTheme } from './preferences';
 
 export const getCustomer = cache(async () => {
   await connection();
@@ -16,6 +17,7 @@ export const getCustomer = cache(async () => {
   return {
     id: user.id,
     email: user.email ?? null,
+    appearance: normalizeTheme(user.user_metadata.golden_rose_theme),
     name: typeof metadataName === 'string' ? metadataName.trim().slice(0, 120) : '',
   };
 });

@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { EdgeError, listAdminProducts } from '@/src/lib/golden-rose/edge';
 import { canManageStockSetup, formatPrice, type AdminProduct } from '@/src/lib/golden-rose/contracts';
@@ -7,6 +9,7 @@ import { OperationForm } from '../operation-form';
 
 export default async function ProductsPage() {
   const { token, role } = await requireStaff();
+  if (!canViewModule(role, 'products')) notFound();
   const canManage = canManageStockSetup(role);
   let products: AdminProduct[] = [];
   let error = '';

@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/src/lib/supabase/server';
 import { getSupabaseConfig } from '@/src/lib/supabase/config';
 import {
-  RECOVERY_COOKIE, resolveAuthOrigin, validEmail, validNewPassword,
+  MIN_NEW_PASSWORD_LENGTH, RECOVERY_COOKIE, resolveAuthOrigin, validEmail, validNewPassword,
   type AuthResult, type CustomerAuthMode,
 } from '@/src/lib/customer/auth-policy';
 
@@ -60,7 +60,7 @@ export async function submitCustomerAuth(mode: CustomerAuthMode, _: AuthResult, 
   if (mode === 'login' && (!password || password.length > 256)) return failure('Enter your password.');
   if ((mode === 'register' || mode === 'reset-password') &&
       !validNewPassword(password, field(form, 'confirmPassword'))) {
-    return failure('Use 12 to 128 characters and make sure the two passwords match.');
+    return failure(`Use ${MIN_NEW_PASSWORD_LENGTH} to 128 characters and make sure the two passwords match.`);
   }
 
   let destination = '/account/dashboard';

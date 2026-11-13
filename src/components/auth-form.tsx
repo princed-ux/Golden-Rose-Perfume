@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useSyncExternalStore, type FormEvent } from 'react';
+import { MIN_NEW_PASSWORD_LENGTH } from '../lib/customer/auth-policy';
 
 type AuthMode = 'login' | 'register' | 'forgot-password' | 'staff-login' | 'accept-invite';
 type Field = 'email' | 'password' | 'confirmPassword' | 'inviteCode';
@@ -13,7 +14,7 @@ export function validateAuthValues(mode: AuthMode, values: AuthValues) {
   const email = values.email.trim();
   if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email address.';
   if (mode !== 'forgot-password' && !values.password) errors.password = 'Enter your password.';
-  if (createsPassword && (values.password.length < 12 || values.password.length > 128)) errors.password = 'Use between 12 and 128 characters.';
+  if (createsPassword && (values.password.length < MIN_NEW_PASSWORD_LENGTH || values.password.length > 128)) errors.password = `Use between ${MIN_NEW_PASSWORD_LENGTH} and 128 characters.`;
   if (createsPassword && (!values.confirmPassword || values.password !== values.confirmPassword)) errors.confirmPassword = 'Your passwords must match.';
   if (mode === 'accept-invite' && (!values.inviteCode.trim() || values.inviteCode.length > 256)) errors.inviteCode = 'Enter the invitation code provided by your manager.';
   return errors;
@@ -74,10 +75,10 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           <div className="gr-auth-field" key={field.name}>
             <label htmlFor={id}>{field.label}</label>
             <div className="gr-auth-input-wrap">
-              <input id={id} name={field.name} type={passwordField ? (showPassword ? 'text' : 'password') : field.name === 'email' ? 'email' : 'text'} autoComplete={field.autoComplete} disabled={!interactive} required maxLength={field.name === 'email' ? 254 : passwordField ? 128 : 256} minLength={passwordField && createsPassword ? 12 : undefined} spellCheck={false} autoCapitalize="none" aria-invalid={Boolean(errors[field.name])} aria-describedby={errors[field.name] ? id + '-error' : field.name === 'password' && createsPassword ? id + '-hint' : undefined} onChange={() => { setStatus(''); if (errors[field.name]) setErrors(previous => ({ ...previous, [field.name]: undefined })); }} />
+              <input id={id} name={field.name} type={passwordField ? (showPassword ? 'text' : 'password') : field.name === 'email' ? 'email' : 'text'} autoComplete={field.autoComplete} disabled={!interactive} required maxLength={field.name === 'email' ? 254 : passwordField ? 128 : 256} minLength={passwordField && createsPassword ? MIN_NEW_PASSWORD_LENGTH : undefined} spellCheck={false} autoCapitalize="none" aria-invalid={Boolean(errors[field.name])} aria-describedby={errors[field.name] ? id + '-error' : field.name === 'password' && createsPassword ? id + '-hint' : undefined} onChange={() => { setStatus(''); if (errors[field.name]) setErrors(previous => ({ ...previous, [field.name]: undefined })); }} />
               {field.name === 'password' && <button type="button" className="gr-auth-reveal" disabled={!interactive} onClick={() => setShowPassword(value => !value)} aria-pressed={showPassword} aria-label={showPassword ? 'Hide passwords' : 'Show passwords'}>{showPassword ? 'Hide' : 'Show'}</button>}
             </div>
-            {field.name === 'password' && createsPassword && <small id={id + '-hint'}>Use at least 12 characters. Longer passphrases are welcome.</small>}
+            {field.name === 'password' && createsPassword && <small id={id + '-hint'}>Use at least {MIN_NEW_PASSWORD_LENGTH} characters. Longer passphrases are welcome.</small>}
             {errors[field.name] && <p className="gr-auth-error" id={id + '-error'} role="alert">{errors[field.name]}</p>}
           </div>
         );

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
+import { connection } from 'next/server';
 import { ROLES } from '@/src/domain/types';
 import { createClient } from '@/src/lib/supabase/server';
 import { callEdge, EdgeError } from './edge';
@@ -14,6 +15,7 @@ export async function verifyStaffToken(token: string): Promise<StaffRole | null>
 }
 
 export const getStaffAccess = cache(async () => {
+  await connection();
   try {
     const supabase = await createClient();
     const { data: { session }, error } = await supabase.auth.getSession();

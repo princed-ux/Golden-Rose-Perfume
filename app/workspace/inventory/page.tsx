@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { EdgeError, getInventoryPage, listAdminProducts } from '@/src/lib/golden-rose/edge';
 import { canManageStockSetup, canReceiveStock, LOCATION_TYPES } from '@/src/lib/golden-rose/contracts';
@@ -8,6 +10,7 @@ import { ReceivingForm } from './receiving-form';
 
 export default async function InventoryPage({ searchParams }: { searchParams: Promise<{ offset?: string }> }) {
   const { token, role, userId } = await requireStaff();
+  if (!canViewModule(role, 'inventory')) notFound();
   const { offset: rawOffset } = await searchParams;
   const offset = typeof rawOffset === 'string' && /^\d{1,7}$/.test(rawOffset) && Number(rawOffset) <= 1_000_000
     ? Number(rawOffset) : 0;

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { normalizeTheme } from './theme-provider';
+import { normalizeTheme } from '../lib/customer/preferences';
 
 describe('Theme preference safety', () => {
   it('restores supported explicit preferences', () => {

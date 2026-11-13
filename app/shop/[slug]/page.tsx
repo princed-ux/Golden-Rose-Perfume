@@ -4,7 +4,10 @@ import { connection } from 'next/server';
 import { Suspense } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { SiteHeader } from '@/src/components/site-header';
-import { BottleArt } from '@/src/components/bottle-art';
+import { ProductGallery } from '@/src/components/product-photo';
+import { WishlistButton } from '@/src/components/wishlist-button';
+import { getCustomer } from '@/src/lib/customer/session';
+import { createClient } from '@/src/lib/supabase/server';
 import { findCatalogProduct } from '@/src/lib/golden-rose/edge';
 import { formatPrice, type CatalogProduct } from '@/src/lib/golden-rose/contracts';
 import { AddToBag } from './add-to-bag';
@@ -26,9 +29,17 @@ async function ProductDetail({ params }: ProductParams) {
     </section>;
   }
   if (!product) notFound();
+  const customer = await getCustomer().catch(() => null);
+  const saved = customer ? await (async () => {
+    const client = await createClient();
+    const { data, error } = await client.from('gr_customer_wishlist').select('product_id')
+      .eq('user_id', customer.id).eq('product_id', product.id).maybeSingle();
+    if (error) throw error;
+    return Boolean(data);
+  })().catch(() => null) : false;
   return (
     <div className="detail-layout">
-      <div className="detail-art" aria-hidden="true"><BottleArt variant={2} /></div>
+      <ProductGallery product={product} />
       <section className="detail-copy">
         <p className="overline">{[product.brand, product.category].filter(Boolean).join(' · ')}</p>
         <h1>{product.name}</h1>
@@ -39,6 +50,10 @@ async function ProductDetail({ params }: ProductParams) {
           </li>)}
         </ul>
         <AddToBag variants={product.variants} />
+        <div className="mt-4">
+          {saved === null ? <p role="status">Saved fragrances are temporarily unavailable. <a href={'/shop/' + encodeURIComponent(slug)}>Try again</a></p> :
+            <WishlistButton productId={product.id} saved={saved} signedIn={Boolean(customer)} />}
+        </div>
       </section>
     </div>
   );

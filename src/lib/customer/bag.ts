@@ -2,7 +2,7 @@ import { formatPrice, UUID, type CatalogProduct } from '../golden-rose/contracts
 
 export const BAG_KEY = 'golden-rose:whatsapp-cart:v1';
 export const MAX_QUANTITY = 20;
-const MAX_LINES = 50;
+export const MAX_BAG_LINES = 50;
 
 export interface BagLine { variantId: string; quantity: number }
 export interface BagItem extends BagLine {
@@ -13,13 +13,13 @@ export interface BagItem extends BagLine {
   priceMinor: number;
 }
 
-export function parseBag(raw: string | null): BagLine[] {
+export function parseBag(raw: string | null, maxLines = MAX_BAG_LINES): BagLine[] {
   if (!raw || raw.length > 80_000) return [];
   try {
     const data: unknown = JSON.parse(raw);
     if (!Array.isArray(data)) return [];
     const lines = new Map<string, number>();
-    for (const item of data.slice(0, MAX_LINES)) {
+    for (const item of data.slice(0, maxLines)) {
       const id = item?.variantId;
       const quantity = item?.quantity;
       if (typeof id === 'string' && UUID.test(id) && Number.isInteger(quantity) && quantity >= 1 && quantity <= MAX_QUANTITY) {
@@ -39,7 +39,13 @@ export function setBagQuantity(lines: BagLine[], variantId: string, quantity: nu
   if (lines.some(line => line.variantId === variantId)) {
     return lines.map(line => line.variantId === variantId ? next : line);
   }
-  return lines.length < MAX_LINES ? [...lines, next] : lines;
+  return lines.length < MAX_BAG_LINES ? [...lines, next] : lines;
+}
+
+export function mergeBagLines(current: BagLine[], incoming: BagLine[]) {
+  const quantities = new Map(current.map(line => [line.variantId, line.quantity]));
+  for (const line of incoming) quantities.set(line.variantId, Math.max(quantities.get(line.variantId) ?? 0, line.quantity));
+  return [...quantities].map(([variantId, quantity]) => ({ variantId, quantity }));
 }
 
 export function resolveBag(lines: BagLine[], products: CatalogProduct[]) {

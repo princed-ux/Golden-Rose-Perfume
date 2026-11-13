@@ -1,116 +1,64 @@
-
-/* Golden Rose — perfume scent animation */
-
-.gr-login {
-  display: block;
-  padding: 0;
+/* Shared fragrance motion. Decorative effects stay within the campaign panel. */
+.gr-boutique__photo {
+  transform-origin: right center;
+  animation: gr-boutique-breathe 18s ease-in-out infinite alternate;
 }
 
-.gr-login__headline {
-  font: 400 clamp(56px, 5.5vw, 88px)/0.98 Georgia, serif;
-  letter-spacing: -0.055em;
-}
-
-.gr-login__photo {
-  animation: rose-breathe 15s ease-in-out infinite alternate;
-}
-
-.gr-login__scent path {
-  fill: none;
-  stroke: url(#rose-scent-gradient);
-  stroke-linecap: round;
-  stroke-dasharray: 25 75;
-  stroke-dashoffset: 100;
-}
-
-.gr-login__mist path {
-  stroke-width: 28;
-  filter: blur(13px);
-  opacity: 0.25;
-  animation: rose-whoosh 14s linear infinite;
-}
-
-.gr-login__trails path {
-  stroke-width: 2;
-  opacity: 0.7;
-  animation: rose-whoosh 11s linear infinite;
-}
-
-.gr-login__mist path:nth-child(2),
-.gr-login__trails path:nth-child(2) {
-  animation-delay: -5s;
-  animation-duration: 17s;
-}
-
-.gr-login__mist path:nth-child(3),
-.gr-login__trails path:nth-child(3) {
-  animation-delay: -8s;
-  animation-duration: 19s;
-}
-
-.gr-login__particle {
+.gr-boutique__motion {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  inset: 0;
+  pointer-events: none;
+}
+
+.gr-boutique__scent {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.gr-boutique__scent path {
+  fill: none;
+  stroke-width: 1.15px;
+  stroke-linecap: round;
+  stroke-dasharray: 22 78;
+  opacity: .72;
+  animation: gr-boutique-trail 15s linear infinite;
+}
+
+.gr-boutique__scent path:nth-of-type(2) { animation-duration: 19s; animation-delay: -7s; opacity: .46; }
+.gr-boutique__scent path:nth-of-type(3) { animation-duration: 23s; animation-delay: -12s; opacity: .34; }
+
+.gr-boutique__particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
   border-radius: 50%;
-  background: #ffe0a4;
-  box-shadow: 0 0 14px #f2c67d;
+  background: #f7d69b;
+  box-shadow: 0 0 6px #efbc65a0;
   opacity: 0;
-  animation: rose-float 9s ease-in-out infinite;
+  animation: gr-boutique-float 11s ease-in-out infinite;
 }
 
-.gr-login .gr-auth-input-wrap input {
-  border-radius: 10px;
+@keyframes gr-boutique-breathe {
+  from { transform: scale(1); }
+  to { transform: scale(1.035); }
 }
 
-.gr-login .gr-auth-submit {
-  border-radius: 10px;
-  background: linear-gradient(110deg, #c89b55, #f1d9a5, #d1a35d);
+/* The dash and gap add to 100, matching the path length and loop distance. */
+@keyframes gr-boutique-trail {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
 }
 
-@keyframes rose-whoosh {
-  0% {
-    stroke-dashoffset: 100;
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.7;
-  }
-  100% {
-    stroke-dashoffset: -100;
-    opacity: 0;
-  }
-}
-
-@keyframes rose-float {
-  0% {
-    transform: translateY(40px) scale(0.4);
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translate(35px, -90px) scale(1.2);
-    opacity: 0;
-  }
-}
-
-@keyframes rose-breathe {
-  from { transform: scale(1.04); }
-  to { transform: scale(1.12); }
+@keyframes gr-boutique-float {
+  0% { opacity: 0; transform: translate3d(0, 15px, 0); }
+  40% { opacity: .63; }
+  75% { opacity: .28; }
+  100% { opacity: 0; transform: translate3d(17px, -42px, 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gr-login__photo,
-  .gr-login__particle {
-    animation: none;
-  }
-
-  .gr-login__scent path {
-    animation: none;
-    stroke-dasharray: none;
-    stroke-dashoffset: 0;
-    opacity: 0.25;
-  }
+  .gr-boutique__motion { display: none; }
+  .gr-boutique__photo, .gr-boutique__scent path, .gr-boutique__particle { animation: none; }
+  .gr-boutique .gr-auth-submit, .gr-boutique .gr-auth-input-wrap input { transition: none; }
 }

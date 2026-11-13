@@ -30,4 +30,4 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ['/workspace/:path*', '/staff/login', '/account/:path*', '/checkout'] };
+export const config = { matcher: ['/workspace/:path*', '/staff/login', '/account/:path*', '/shop/:slug', '/cart', '/checkout'] };

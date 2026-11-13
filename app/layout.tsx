@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
-import ThemeProvider from '@/src/components/theme-provider';
+import { Suspense } from 'react';
+import ThemeProvider, { SyncAccountAppearance } from '@/src/components/theme-provider';
+import { Amara } from '@/src/components/amara';
+import { getWhatsAppNumber } from '@/src/lib/customer/bag';
+import { getCustomer } from '@/src/lib/customer/session';
 import './globals.css';
 import './starter.css';
 
@@ -14,5 +18,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" data-scroll-behavior="smooth"><body><ThemeProvider>{children}</ThemeProvider></body></html>;
+  const number = getWhatsAppNumber();
+  return <html lang="en" data-scroll-behavior="smooth"><body><ThemeProvider>
+    {children}
+    <Suspense fallback={null}><AccountAppearance /></Suspense>
+    <Suspense fallback={null}><Amara supportHref={number ? 'https://wa.me/' + number : null} /></Suspense>
+  </ThemeProvider></body></html>;
+}
+
+async function AccountAppearance() {
+  const customer = await getCustomer().catch(() => null);
+  return customer ? <SyncAccountAppearance appearance={customer.appearance} /> : null;
 }

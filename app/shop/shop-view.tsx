@@ -1,30 +1,26 @@
-'use client';
-
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, ChevronRight, Search, ShoppingBag, SlidersHorizontal, UserRound, X } from 'lucide-react';
+import { ArrowUpRight, ChevronRight, Search, ShoppingBag, UserRound } from 'lucide-react';
 import { ProductCard } from '@/src/components/product-card';
 import type { CatalogProduct } from '@/src/lib/golden-rose/contracts';
 import './page.css';
 
-const ALL = 'All fragrances';
-
-export function ShopView({ items, unavailable = false }: { items: CatalogProduct[] | null; unavailable?: boolean }) {
-  const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<string | null>(null);
-  const [sort, setSort] = useState('featured');
-  const categories = [...new Set(items?.flatMap(product => product.category ? [product.category] : []) ?? [])];
-  const products = (items ?? []).filter(product => {
-    const matchesCategory = category === null || product.category === category;
-    const searchable = [product.name, product.brand, product.category].filter(Boolean).join(' ').toLowerCase();
-    return matchesCategory && searchable.includes(query.trim().toLowerCase());
-  });
-  if (sort === 'price-low') products.sort((a, b) => (a.variants[0]?.priceMinor ?? Infinity) - (b.variants[0]?.priceMinor ?? Infinity));
-  if (sort === 'price-high') products.sort((a, b) => (b.variants[0]?.priceMinor ?? -Infinity) - (a.variants[0]?.priceMinor ?? -Infinity));
-  if (sort === 'name') products.sort((a, b) => a.name.localeCompare(b.name));
-  const filtered = Boolean(query.trim()) || category !== null;
-  function clearFilters() { setQuery(''); setCategory(null); }
+export function ShopView({
+  items, unavailable = false, query = '', category = '', sort = '', page = 1, hasNext = false, categories = [],
+}: {
+  items: CatalogProduct[] | null; unavailable?: boolean; query?: string; category?: string; sort?: string;
+  page?: number; hasNext?: boolean; categories?: string[];
+}) {
+  const products = items ?? [];
+  const filtered = Boolean(query || category || sort);
+  const options = [...new Set([...categories, ...products.flatMap(product => product.category ? [product.category] : []), ...(category ? [category] : [])])];
+  function pageLink(target: number) {
+    const params = new URLSearchParams({ page: String(target) });
+    if (query) params.set('q', query);
+    if (category) params.set('category', category);
+    if (sort) params.set('sort', sort);
+    return '/shop?' + params;
+  }
 
   return (
     <div className="gr-shop min-h-screen bg-[var(--gr-theme-bg)] text-[var(--gr-theme-text)]">
@@ -52,33 +48,45 @@ export function ShopView({ items, unavailable = false }: { items: CatalogProduct
           </div>
         </section>
 
-        {!!items?.length && <section className="flex flex-col gap-5" aria-label="Browse the collection">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div role="search" className="relative w-full text-base sm:max-w-sm">
-              <label htmlFor="shop-search" className="sr-only">Search fragrances by name, brand or scent family</label>
-              <Search size={17} strokeWidth={1.5} aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[var(--gr-theme-gold)]" />
-              <input id="shop-search" type="search" placeholder="Search fragrances…" value={query} onChange={event => setQuery(event.target.value)} className="min-h-12 w-full rounded-none border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] py-3 pr-4 pl-11 text-[var(--gr-theme-text)] placeholder:text-[var(--gr-theme-muted)] focus:border-[var(--gr-theme-gold)] focus:outline-none" />
-            </div>
-            <div className="flex items-center gap-3 text-xs text-[var(--gr-theme-muted)]"><SlidersHorizontal size={14} aria-hidden="true" /><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={event => setSort(event.target.value)} className="min-h-11 max-w-full border-0 border-b border-[var(--gr-theme-border)] bg-[var(--gr-theme-bg)] py-2 pr-3 text-[var(--gr-theme-text)] focus:outline-2 focus:outline-offset-2 focus:outline-[var(--gr-theme-gold)]"><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div>
-          </div>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex w-full flex-nowrap gap-2 overflow-x-auto pb-1 text-[11px] sm:w-auto sm:flex-wrap" aria-label="Scent families">{[null, ...categories].map(item => <button type="button" key={item === null ? 'all' : 'category:' + item} aria-pressed={category === item} onClick={() => setCategory(item)} className={`min-h-10 shrink-0 rounded-full border px-4 py-2 transition-colors motion-reduce:transition-none ${category === item ? 'border-[var(--gr-theme-gold)] bg-[var(--gr-theme-gold)] text-[var(--gr-theme-surface)]' : 'border-[var(--gr-theme-border)] bg-transparent text-[var(--gr-theme-muted)] hover:border-[var(--gr-theme-gold)] hover:text-[var(--gr-theme-gold)]'}`}>{item ?? ALL}</button>)}</div>
-            <div className="flex items-center justify-between gap-4 text-[10px] text-[var(--gr-theme-muted)]"><span role="status" aria-live="polite">Showing {products.length} of {items.length} fragrances</span>{filtered && <button type="button" onClick={clearFilters} className="flex min-h-10 items-center gap-1.5 text-[var(--gr-theme-gold)] underline underline-offset-4"><X size={12} aria-hidden="true" /> Clear filters</button>}</div>
-          </div>
-        </section>}
-
+        {items !== null && !unavailable && (items.length > 0 || filtered) &&
+          <form action="/shop" className="flex flex-wrap items-end gap-3" role="search" aria-label="Find fragrances" key={pageLink(page)}>
+            <label className="grid min-w-0 flex-1 basis-52 gap-2 text-xs">Search fragrances
+              <input name="q" type="search" defaultValue={query} maxLength={120} placeholder="Search fragrances…"
+                className="min-h-11 w-full border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] px-3 text-base" />
+            </label>
+            {options.length > 0 && <label className="grid max-w-full gap-2 text-xs">Category
+              <select name="category" defaultValue={category} className="min-h-11 max-w-full border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] px-3">
+                <option value="">All fragrances</option>
+                {options.map(option => <option key={option}>{option}</option>)}
+              </select>
+            </label>}
+            <label className="grid gap-2 text-xs">Sort by
+              <select name="sort" defaultValue={sort} className="min-h-11 border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] px-3">
+                <option value="">Name: A–Z</option>
+                <option value="price-low">Price: low to high</option>
+                <option value="price-high">Price: high to low</option>
+              </select>
+            </label>
+            <button className="min-h-11 bg-[var(--gr-theme-gold)] px-5 text-sm font-semibold text-[var(--gr-theme-surface)]">Apply</button>
+            {filtered && <Link href="/shop" className="inline-flex min-h-11 items-center text-sm underline">Clear filters</Link>}
+          </form>}
         <section className="grid grid-cols-1 gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8" aria-label="Fragrance products">
-          {products.map((product, index) => <ProductCard product={product} index={index} key={product.id} />)}
+          {products.map(product => <ProductCard product={product} key={product.id} />)}
           {!products.length && (
             <div className="col-span-full flex min-h-64 flex-col items-center justify-center gap-4 border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] px-5 py-10 text-center">
               <Search size={25} strokeWidth={1} className="text-[var(--gr-theme-gold)]" aria-hidden="true" />
-              {unavailable ? <><h2 className="font-serif text-3xl">The collection is temporarily unavailable.</h2><button type="button" className="min-h-11 underline" onClick={() => window.location.reload()}>Try again</button></>
+              {unavailable ? <><h2 className="font-serif text-3xl">The collection is temporarily unavailable.</h2><a className="min-h-11 underline" href={pageLink(page)}>Try again</a></>
                 : items === null ? <p role="status">Loading the collection…</p>
-                  : filtered ? <><h2 className="font-serif text-3xl">No fragrances match your filters.</h2><button type="button" onClick={clearFilters} className="min-h-11 underline">Show all fragrances</button></>
-                    : <><h2 className="font-serif text-3xl">The collection is coming soon.</h2><p className="max-w-sm text-sm leading-6 text-[var(--gr-theme-muted)]">Fragrances will appear here when they are released.</p></>}
+                  : filtered ? <><h2 className="font-serif text-3xl">No fragrances match your filters.</h2><Link href="/shop" className="min-h-11 underline">Show all fragrances</Link></>
+                    : <><h2 className="font-serif text-3xl">{page > 1 ? 'No fragrances on this page.' : 'The collection is coming soon.'}</h2><p className="max-w-sm text-sm leading-6 text-[var(--gr-theme-muted)]">Fragrances will appear here when they are released.</p></>}
             </div>
           )}
         </section>
+        {(page > 1 || hasNext) && <nav className="flex flex-wrap items-center justify-between gap-3" aria-label="Catalogue pages">
+          {page > 1 && <Link href={pageLink(page - 1)} className="inline-flex min-h-11 items-center underline">Previous page</Link>}
+          <span className="text-sm">Page {page}</span>
+          {hasNext && <Link href={pageLink(page + 1)} className="inline-flex min-h-11 items-center underline">Next page</Link>}
+        </nav>}
         <div className="flex flex-col gap-3 border-t border-[var(--gr-theme-border)] pt-7 sm:flex-row sm:items-center sm:justify-between"><span className="text-[10px] leading-6 text-[var(--gr-theme-muted)]">A considered collection. A personal expression.</span><Link href="/#gr-story" className="inline-flex min-h-11 items-center gap-3 text-xs text-[var(--gr-theme-gold)]">Discover the Golden Rose story <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
       </main>
       <footer className="border-t border-[#d8b575]/20 bg-[#0d0b09] px-5 pt-8 pb-24 text-[#b7a485] sm:px-9 lg:px-14"><div className="mx-auto flex max-w-[1248px] flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><div className="flex flex-col gap-2"><span className="font-serif text-xl tracking-[.1em] text-[#e2c189]">GOLDEN ROSE</span><span className="text-[8px] tracking-[.22em]">PERFUME · BEAUTY OF FRAGRANCE</span></div><nav aria-label="Shop footer" className="flex gap-6 text-[11px]"><Link href="/">Home</Link><Link href="/account">Your account</Link><Link href="/cart">Shopping bag</Link></nav></div></footer>

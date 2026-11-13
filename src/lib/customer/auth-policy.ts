@@ -7,6 +7,7 @@ export interface AuthResult {
 
 export const INITIAL_AUTH_RESULT: AuthResult = { message: '' };
 export const RECOVERY_COOKIE = 'gr-password-recovery';
+export const MIN_NEW_PASSWORD_LENGTH = 8;
 
 export function resolveAuthOrigin(siteUrl: string | undefined, host: string | null): string | null {
   if (siteUrl?.trim()) {
@@ -30,5 +31,5 @@ export function validEmail(value: string) {
 }
 
 export function validNewPassword(value: string, confirmation: string) {
-  return value.length >= 12 && value.length <= 128 && value === confirmation;
+  return value.length >= MIN_NEW_PASSWORD_LENGTH && value.length <= 128 && value === confirmation;
 }

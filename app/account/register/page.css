@@ -1,0 +1,5 @@
+/* Registration uses the same theme and layout. Frame this campaign’s wider rose arrangement. */
+.gr-boutique.gr-boutique--register {
+  --boutique-focal-x: 98%;
+  --boutique-focal-y: 48%;
+}

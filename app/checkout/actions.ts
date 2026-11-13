@@ -1,7 +1,7 @@
 'use server';
 
-import { listCatalog } from '@/src/lib/golden-rose/edge';
-import { createWhatsAppLink, getWhatsAppNumber, parseBag, resolveBag } from '@/src/lib/customer/bag';
+import { findCatalogProducts } from '@/src/lib/golden-rose/edge';
+import { createWhatsAppLink, getWhatsAppNumber, MAX_BAG_LINES, parseBag, resolveBag } from '@/src/lib/customer/bag';
 import { validEmail } from '@/src/lib/customer/auth-policy';
 
 function text(form: FormData, key: string) {
@@ -13,8 +13,9 @@ export async function prepareCheckout(form: FormData) {
   const number = getWhatsAppNumber();
   if (!number) return { error: 'The store’s WhatsApp number is not configured yet.' };
 
-  const lines = parseBag(text(form, 'bag'));
+  const lines = parseBag(text(form, 'bag'), MAX_BAG_LINES + 1);
   if (!lines.length) return { error: 'Add a fragrance to your bag first.' };
+  if (lines.length > MAX_BAG_LINES) return { error: 'Reduce the number of fragrances in your bag before continuing.' };
 
   const contact = {
     name: text(form, 'name'), phone: text(form, 'phone'),
@@ -28,7 +29,8 @@ export async function prepareCheckout(form: FormData) {
   }
 
   try {
-    const { items, unavailable, totalMinor } = resolveBag(lines, await listCatalog());
+    const products = await findCatalogProducts(lines.map(line => line.variantId), true);
+    const { items, unavailable, totalMinor } = resolveBag(lines, products);
     if (unavailable.length) return { error: 'An item is no longer available. Review your bag before continuing.' };
     if (totalMinor === null) return { error: 'The estimated total could not be calculated. Reduce the bag quantity.' };
     const href = createWhatsAppLink(number, items, totalMinor, contact);

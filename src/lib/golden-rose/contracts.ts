@@ -18,6 +18,8 @@ export interface CatalogProduct {
   category: string | null;
   description: string | null;
   variants: CatalogVariant[];
+  createdAt?: string;
+  images?: { storagePath: string; altText: string | null }[];
 }
 
 export interface AdminProduct extends Omit<CatalogProduct, 'id' | 'variants'> {
