@@ -20,6 +20,7 @@ import { requireCustomer } from '@/src/lib/customer/session';
 import { getCatalogPage } from '@/src/lib/golden-rose/edge';
 import { ProductCard } from '@/src/components/product-card';
 import { AuthNotice } from '../auth-notice';
+import { SignedInToast } from '@/src/components/auth-toast';
 
 export const metadata: Metadata = {
   title: 'My Account — Golden Rose Perfume',
@@ -90,6 +91,7 @@ async function CustomerDashboard({
         <Suspense fallback={null}>
           <AuthNotice searchParams={searchParams} />
         </Suspense>
+        <Suspense fallback={null}><SignedInToast destination="customer" /></Suspense>
 
         {/* PERSONAL BOUTIQUE HERO */}
         <section
