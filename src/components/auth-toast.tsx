@@ -49,7 +49,7 @@ export function AuthToast({ result }: { result: AuthToastResult }) {
 /** Used only after a successful redirect, not for an unverified form submission. */
 export function SignedInToast({ destination }: { destination: 'workspace' | 'customer' }) {
   const search = useSearchParams();
-  const signedIn = search.get('notice') === 'signed-in';
+  const [signedIn] = useState(() => search.get('notice') === 'signed-in');
   const message = signedIn
     ? destination === 'workspace' ? 'Welcome to your Golden Rose business workspace.' : 'Welcome back to your Golden Rose account.'
     : '';
