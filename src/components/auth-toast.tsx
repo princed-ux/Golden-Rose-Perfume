@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
-import styles from './auth-toast.module.css';
+import './auth-toast.css';
 
 export interface AuthToastResult {
   message: string;
@@ -13,34 +13,31 @@ export interface AuthToastResult {
 
 /** Accessible, dismissible, auto-expiring authentication notice. Never exposes credentials. */
 export function AuthToast({ result }: { result: AuthToastResult }) {
-  const [active, setActive] = useState<{ message: string; kind: 'error' | 'success' | 'info' } | null>(null);
+  const [dismissed, setDismissed] = useState<AuthToastResult | null>(null);
+  const visible = Boolean(result.message) && dismissed !== result;
 
   useEffect(() => {
-    if (!result.message) {
-      setActive(null);
-      return;
-    }
-    const kind = result.error || result.status === 'error' ? 'error'
-      : result.status === 'success' ? 'success' : 'info';
-    setActive({ message: result.message, kind });
-    const timeout = window.setTimeout(() => setActive(null), 6500);
+    if (!visible) return;
+    const timeout = window.setTimeout(() => setDismissed(result), 6500);
     return () => window.clearTimeout(timeout);
-  }, [result]);
+  }, [result, visible]);
 
-  if (!active) return null;
-  const Icon = active.kind === 'error' ? AlertCircle : active.kind === 'success' ? CheckCircle2 : Info;
+  if (!visible) return null;
+  const kind = result.error || result.status === 'error' ? 'error'
+    : result.status === 'success' ? 'success' : 'info';
+  const Icon = kind === 'error' ? AlertCircle : kind === 'success' ? CheckCircle2 : Info;
 
   return (
-    <div className={`${styles.toast} ${styles[active.kind]}`}
-      role={active.kind === 'error' ? 'alert' : 'status'}
-      aria-live={active.kind === 'error' ? 'assertive' : 'polite'}
+    <div className={`gr-auth-toast gr-auth-toast--${kind}`}
+      role={kind === 'error' ? 'alert' : 'status'}
+      aria-live={kind === 'error' ? 'assertive' : 'polite'}
       aria-atomic="true">
-      <span className={styles.symbol}><Icon size={21} aria-hidden="true" /></span>
-      <div className={styles.copy}>
-        <strong>{active.kind === 'error' ? 'Sign-in needs attention' : active.kind === 'success' ? 'Signed in successfully' : 'Golden Rose'}</strong>
-        <p>{active.message}</p>
+      <span className="gr-auth-toast__symbol"><Icon size={21} aria-hidden="true" /></span>
+      <div className="gr-auth-toast__copy">
+        <strong>{kind === 'error' ? 'Sign-in needs attention' : kind === 'success' ? 'Signed in successfully' : 'Golden Rose'}</strong>
+        <p>{result.message}</p>
       </div>
-      <button className={styles.close} type="button" onClick={() => setActive(null)}
+      <button className="gr-auth-toast__close" type="button" onClick={() => setDismissed(result)}
         aria-label="Dismiss notification" title="Dismiss notification"><X size={17} aria-hidden="true" /></button>
     </div>
   );

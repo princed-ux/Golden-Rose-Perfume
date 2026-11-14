@@ -4,6 +4,7 @@ import { WORKSPACE_MODULES } from '@/src/domain/modules';
 import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { liveOnlyModules, previewModules } from '@/app/owner-preview/workspace-model';
+import { OwnerAccessPanel } from '../owner-access/panel';
 
 export function generateStaticParams() {
   return WORKSPACE_MODULES.filter(module => module.id !== 'products' && module.id !== 'inventory')
@@ -11,10 +12,11 @@ export function generateStaticParams() {
 }
 
 async function ModuleContent({ params }: { params: Promise<{ module: string }> }) {
-  const [{ role }, { module: id }] = await Promise.all([requireStaff(), params]);
+  const [{ role, userId }, { module: id }] = await Promise.all([requireStaff(), params]);
   const selected = WORKSPACE_MODULES.find(item => item.id === id);
   if (!selected || !canViewModule(role, selected.id)) notFound();
   if (selected.id === 'overview') redirect('/workspace');
+  if (selected.id === 'staff' && role === 'owner') return <OwnerAccessPanel userId={userId} />;
   const display = [...previewModules, ...liveOnlyModules].find(item => item.id === selected.id);
   const Icon = display?.icon;
   return (

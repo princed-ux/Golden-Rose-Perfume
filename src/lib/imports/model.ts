@@ -44,7 +44,7 @@ export function canImportData(role: string | undefined): boolean {
 export function fieldNames(kind: ImportKind): Field[] {
   if (kind === 'variant') return ['externalId','databaseId','parentExternalId','parentDatabaseId','name','sku','barcode','sizeMl','priceMinor','costMinor','currency','imageReference'];
   if (kind === 'template') return ['externalId','databaseId','name','description','brandExternalId','categoryExternalId','imageReference'];
-  return ['externalId','databaseId','name','description'];
+  return kind === 'brand' ? ['externalId','databaseId','name','description'] : ['externalId','databaseId','name'];
 }
 
 export function guessMapping(headers: string[], kind: ImportKind, preset = 'auto'): Mapping {

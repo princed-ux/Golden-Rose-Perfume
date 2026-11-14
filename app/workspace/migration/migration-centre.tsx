@@ -167,7 +167,7 @@ export function MigrationCentre() {
         <span className="owner-metric-icon"><Database size={22} aria-hidden="true" /></span>
       </header>
       {history?.available === false && <p className="gr-import-notice" role="status">
-        File inspection and validation are available. Catalogue matching, private storage and import jobs await the reviewed database migration.
+        File inspection and validation are available. Catalogue matching, private storage and import jobs require the reviewed migration and server import key.
       </p>}
       <section className="owner-panel gr-import-panel" aria-labelledby="upload-export">
         <h2 id="upload-export"><Upload size={19} aria-hidden="true" /> Upload an export</h2>

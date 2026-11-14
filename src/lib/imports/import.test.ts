@@ -100,3 +100,18 @@ test('authorizes active owner role only at the import route boundary', () => {
   for (const role of ['customer','manager','inventory_staff','cashier','accountant','sales_staff',undefined]) assert.equal(canImportData(role), false);
   assert.equal(canImportData('owner'), true);
 });
+
+test('rejects malformed exports and unsupported file types', async () => {
+  await assert.rejects(parseUpload(Buffer.from('External ID,Name\np1,"Unclosed'), 'products.csv'), /invalid record/i);
+  await assert.rejects(parseUpload(Buffer.from('{"records":[{"name":'), 'products.json'), SyntaxError);
+  await assert.rejects(parseUpload(archive({ 'products.csv':'ID,Name\n1,Test', 'extra.txt':'unknown' }), 'export.zip'), /supported data exports/);
+  await assert.rejects(parseUpload(Buffer.from('ID,Name\n1,Test'), 'products.exe'), /supported ZIP export/);
+});
+
+test('blocks every contradictory row before catalogue matching', async () => {
+  const { dataset } = await parseUpload(Buffer.from('External ID,Database ID,Name\np1,1,Alpha\np2,2,Bravo\np1,2,Contradiction'), 'products.csv');
+  assert.ok(dataset);
+  const { results, records } = validateRows(dataset, 'template', guessMapping(dataset.headers, 'template'));
+  assert.equal(records.length, 0);
+  assert.deepEqual(results.map(row => row.status), ['invalid','invalid','invalid']);
+});

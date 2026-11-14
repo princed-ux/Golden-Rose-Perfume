@@ -1,0 +1,1794 @@
+
+/*
+  GOLDEN ROSE PERFUME
+  Production POS module styling
+
+  All styles are scoped to the POS module.
+  The existing owner dashboard shell is preserved.
+*/
+
+.pos-screen {
+  --pos-wine: #491027;
+  --pos-gold: #af8449;
+  --pos-text: #392c31;
+  --pos-muted: #86777c;
+  --pos-line: #eadfe1;
+
+  color: var(--pos-text);
+  padding: 8px 0 68px;
+  min-width: 0;
+
+  font: 13px/1.5 Arial, Helvetica, sans-serif;
+}
+
+.pos-screen *,
+.pos-screen *::before,
+.pos-screen *::after {
+  box-sizing: border-box;
+}
+
+.pos-screen button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.pos-screen button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.pos-screen :is(
+  button,
+  input,
+  select,
+  a
+):focus-visible {
+  outline: 2px solid var(--pos-gold);
+  outline-offset: 3px;
+}
+
+.pos-screen :is(h1, h2, h3, p) {
+  margin: 0;
+}
+
+/* ===========================
+   TEXT & HEADING
+=========================== */
+
+.pos-eyebrow {
+  color: #a47a48;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.pos-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.pos-heading h1 {
+  margin: 5px 0 !important;
+  font: 400 clamp(31px, 3vw, 43px)/1.15 Georgia, serif;
+  color: #381727;
+  letter-spacing: -0.04em;
+}
+
+.pos-heading h1 span {
+  color: #d2aa69;
+}
+
+.pos-heading > div > p:last-child {
+  font-size: 12px;
+  color: var(--pos-muted);
+}
+
+.pos-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+/* ===========================
+   REGISTER STATUS
+=========================== */
+
+.pos-online {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  border: 1px solid #d2e6d9;
+  color: #34714b;
+  background: #eff8f0;
+
+  border-radius: 99px;
+  padding: 9px 11px;
+
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pos-online i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ba366;
+}
+
+/* ===========================
+   SHARED BUTTONS
+=========================== */
+
+.pos-primary,
+.pos-secondary {
+  min-height: 41px;
+  padding: 10px 13px;
+
+  border: 1px solid #e7d9dc;
+  border-radius: 9px;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  font-weight: 750 !important;
+  font-size: 12px !important;
+  text-decoration: none;
+
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.pos-secondary {
+  background: #fff;
+  color: #663748;
+}
+
+.pos-secondary:hover:not(:disabled) {
+  background: #fbf2e7;
+}
+
+.pos-primary {
+  color: #fff6e7;
+  background:
+    linear-gradient(
+      110deg,
+      #5e1832,
+      #3d0c20
+    );
+  border-color: #4b1027;
+}
+
+.pos-primary:hover:not(:disabled) {
+  background: #702343;
+  transform: translateY(-1px);
+}
+
+.pos-wide {
+  width: 100%;
+}
+
+/* ===========================
+   SELLING LOCATION BAR
+=========================== */
+
+.pos-store-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 13px 20px;
+  padding: 14px 18px;
+
+  border: 1px solid var(--pos-line);
+  border-radius: 12px;
+  background: #fffdfb;
+
+  margin-bottom: 20px;
+}
+
+.pos-store-bar > label {
+  color: #70555f;
+  font-weight: 750;
+  font-size: 11px;
+}
+
+.pos-select {
+  position: relative;
+  min-width: 0;
+}
+
+.pos-select select {
+  appearance: none;
+
+  min-width: 210px;
+  width: 100%;
+  height: 38px;
+
+  border: 1px solid #e4d9d7;
+  border-radius: 8px;
+
+  background: white;
+  color: #633a46;
+
+  padding: 6px 36px 6px 12px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pos-select svg {
+  pointer-events: none;
+  position: absolute;
+
+  right: 11px;
+  top: 11px;
+
+  color: #a17a52;
+}
+
+.pos-store-caption {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+
+  color: #9a8987;
+  font-size: 10px;
+}
+
+.pos-store-caption svg {
+  color: #b08552;
+}
+
+/* ===========================
+   SETUP & PENDING ALERTS
+=========================== */
+
+.pos-setup-alert,
+.pos-pending {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 17px;
+
+  border: 1px solid #eed7b8;
+  border-radius: 12px;
+
+  color: #805d37;
+  background: #fff8ed;
+}
+
+.pos-setup-alert span,
+.pos-pending span {
+  flex: 1;
+  min-width: 190px;
+}
+
+.pos-setup-alert b,
+.pos-pending b {
+  display: block;
+  font-size: 12px;
+}
+
+.pos-setup-alert small,
+.pos-pending small {
+  display: block;
+  color: #91785a;
+
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.pos-setup-alert a {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+
+  color: #7f4d29;
+  text-decoration: underline;
+
+  font-weight: 750;
+  font-size: 11px;
+}
+
+.pos-pending {
+  background: #fff1f5;
+  color: #75334a;
+  border-color: #e2c0cd;
+}
+
+.pos-pending .pos-text-button {
+  border: 0;
+  background: transparent;
+
+  text-decoration: underline;
+  color: #8a4660;
+  padding: 8px;
+}
+
+/* ===========================
+   MAIN POS GRID
+=========================== */
+
+.pos-columns {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(305px, 345px);
+
+  align-items: start;
+  gap: 18px;
+}
+
+.pos-catalogue,
+.pos-cart {
+  border: 1px solid var(--pos-line);
+  border-radius: 15px;
+
+  background: #fffefd;
+  min-width: 0;
+
+  box-shadow:
+    0 6px 28px #3f152009;
+
+  overflow: hidden;
+}
+
+.pos-catalogue {
+  padding: clamp(15px, 2vw, 24px);
+}
+
+/* ===========================
+   CATALOGUE HEADING
+=========================== */
+
+.pos-section-title,
+.pos-cart-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pos-section-title {
+  margin-bottom: 18px;
+}
+
+.pos-section-title h2,
+.pos-cart-heading h2 {
+  font: 400 25px/1.2 Georgia, serif;
+  letter-spacing: -0.025em;
+  color: #451e2d;
+
+  margin-top: 5px;
+}
+
+.pos-counter {
+  flex-shrink: 0;
+
+  color: #8f6537;
+  background: #fbf2e5;
+
+  border: 1px solid #efdfc9;
+  border-radius: 50px;
+
+  padding: 7px 10px;
+
+  font-weight: 700;
+  font-size: 10px;
+}
+
+/* ===========================
+   SEARCH & BARCODE INPUT
+=========================== */
+
+.pos-search-row {
+  display: flex;
+  gap: 9px;
+}
+
+.pos-search {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-width: 0;
+  height: 48px;
+  padding: 0 12px;
+
+  border-radius: 9px;
+  background: #faf8f8;
+  border: 1px solid #e7dadd;
+
+  color: #a5744e;
+}
+
+.pos-search:focus-within {
+  border-color: #bb945c;
+
+  box-shadow:
+    0 0 0 3px #d9b78220;
+}
+
+.pos-search input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+  color: #4c3441;
+
+  min-width: 0;
+  font-size: 12px;
+}
+
+.pos-search input::placeholder {
+  color: #a99b9f;
+}
+
+.pos-search input:focus-visible {
+  outline: none;
+}
+
+.pos-search small {
+  font-size: 10px;
+}
+
+.pos-refresh {
+  width: 48px;
+  padding: 0;
+}
+
+/* ===========================
+   CATALOGUE FILTERS
+=========================== */
+
+.pos-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 14px 0 19px;
+}
+
+.pos-filter-row > small {
+  color: #a6979b;
+  font-size: 10px;
+}
+
+.pos-segments {
+  display: flex;
+  gap: 4px;
+
+  background: #f7f1f1;
+  padding: 4px;
+
+  border: 1px solid #ede2e3;
+  border-radius: 9px;
+}
+
+.pos-segments button {
+  border: 0;
+  border-radius: 6px;
+
+  padding: 8px 11px;
+
+  background: transparent;
+  color: #95848c;
+
+  font-size: 11px;
+}
+
+.pos-segments button.selected {
+  background: #fff;
+  color: #562c3c;
+
+  font-weight: 750;
+
+  box-shadow:
+    0 2px 8px #310e1b0b;
+}
+
+/* ===========================
+   PERFUME PRODUCT GRID
+=========================== */
+
+.pos-products {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(175px, 1fr)
+    );
+
+  gap: 12px;
+}
+
+.pos-product {
+  display: flex;
+  flex-direction: column;
+
+  border: 1px solid #ede3e5;
+  border-radius: 12px;
+
+  overflow: hidden;
+  min-width: 0;
+
+  background: #fff;
+
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.pos-product:hover {
+  transform: translateY(-2px);
+  border-color: #e4c7ae;
+
+  box-shadow:
+    0 8px 24px #43152814;
+}
+
+/* ===========================
+   PRODUCT PHOTOGRAPHS
+=========================== */
+
+.pos-photo {
+  position: relative;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 132px;
+
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      #fff8ed,
+      #f0e5e2
+    );
+
+  overflow: hidden;
+}
+
+.pos-photo img {
+  object-fit: contain;
+  padding: 10px;
+}
+
+.pos-photo-mark {
+  display: grid;
+  place-items: center;
+
+  width: 70px;
+  height: 78px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #6e2941,
+      #321020
+    );
+
+  border-radius:
+    16px 16px 9px 9px;
+
+  box-shadow:
+    0 12px 23px #51233628;
+
+  color: #e7c08a;
+
+  font: italic 25px Georgia, serif;
+}
+
+/* ===========================
+   PRODUCT CARD DETAILS
+=========================== */
+
+.pos-product-info {
+  flex: 1;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 13px;
+}
+
+.pos-product-brand {
+  color: #9b744b;
+
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+
+  text-transform: uppercase;
+}
+
+.pos-product h3 {
+  color: #492333;
+
+  font-size: 13px;
+  line-height: 1.4;
+
+  min-height: 36px;
+  margin-top: 7px;
+
+  font-weight: 750;
+}
+
+.pos-product-detail {
+  color: #9a8d91;
+  font-size: 10px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  margin-top: 5px !important;
+}
+
+.pos-product-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+
+  flex-wrap: wrap;
+  gap: 4px;
+
+  margin-top: auto;
+  padding-top: 13px;
+}
+
+.pos-product-price b {
+  color: #512137;
+
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pos-product-price small {
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.pos-instock {
+  color: #468a5e;
+}
+
+.pos-outstock {
+  color: #b85160;
+}
+
+.pos-product-info > button {
+  margin-top: 11px;
+
+  border: 1px solid #ebd8b6;
+  color: #75512b;
+  background: #fcf4e6;
+
+  border-radius: 8px;
+  padding: 9px;
+
+  font-weight: 750;
+  font-size: 11px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pos-product-info > button:hover:not(:disabled) {
+  background: #f8e6cb;
+}
+
+/* ===========================
+   LOAD MORE
+=========================== */
+
+.pos-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 100%;
+  margin-top: 18px;
+
+  background: white;
+  color: #80566a;
+
+  border: 1px solid #e5d8da;
+  padding: 12px;
+  border-radius: 9px;
+
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.pos-catalogue-foot {
+  text-align: center;
+  color: #a79a9d;
+
+  margin-top: 17px !important;
+  font-size: 10px;
+}
+
+/* ===========================
+   EMPTY CATALOGUE
+=========================== */
+
+.pos-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  gap: 9px;
+  text-align: center;
+
+  border: 1px dashed #e9dddd;
+  border-radius: 12px;
+
+  min-height: 260px;
+  padding: 22px;
+
+  color: #b0895f;
+  background: #fefcfb;
+}
+
+.pos-empty h3 {
+  font: 400 18px Georgia, serif;
+  color: #573047;
+}
+
+.pos-empty p {
+  color: #938589;
+  font-size: 11px;
+  max-width: 300px;
+}
+
+.pos-empty a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 9px 12px;
+
+  border: 1px solid #e6cca6;
+  border-radius: 8px;
+
+  background: #fcf2e4;
+  color: #794f2c;
+
+  text-decoration: none;
+  font-size: 11px;
+
+  margin-top: 5px;
+}
+
+/* ===========================
+   STICKY CHECKOUT BASKET
+=========================== */
+
+.pos-cart {
+  position: sticky;
+  top: 14px;
+
+  max-height:
+    calc(100dvh - 28px);
+
+  overflow-y: auto;
+}
+
+.pos-cart-heading {
+  padding: 21px 19px;
+
+  background: #fffcfa;
+  border-bottom: 1px solid var(--pos-line);
+}
+
+.pos-cart-heading h2 {
+  font-size: 22px;
+}
+
+.pos-cart-contents {
+  min-height: 150px;
+  max-height: 290px;
+  overflow-y: auto;
+}
+
+/* ===========================
+   EMPTY BASKET
+=========================== */
+
+.pos-cart-empty {
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+  gap: 8px;
+
+  padding: 36px 24px;
+  color: #b68b60;
+}
+
+.pos-cart-empty h3 {
+  font: 400 17px Georgia, serif;
+  color: #542c3b;
+}
+
+.pos-cart-empty p {
+  color: #94868d;
+  font-size: 11px;
+}
+
+/* ===========================
+   BASKET ITEMS
+=========================== */
+
+.pos-cart-item {
+  display: flex;
+  gap: 10px;
+
+  padding: 12px 15px;
+
+  border-bottom:
+    1px solid #f0e8e9;
+
+  min-width: 0;
+}
+
+.pos-cart-item .pos-photo {
+  width: 48px;
+  height: 55px;
+
+  flex: 0 0 48px;
+
+  border-radius: 7px;
+}
+
+.pos-cart-item .pos-photo-mark {
+  width: 30px;
+  height: 36px;
+
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.pos-cart-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pos-cart-item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.pos-cart-item-top b {
+  display: block;
+  color: #52313f;
+  font-size: 11px;
+}
+
+.pos-cart-item-top small {
+  display: block;
+  margin-top: 3px;
+
+  color: #9c8c91;
+  font-size: 9px;
+}
+
+.pos-cart-item-top button {
+  color: #9c7b84;
+  border: 0;
+
+  background: transparent;
+  padding: 2px;
+
+  height: 25px;
+}
+
+.pos-cart-item-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+
+  margin-top: 10px;
+}
+
+.pos-cart-item-bottom strong {
+  font-size: 11px;
+  color: #5c3042;
+}
+
+/* ===========================
+   QUANTITY CONTROLS
+=========================== */
+
+.pos-quantity {
+  display: flex;
+  align-items: center;
+
+  border: 1px solid #e6d9dc;
+  border-radius: 7px;
+}
+
+.pos-quantity button {
+  border: 0;
+  background: transparent;
+  color: #794b5b;
+
+  height: 27px;
+  width: 28px;
+
+  display: grid;
+  place-items: center;
+}
+
+.pos-quantity b {
+  width: 22px;
+
+  text-align: center;
+  font-size: 11px;
+}
+
+/* ===========================
+   CHECKOUT TOTALS
+=========================== */
+
+.pos-checkout {
+  padding: 18px 19px 21px;
+
+  border-top:
+    1px solid var(--pos-line);
+}
+
+.pos-summary-row,
+.pos-discount {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+  color: #83757a;
+
+  margin-bottom: 13px;
+  font-size: 11px;
+}
+
+.pos-summary-row strong {
+  color: #4c313b;
+  font-size: 12px;
+}
+
+.pos-discount > span:first-child {
+  font-weight: 700;
+}
+
+.pos-discount small {
+  font-weight: 400;
+  color: #a99c9e;
+  margin-left: 3px;
+}
+
+/* ===========================
+   CURRENCY INPUTS
+=========================== */
+
+.pos-money-input {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid #e6d8dc;
+  border-radius: 7px;
+
+  background: white;
+
+  padding: 7px 9px;
+
+  height: 37px;
+  width: 115px;
+}
+
+.pos-money-input i {
+  font-style: normal;
+  color: #916b72;
+}
+
+.pos-money-input input {
+  background: transparent;
+  color: #49303c;
+
+  border: 0;
+  outline: 0;
+
+  width: 100%;
+  min-width: 0;
+
+  text-align: right;
+  font-size: 12px;
+}
+
+.pos-money-input:focus-within {
+  border-color: #b88e5e;
+
+  box-shadow:
+    0 0 0 3px #d9b78220;
+}
+
+.pos-tax {
+  padding-bottom: 12px;
+
+  border-bottom:
+    1px dashed #e7dfe0;
+
+  font-size: 10px;
+}
+
+/* ===========================
+   AMOUNT DUE
+=========================== */
+
+.pos-amount-due {
+  padding: 15px;
+  margin: 0 0 15px;
+
+  color: #f8edf0;
+
+  background:
+    linear-gradient(
+      110deg,
+      #55172e,
+      #320c1b
+    );
+
+  border-radius: 10px;
+}
+
+.pos-amount-due > span {
+  display: block;
+  letter-spacing: 0.12em;
+  font-size: 9px;
+}
+
+.pos-amount-due strong {
+  display: block;
+
+  color: #f1d3a1;
+  font-size: 24px;
+
+  margin: 5px 0;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.pos-amount-due small {
+  display: block;
+  color: #d1b5bf;
+  font-size: 9px;
+}
+
+/* ===========================
+   PAYMENT METHODS
+=========================== */
+
+.pos-payment {
+  margin-bottom: 15px;
+}
+
+.pos-payment-options {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pos-payment-options span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+  padding: 9px;
+
+  background: #fbefd9;
+
+  border: 1px solid #ddc49c;
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 750;
+  color: #795334;
+
+  flex: 1;
+}
+
+.pos-payment-options .disabled {
+  background: #f8f6f5;
+  border-color: #ece4e5;
+
+  color: #aca2a6;
+  font-weight: 400;
+}
+
+/* ===========================
+   CASH TENDER
+=========================== */
+
+.pos-cash-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  font-size: 11px;
+  color: #7c6871;
+  font-weight: 700;
+}
+
+.pos-cash-input {
+  width: 100%;
+  height: 45px;
+}
+
+.pos-cash-input input {
+  text-align: left;
+  font-weight: 750;
+  font-size: 15px;
+}
+
+.pos-shortcuts {
+  display: flex;
+  gap: 7px;
+
+  margin: 9px 0 17px;
+}
+
+.pos-shortcuts button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  background: #fff9f1;
+  border: 1px solid #eddfcf;
+  border-radius: 6px;
+
+  color: #825d40;
+
+  padding: 8px 10px;
+  font-size: 10px;
+}
+
+.pos-change {
+  padding-bottom: 13px;
+
+  border-bottom:
+    1px solid #efe6e7;
+}
+
+.pos-field-error {
+  color: #b23549;
+
+  font-size: 10px;
+  margin: -4px 0 10px !important;
+}
+
+.pos-pay {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+}
+
+.pos-safe {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  color: #98888e;
+  font-size: 9px;
+
+  justify-content: center;
+
+  margin-top: 12px !important;
+  text-align: center;
+}
+
+.pos-safe svg {
+  color: #608868;
+  flex: none;
+}
+
+/* ===========================
+   TOP-RIGHT TOAST NOTIFICATIONS
+=========================== */
+
+.pos-toast {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+
+  position: fixed;
+  z-index: 200;
+
+  top: 16px;
+  right: 16px;
+
+  width:
+    min(425px, calc(100vw - 32px));
+
+  background: white;
+
+  border: 1px solid #e2d7d7;
+  border-left: 4px solid #a8824f;
+
+  padding: 14px;
+  border-radius: 11px;
+
+  box-shadow:
+    0 17px 55px #2510142f;
+
+  color: #533740;
+
+  animation:
+    pos-toast-in 250ms ease-out;
+}
+
+.pos-toast > span {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.pos-toast.error {
+  border-left-color: #b73247;
+  color: #aa3048;
+}
+
+.pos-toast.success {
+  border-left-color: #43885d;
+  color: #347652;
+}
+
+.pos-toast button {
+  border: 0;
+  color: #8c8184;
+  background: transparent;
+}
+
+@keyframes pos-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-13px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   MODAL BACKDROP
+=========================== */
+
+.pos-modal-backdrop {
+  position: fixed;
+  z-index: 220;
+
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background: #200c17a6;
+  backdrop-filter: blur(4px);
+}
+
+.pos-calculator,
+.pos-receipt-dialog {
+  width: min(420px, 100%);
+
+  max-height:
+    calc(100dvh - 32px);
+
+  overflow-y: auto;
+
+  background: white;
+  padding: 20px;
+
+  border-radius: 15px;
+
+  box-shadow:
+    0 25px 65px #0003;
+}
+
+.pos-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pos-dialog-header small {
+  color: #a37d4a;
+  letter-spacing: 0.12em;
+  font-size: 9px;
+}
+
+.pos-dialog-header h2 {
+  font: 400 24px Georgia, serif;
+  color: #4c2436;
+}
+
+.pos-icon-btn {
+  border: 0;
+  background: transparent;
+  color: #83576a;
+  padding: 7px;
+}
+
+/* ===========================
+   BUSINESS CALCULATOR
+=========================== */
+
+.pos-calc-display {
+  display: block;
+  text-align: right;
+
+  background: #f8f3f2;
+  border: 1px solid #eadfe0;
+
+  padding: 15px;
+  border-radius: 9px;
+
+  font-size: 27px;
+  margin-bottom: 12px;
+}
+
+.pos-calc-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.pos-calc-grid button {
+  min-height: 44px;
+
+  font-size: 17px;
+
+  border: 1px solid #e8dbdc;
+
+  color: #634052;
+  border-radius: 7px;
+
+  background: #fff;
+}
+
+.pos-calc-grid .pos-equals {
+  grid-row: span 2;
+
+  background: #562037;
+  color: white;
+
+  border-color: #562037;
+}
+
+/* ===========================
+   PRINTABLE RECEIPT
+=========================== */
+
+.pos-receipt-dialog {
+  width: min(460px, 100%);
+}
+
+.pos-receipt-paper {
+  border: 1px dashed #dccfca;
+  padding: 21px;
+}
+
+.pos-receipt-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  align-items: center;
+
+  border-bottom:
+    1px dashed #ddd0cc;
+
+  padding-bottom: 13px;
+}
+
+.pos-receipt-brand strong {
+  font: 400 24px Georgia, serif;
+  color: #5b2037;
+}
+
+.pos-receipt-brand small {
+  letter-spacing: 0.13em;
+  color: #9d7848;
+  font-size: 9px;
+}
+
+.pos-receipt-paper h2 {
+  font: 400 17px Georgia, serif;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.pos-receipt-meta {
+  display: grid;
+  grid-template-columns: 85px 1fr;
+
+  gap: 7px;
+  font-size: 10px;
+}
+
+.pos-receipt-meta > span:nth-child(odd) {
+  color: #998b90;
+}
+
+.pos-receipt-lines {
+  border-block:
+    1px dashed #e1d7d6;
+
+  padding: 12px 0;
+  margin: 16px 0;
+}
+
+.pos-receipt-lines > div {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 9px;
+  margin: 9px 0;
+
+  font-size: 11px;
+}
+
+.pos-receipt-lines b {
+  color: #4a3440;
+}
+
+.pos-receipt-lines small {
+  display: block;
+
+  font-size: 10px;
+  color: #95848c;
+
+  margin-top: 3px;
+}
+
+.pos-receipt-totals {
+  display: grid;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.pos-receipt-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pos-receipt-grand {
+  border-top:
+    1px solid #e4d9db;
+
+  padding-top: 12px;
+  margin-top: 4px;
+
+  color: #571c37;
+  font-size: 14px;
+}
+
+.pos-receipt-thanks {
+  text-align: center;
+
+  border-top:
+    1px dashed #e1d7d6;
+
+  padding-top: 18px;
+  margin-top: 20px !important;
+
+  color: #9a878d;
+  font-size: 10px;
+}
+
+.pos-receipt-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.pos-receipt-buttons button {
+  flex: 1;
+}
+
+/* ===========================
+   MOBILE CHECKOUT BAR
+=========================== */
+
+.pos-mobile-cart-button {
+  display: none;
+}
+
+/* ===========================
+   RESPONSIVE — COMPACT DESKTOP
+=========================== */
+
+@media (max-width: 1250px) {
+  .pos-columns {
+    grid-template-columns:
+      minmax(0, 1fr) 305px;
+
+    gap: 12px;
+  }
+
+  .pos-products {
+    grid-template-columns:
+      repeat(
+        auto-fill,
+        minmax(150px, 1fr)
+      );
+  }
+
+  .pos-catalogue {
+    padding: 15px;
+  }
+}
+
+/* ===========================
+   RESPONSIVE — TABLET
+=========================== */
+
+@media (max-width: 1050px) {
+  .pos-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .pos-cart {
+    position: static;
+    max-height: none;
+  }
+
+  .pos-cart-contents {
+    max-height: 350px;
+  }
+
+  .pos-products {
+    grid-template-columns:
+      repeat(
+        auto-fill,
+        minmax(175px, 1fr)
+      );
+  }
+}
+
+/* ===========================
+   RESPONSIVE — MOBILE
+=========================== */
+
+@media (max-width: 780px) {
+  .pos-screen {
+    padding-bottom: 90px;
+  }
+
+  .pos-store-caption {
+    display: none;
+  }
+
+  .pos-cart {
+    display: none;
+  }
+
+  .pos-cart.pos-cart-open {
+    display: block;
+
+    position: fixed;
+    inset: 45px 0 65px;
+
+    z-index: 100;
+
+    overflow-y: auto;
+
+    border-radius:
+      16px 16px 0 0;
+
+    max-height: none;
+
+    box-shadow:
+      0 -15px 60px #2c122344;
+  }
+
+  .pos-mobile-cart-button {
+    display: flex;
+
+    position: fixed;
+    z-index: 120;
+
+    left: 12px;
+    right: 12px;
+
+    bottom:
+      max(
+        12px,
+        env(safe-area-inset-bottom)
+      );
+
+    align-items: center;
+    gap: 10px;
+
+    width:
+      calc(100% - 24px);
+
+    min-height: 52px;
+    padding: 12px 15px;
+
+    background: #4d142b;
+
+    border: 0;
+    border-radius: 11px;
+
+    color: #fff4e8;
+
+    box-shadow:
+      0 8px 25px #30111d55;
+
+    font-weight: 750;
+  }
+
+  .pos-mobile-cart-button strong {
+    margin-left: auto;
+    color: #efc58e;
+  }
+}
+
+/* ===========================
+   RESPONSIVE — SMALL PHONES
+=========================== */
+
+@media (max-width: 500px) {
+  .pos-heading h1 {
+    font-size: 32px;
+  }
+
+  .pos-heading-actions {
+    gap: 6px;
+  }
+
+  .pos-heading-actions button {
+    min-height: 36px;
+    padding: 8px;
+  }
+
+  .pos-store-bar {
+    gap: 10px;
+  }
+
+  .pos-select {
+    flex: 1;
+  }
+
+  .pos-select select {
+    min-width: 0;
+  }
+
+  .pos-catalogue {
+    padding: 12px;
+  }
+
+  .pos-section-title h2 {
+    font-size: 22px;
+  }
+
+  .pos-products {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 9px;
+  }
+
+  .pos-photo {
+    height: 106px;
+  }
+
+  .pos-product-info {
+    padding: 10px;
+  }
+
+  .pos-product h3 {
+    font-size: 12px;
+  }
+
+  .pos-filter-row > small {
+    display: none;
+  }
+
+  .pos-receipt-paper {
+    padding: 14px;
+  }
+}
+
+/* ===========================
+   ACCESSIBILITY
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .pos-toast {
+    animation: none;
+  }
+
+  .pos-product,
+  .pos-primary,
+  .pos-secondary {
+    transition: none;
+  }
+}
+
+/* ===========================
+   PRINT ONLY THE RECEIPT
+=========================== */
+
+@media print {
+  body:has(#pos-print-receipt) * {
+    visibility: hidden !important;
+  }
+
+  body:has(#pos-print-receipt)
+    #pos-print-receipt,
+  body:has(#pos-print-receipt)
+    #pos-print-receipt * {
+    visibility: visible !important;
+  }
+
+  body:has(#pos-print-receipt)
+    #pos-print-receipt {
+    position: absolute !important;
+
+    inset: 0 auto auto 0 !important;
+
+    width: 100% !important;
+    padding: 5mm !important;
+
+    border: 0 !important;
+    background: white !important;
+  }
+}
