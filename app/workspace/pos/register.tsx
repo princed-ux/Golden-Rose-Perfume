@@ -223,13 +223,17 @@ export function PosRegister({ initial, initialError, role }: {
 
   function addProduct(product: RegisterProduct) {
     if (locked || product.available <= 0) return;
+    if (lines.length >= 40 && !lines.some(line => line.product.id === product.id)) {
+      setNotice({kind:'error',message:'A sale can contain up to 40 distinct fragrances.'});
+      return;
+    }
     setLines(previous => {
       const existing = previous.find(line => line.product.id === product.id);
       if (existing) {
         if (existing.quantity >= Math.min(100, product.available)) return previous;
         return previous.map(line => line.product.id === product.id ? { ...line, quantity:line.quantity + 1 } : line);
       }
-      if (previous.length >= 40) { setNotice({kind:'error',message:'A sale can contain up to 40 distinct fragrances.'}); return previous; }
+      if (previous.length >= 40) return previous;
       return [...previous,{ product, quantity:1 }];
     });
   }
