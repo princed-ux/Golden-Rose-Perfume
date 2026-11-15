@@ -18,6 +18,12 @@ const register = {
   fetch: withSupabase({ auth: "user" }, async (request, context) => {
     const actor = context.userClaims?.id ?? context.jwtClaims?.sub;
     if (typeof actor !== "string" || !uuid.test(actor)) return respond({ ok: false, error: "Invalid staff session" }, 401);
+    const sessionId = context.jwtClaims?.session_id;
+    const credential = await context.supabaseAdmin.rpc("gr_employee_session_allowed", {
+      p_actor: actor, p_session: typeof sessionId === "string" && uuid.test(sessionId) ? sessionId : null,
+    });
+    if (credential.error) return problem(credential.error);
+    if (credential.data !== true) return respond({ ok: false, error: "Sign in again after changing your employee password." }, 403);
 
     if (request.method === "GET") {
       const url = new URL(request.url);

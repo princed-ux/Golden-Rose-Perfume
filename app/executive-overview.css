@@ -1,0 +1,30 @@
+
+/*
+ * Golden Rose — Production Executive Overview
+ *
+ * Keep the existing topbar, sidebar, hero and Amara.
+ * Replace duplicate placeholder sections with
+ * the real operational overview.
+ */
+
+.owner-main:has(> .gr-executive) > .owner-hero {
+  order: 0;
+}
+
+.owner-main:has(> .gr-executive) > :is(
+  .owner-metrics,
+  .owner-analysis,
+  .owner-activity
+) {
+  display: none;
+}
+
+.owner-main:has(> .gr-executive) > .gr-executive {
+  width: 100%;
+  min-width: 0;
+  order: 1;
+}
+
+.owner-main:has(> .gr-executive) > .owner-footer {
+  order: 2;
+}

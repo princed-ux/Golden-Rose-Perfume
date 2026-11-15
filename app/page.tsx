@@ -1,103 +1,735 @@
-import './page.css';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, ArrowUpRight, Flower2, ShoppingBag, Sparkles, UserRound } from 'lucide-react';
-import HeroSlideshow from './HeroSlideshow';
 
-const edits = [
-  { title: 'The Rose Edit', detail: 'Soft, romantic & unforgettable', image: '/assets/hero/hero-01.png', number: '01' },
-  { title: 'Golden Hour', detail: 'Rich, radiant & warm', image: '/assets/hero/hero-02.png', number: '02' },
-  { title: 'After Dark', detail: 'Bold, mysterious & magnetic', image: '/assets/hero/hero-03.png', number: '03' },
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+
+import {
+  ArrowRight,
+  Barcode,
+  Boxes,
+  Building2,
+  CircleAlert,
+  CircleCheck,
+  ClipboardList,
+  FileText,
+  Package,
+  ScanBarcode,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
+  UsersRound,
+  ChartNoAxesCombined,
+  type LucideIcon,
+} from 'lucide-react';
+
+import { canViewModule } from '@/src/domain/permissions';
+import type { WorkspaceModuleId } from '@/src/domain/modules';
+import { requireStaff } from '@/src/lib/golden-rose/staff';
+
+import {
+  getAdminProductsPage,
+  getInventoryPage,
+} from '@/src/lib/golden-rose/edge';
+
+import { createClient } from '@/src/lib/supabase/server';
+
+import './executive-overview.css';
+
+type Metric = {
+  title: string;
+  value: string;
+  detail: string;
+  icon: LucideIcon;
+  status: 'connected' | 'attention' | 'unavailable';
+};
+
+type WorkspaceShortcut = {
+  id: WorkspaceModuleId;
+  href: string;
+  label: string;
+  detail: string;
+  icon: LucideIcon;
+};
+
+const shortcuts: WorkspaceShortcut[] = [
+  {
+    id: 'pos',
+    href: '/workspace/pos',
+    label: 'Point of Sale',
+    detail: 'Open the barcode register',
+    icon: ScanBarcode,
+  },
+  {
+    id: 'products',
+    href: '/workspace/products',
+    label: 'Products',
+    detail: 'Review fragrances and prices',
+    icon: Package,
+  },
+  {
+    id: 'inventory',
+    href: '/workspace/inventory',
+    label: 'Inventory & Stock',
+    detail: 'Stores, receipts and balances',
+    icon: Boxes,
+  },
+  {
+    id: 'staff',
+    href: '/workspace/staff',
+    label: 'Staff & Permissions',
+    detail: 'Manage employee accounts',
+    icon: UsersRound,
+  },
+  {
+    id: 'orders',
+    href: '/workspace/orders',
+    label: 'Sales & Orders',
+    detail: 'Review order operations',
+    icon: ShoppingBag,
+  },
+  {
+    id: 'customers',
+    href: '/workspace/customers',
+    label: 'Customers',
+    detail: 'Customer relationships',
+    icon: UsersRound,
+  },
+  {
+    id: 'invoices',
+    href: '/workspace/invoices',
+    label: 'Invoices & Quotes',
+    detail: 'Billing and outstanding work',
+    icon: FileText,
+  },
+  {
+    id: 'purchases',
+    href: '/workspace/purchases',
+    label: 'Purchasing',
+    detail: 'Supplier purchase workflow',
+    icon: Truck,
+  },
+  {
+    id: 'reports',
+    href: '/workspace/reports',
+    label: 'Reports',
+    detail: 'Verified business reporting',
+    icon: ChartNoAxesCombined,
+  },
 ];
 
-export default async function HomePage() {
-  'use cache';
-  return (
-    <div className="gr-home">
-      <div className="gr-announcement">BEAUTY OF FRAGRANCE <span aria-hidden="true">✦</span> DISCOVER YOUR SIGNATURE</div>
+function MetricCard({ metric }: { metric: Metric }) {
+  const Icon = metric.icon;
 
-      <header className="gr-header">
-        <div className="gr-header__inner">
-          <Link href="/" className="gr-brand" aria-label="Golden Rose Perfume homepage">
-            <Image src="/assets/brand/golden-rose-logo.png" alt="Golden Rose Perfume — Beauty Of Fragrance" width={1188} height={1324} sizes="80px" className="gr-brand__logo" preload />
-          </Link>
-          <nav className="gr-nav" aria-label="Main navigation">
-            <Link href="/">Home</Link>
-            <Link href="/shop">Shop All</Link>
-            <a href="#collections">Collections</a>
-            <a href="#gr-story">Our Story</a>
-          </nav>
-          <div className="gr-header__right">
-            <Link className="gr-header__account" href="/account" aria-label="Customer account or sign in"><UserRound size={18} strokeWidth={1.5} aria-hidden="true" /><span>Account</span></Link>
-            <Link className="gr-header__bag" href="/cart" aria-label="Shopping bag"><ShoppingBag size={19} strokeWidth={1.5} aria-hidden="true" /></Link>
-            <Link className="gr-header__shop" href="/shop">Shop now <ArrowUpRight size={16}/></Link>
-          </div>
+  const styles = {
+    connected: 'bg-[#e8f5ed] text-[#266746]',
+    attention: 'bg-[#fff1dc] text-[#915d22]',
+    unavailable: 'bg-[#f5edf0] text-[#86546a]',
+  }[metric.status];
+
+  return (
+    <article className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-4 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f9ecda] text-[#9d702f]">
+          <Icon
+            size={21}
+            strokeWidth={1.7}
+            aria-hidden="true"
+          />
+        </span>
+
+        <span
+          className={
+            'rounded-full px-2.5 py-1 text-[10px] font-semibold ' +
+            styles
+          }
+        >
+          {metric.status === 'connected'
+            ? 'Connected'
+            : metric.status === 'attention'
+              ? 'Needs attention'
+              : 'Unavailable'}
+        </span>
+      </div>
+
+      <p className="mt-4 text-xs font-semibold text-[#826f7a]">
+        {metric.title}
+      </p>
+
+      <p className="mt-1 font-serif text-[clamp(1.5rem,2.6vw,2rem)] leading-tight text-[#46172f]">
+        {metric.value}
+      </p>
+
+      <p className="mt-2 text-xs leading-5 text-[#8a7782]">
+        {metric.detail}
+      </p>
+    </article>
+  );
+}
+
+function ReadinessRow({
+  title,
+  detail,
+  ready,
+}: {
+  title: string;
+  detail: string;
+  ready: boolean;
+}) {
+  return (
+    <li className="flex items-start gap-3 border-b border-[#f0e5e1] py-3 last:border-0">
+      <span
+        className={
+          'mt-0.5 grid size-8 shrink-0 place-items-center rounded-full ' +
+          (ready
+            ? 'bg-[#eaf5ec] text-[#37764d]'
+            : 'bg-[#fff1df] text-[#a26f2c]')
+        }
+      >
+        {ready ? (
+          <CircleCheck size={17} aria-hidden="true" />
+        ) : (
+          <CircleAlert size={17} aria-hidden="true" />
+        )}
+      </span>
+
+      <span className="grid min-w-0 gap-1">
+        <strong className="text-sm font-semibold text-[#4e2b3d]">
+          {title}
+        </strong>
+
+        <small className="text-xs leading-5 text-[#87747e]">
+          {detail}
+        </small>
+      </span>
+    </li>
+  );
+}
+
+async function ownerStaffCounts() {
+  try {
+    const client = await createClient();
+
+    const { data, error } = await client.rpc(
+      'gr_staff_manage',
+      { p_action: 'list' },
+    );
+
+    if (
+      error ||
+      !data ||
+      typeof data !== 'object'
+    ) {
+      return null;
+    }
+
+    const result = data as {
+      employees?: unknown;
+      invitations?: unknown;
+    };
+
+    if (
+      !Array.isArray(result.employees) ||
+      !Array.isArray(result.invitations)
+    ) {
+      return null;
+    }
+
+    const pending = result.invitations.filter(
+      (value: unknown) =>
+        value !== null &&
+        typeof value === 'object' &&
+        'status' in value &&
+        value.status === 'pending',
+    ).length;
+
+    return {
+      employees: result.employees.length,
+      pending,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export default async function WorkspaceOverview() {
+  const { role, token } = await requireStaff();
+
+  if (!canViewModule(role, 'overview')) {
+    redirect(
+      canViewModule(role, 'pos')
+        ? '/workspace/pos'
+        : '/staff/login',
+    );
+  }
+
+  const mayViewProducts = canViewModule(
+    role,
+    'products',
+  );
+
+  const mayViewInventory = canViewModule(
+    role,
+    'inventory',
+  );
+
+  const [catalogue, inventory, staff] =
+    await Promise.all([
+      mayViewProducts
+        ? getAdminProductsPage(token, 0, 1)
+            .then(items => ({
+              reachable: true,
+              hasProducts: items.length > 0,
+            }))
+            .catch(() => ({
+              reachable: false,
+              hasProducts: false,
+            }))
+        : Promise.resolve(null),
+
+      mayViewInventory
+        ? getInventoryPage(token, 0)
+            .catch(() => null)
+        : Promise.resolve(null),
+
+      role === 'owner'
+        ? ownerStaffCounts()
+        : Promise.resolve(null),
+    ]);
+
+  const stores =
+    inventory?.locations.filter(
+      location =>
+        location.active &&
+        location.type === 'store',
+    ).length ?? null;
+
+  const stockRows =
+    inventory?.items.length ?? null;
+
+  const lowStockOnPage =
+    inventory?.items.filter(
+      item => item.available <= 5,
+    ).length ?? null;
+
+  const catalogueReady =
+    catalogue?.reachable === true &&
+    catalogue.hasProducts;
+
+  const storeReady =
+    stores !== null && stores > 0;
+
+  const staffReady =
+    staff !== null && staff.employees > 0;
+
+  const visibleShortcuts = shortcuts.filter(
+    link => canViewModule(role, link.id),
+  );
+
+  const metrics: Metric[] = [
+    {
+      title: 'Product catalogue',
+      value: catalogue?.reachable
+        ? catalogue.hasProducts
+          ? 'Accessible'
+          : 'Empty'
+        : '—',
+      detail: catalogue?.reachable
+        ? 'Live catalogue connection checked'
+        : 'Unable to confirm catalogue access',
+      icon: Package,
+      status: catalogue?.reachable
+        ? catalogue.hasProducts
+          ? 'connected'
+          : 'attention'
+        : 'unavailable',
+    },
+    {
+      title: 'Active retail stores',
+      value: stores === null
+        ? '—'
+        : stores.toLocaleString('en-NG'),
+      detail: 'Real store locations in Inventory',
+      icon: Building2,
+      status: stores === null
+        ? 'unavailable'
+        : stores > 0
+          ? 'connected'
+          : 'attention',
+    },
+    {
+      title: 'Employee accounts',
+      value: staff
+        ? staff.employees.toLocaleString('en-NG')
+        : '—',
+      detail: staff
+        ? `${staff.pending} pending invitation${staff.pending === 1 ? '' : 's'}`
+        : role === 'owner'
+          ? 'Employee directory not available'
+          : 'Owner-only information',
+      icon: UsersRound,
+      status: staff
+        ? staff.employees
+          ? 'connected'
+          : 'attention'
+        : 'unavailable',
+    },
+    {
+      title: 'Inventory snapshot',
+      value: stockRows === null
+        ? '—'
+        : stockRows.toLocaleString('en-NG'),
+      detail: stockRows === null
+        ? 'Stock service unavailable'
+        : 'Stock balance rows on the first page',
+      icon: Barcode,
+      status: stockRows === null
+        ? 'unavailable'
+        : stockRows > 0
+          ? 'connected'
+          : 'attention',
+    },
+  ];
+
+  return (
+    <section
+      className="gr-executive grid min-w-0 gap-5"
+      aria-labelledby="gr-operations-title"
+    >
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="grid min-w-0 gap-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#a47636]">
+            Golden Rose / Operations
+          </p>
+
+          <h2
+            id="gr-operations-title"
+            className="font-serif text-[clamp(1.75rem,3vw,2.35rem)] leading-tight tracking-tight text-[#46172f]"
+          >
+            Executive overview
+          </h2>
+
+          <p className="max-w-2xl text-sm leading-6 text-[#85717d]">
+            Live operational readiness, your next
+            priorities and access to every permitted
+            workspace.
+          </p>
         </div>
+
+        <span className="inline-flex items-center gap-2 rounded-full border border-[#e9d8bb] bg-[#fff7e8] px-3 py-2 text-xs font-semibold text-[#8c612b]">
+          <ShieldCheck size={16} aria-hidden="true" />
+          Authenticated business workspace
+        </span>
       </header>
 
-      <main>
-        <HeroSlideshow />
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {metrics.map(metric => (
+          <MetricCard
+            key={metric.title}
+            metric={metric}
+          />
+        ))}
+      </div>
 
-        <div className="gr-ticker" aria-hidden="true">
-          <span>THE BEAUTY OF FRAGRANCE</span><i>✦</i><span>GOLDEN ROSE</span><i>✦</i>
-          <span>SCENTS THAT STAY</span><i>✦</i><span>THE BEAUTY OF FRAGRANCE</span><i>✦</i>
-        </div>
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,1fr)]">
+        <section
+          className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
+          aria-labelledby="gr-ops-priorities"
+        >
+          <div className="flex items-start justify-between gap-3 border-b border-[#f0e6e2] pb-4">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+                Recommended next actions
+              </p>
 
-        <section id="collections" className="gr-collections gr-wrap">
-          <div className="gr-section-head">
-            <div><p className="gr-kicker">01 / THE COLLECTIONS</p><h2>Find your <em>feeling.</em></h2></div>
-            <Link href="/shop" className="gr-underlink">Discover all fragrances <ArrowUpRight size={17} /></Link>
+              <h3
+                id="gr-ops-priorities"
+                className="mt-1 font-serif text-2xl text-[#46172f]"
+              >
+                What needs attention
+              </h3>
+            </div>
+
+            <ClipboardList
+              className="text-[#ad8247]"
+              size={22}
+              aria-hidden="true"
+            />
           </div>
-          <p className="gr-section-intro">For the days you want to feel effortlessly beautiful—and the nights you want to be unforgettable.</p>
-          <div className="gr-edit-grid">
-            {edits.map((edit) => (
-              <Link className="gr-edit" href="/shop" key={edit.number} aria-label={`Explore ${edit.title} in the shop`}>
-                <Image src={edit.image} alt="" fill sizes="(max-width: 700px) 100vw, (max-width: 1050px) 50vw, 33vw" className="gr-edit__image" />
-                <span className="gr-edit__shade" />
-                <span className="gr-edit__number">{edit.number} / EDIT</span>
-                <span className="gr-edit__body"><small>{edit.detail}</small><strong>{edit.title}</strong><span className="gr-edit__arrow"><ArrowUpRight size={22}/></span></span>
+
+          <div className="mt-4 grid gap-3">
+            {!catalogueReady && mayViewProducts && (
+              <Link
+                href="/workspace/products"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+              >
+                <Package
+                  className="shrink-0 text-[#a67532]"
+                  size={19}
+                  aria-hidden="true"
+                />
+
+                <span className="grid min-w-0 flex-1 gap-1">
+                  <strong className="text-sm text-[#4f2b3d]">
+                    Check catalogue access
+                  </strong>
+
+                  <small className="text-xs leading-5 text-[#8a7580]">
+                    Verify imported products and
+                    their publication status.
+                  </small>
+                </span>
+
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[#a67532]"
+                  aria-hidden="true"
+                />
               </Link>
-            ))}
+            )}
+
+            {!storeReady && mayViewInventory && (
+              <Link
+                href="/workspace/inventory"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+              >
+                <Building2
+                  className="shrink-0 text-[#a67532]"
+                  size={19}
+                  aria-hidden="true"
+                />
+
+                <span className="grid min-w-0 flex-1 gap-1">
+                  <strong className="text-sm text-[#4f2b3d]">
+                    Verify store setup
+                  </strong>
+
+                  <small className="text-xs leading-5 text-[#8a7580]">
+                    Employees and cash registers
+                    need a real active retail location.
+                  </small>
+                </span>
+
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[#a67532]"
+                  aria-hidden="true"
+                />
+              </Link>
+            )}
+
+            {role === 'owner' && !staffReady && (
+              <Link
+                href="/workspace/staff"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+              >
+                <UsersRound
+                  className="shrink-0 text-[#a67532]"
+                  size={19}
+                  aria-hidden="true"
+                />
+
+                <span className="grid min-w-0 flex-1 gap-1">
+                  <strong className="text-sm text-[#4f2b3d]">
+                    Set up employee access
+                  </strong>
+
+                  <small className="text-xs leading-5 text-[#8a7580]">
+                    Create or invite staff and
+                    test role-based sign-in.
+                  </small>
+                </span>
+
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[#a67532]"
+                  aria-hidden="true"
+                />
+              </Link>
+            )}
+
+            {mayViewInventory &&
+              inventory &&
+              lowStockOnPage !== null &&
+              lowStockOnPage > 0 && (
+                <Link
+                  href="/workspace/inventory#inventory-balances"
+                  className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+                >
+                  <CircleAlert
+                    className="shrink-0 text-[#a67532]"
+                    size={19}
+                    aria-hidden="true"
+                  />
+
+                  <span className="grid min-w-0 flex-1 gap-1">
+                    <strong className="text-sm text-[#4f2b3d]">
+                      Review {lowStockOnPage} low / empty
+                      stock rows
+                    </strong>
+
+                    <small className="text-xs leading-5 text-[#8a7580]">
+                      First inventory page only;
+                      confirm physical quantities.
+                    </small>
+                  </span>
+
+                  <ArrowRight
+                    size={17}
+                    className="shrink-0 text-[#a67532]"
+                    aria-hidden="true"
+                  />
+                </Link>
+              )}
+
+            {catalogueReady &&
+              storeReady &&
+              (role !== 'owner' || staffReady) &&
+              (lowStockOnPage === null ||
+                lowStockOnPage === 0) && (
+                <p className="rounded-xl border border-[#dceadf] bg-[#f3faf5] p-4 text-sm leading-6 text-[#3e6e4a]">
+                  Catalogue, store and available team
+                  checks look good. Continue verifying
+                  actual receiving and POS transactions
+                  before going live.
+                </p>
+              )}
+
+            <p className="rounded-xl bg-[#f8f3ee] p-4 text-xs leading-5 text-[#866f7b]">
+              Financial totals are intentionally not
+              shown until verified sales and reporting
+              endpoints are connected. A working page
+              does not by itself confirm a complete
+              business workflow.
+            </p>
           </div>
         </section>
 
-        <section id="gr-story" className="gr-story">
-          <div className="gr-story__image">
-            <Image src="/assets/hero/hero-02.png" alt="Golden fragrance bottle on black marble, an artistic campaign visual" fill sizes="(max-width: 860px) 100vw, 50vw" />
-            <span>AN EXPRESSION OF ELEGANCE</span>
+        <section
+          className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
+          aria-labelledby="gr-ops-readiness"
+        >
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+            Live checks
+          </p>
+
+          <h3
+            id="gr-ops-readiness"
+            className="mt-1 font-serif text-2xl text-[#46172f]"
+          >
+            Store readiness
+          </h3>
+
+          <ul className="mt-4">
+            <ReadinessRow
+              title="Catalogue"
+              detail={
+                catalogueReady
+                  ? 'Product records can be retrieved.'
+                  : 'Check the product service.'
+              }
+              ready={catalogueReady}
+            />
+
+            <ReadinessRow
+              title="Retail location"
+              detail={
+                storeReady
+                  ? `${stores} active store${stores === 1 ? '' : 's'} configured.`
+                  : 'No active store could be verified.'
+              }
+              ready={storeReady}
+            />
+
+            {role === 'owner' && (
+              <ReadinessRow
+                title="Staff directory"
+                detail={
+                  staffReady
+                    ? `${staff!.employees} employee account${staff!.employees === 1 ? '' : 's'} found.`
+                    : 'Review employee invitations and account setup.'
+                }
+                ready={staffReady}
+              />
+            )}
+
+            <ReadinessRow
+              title="Financial reporting"
+              detail="Awaiting verified sales, orders and revenue integration."
+              ready={false}
+            />
+          </ul>
+        </section>
+      </div>
+
+      <section
+        className="min-w-0"
+        aria-labelledby="gr-ops-workspaces"
+      >
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+              Your tools
+            </p>
+
+            <h3
+              id="gr-ops-workspaces"
+              className="mt-1 font-serif text-2xl text-[#46172f]"
+            >
+              Business workspaces
+            </h3>
           </div>
-          <div className="gr-story__content">
-            <p className="gr-kicker">02 / OUR WORLD</p>
-            <Flower2 size={35} strokeWidth={.85} aria-hidden="true" className="gr-story__flower" />
-            <h2>Not just a scent.<br /><em>A lasting impression.</em></h2>
-            <p>A fragrance can carry a memory, change a mood and say everything without a word. Welcome to Golden Rose Perfume—where discovering your next favourite scent should feel as beautiful as wearing it.</p>
-            <Link href="/shop" className="gr-underlink">Enter our world <ArrowRight size={18}/></Link>
-            <span className="gr-story__monogram" aria-hidden="true">GR</span>
-          </div>
-        </section>
 
-        <section className="gr-promise gr-wrap" aria-label="Golden Rose experience">
-          <div><Sparkles size={24} strokeWidth={1.2} /><strong>Thoughtfully selected</strong><p>Discover perfumes for your every mood and moment.</p></div>
-          <div><Flower2 size={24} strokeWidth={1.2} /><strong>Made for self-expression</strong><p>From subtle everyday signatures to bold statements.</p></div>
-          <div><ShoppingBag size={24} strokeWidth={1.2} /><strong>Shop your way</strong><p>Build your bag online and confirm your order with us on WhatsApp.</p></div>
-        </section>
+          {role === 'owner' && (
+            <Link
+              href="/workspace/migration"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#dfc9b6] bg-[#fff8ee] px-3 py-2 text-xs font-semibold text-[#754c27] hover:bg-[#fff1dc]"
+            >
+              Data Management
 
-        <section className="gr-last-call">
-          <span className="gr-last-call__glow" aria-hidden="true" />
-          <p className="gr-kicker">YOUR NEXT SIGNATURE AWAITS</p>
-          <h2>Let them remember <em>you.</em></h2>
-          <Link href="/shop" className="gr-btn gr-btn--gold">Explore Golden Rose <ArrowUpRight size={18}/></Link>
-        </section>
-      </main>
-
-      <footer className="gr-footer">
-        <div className="gr-wrap gr-footer__top">
-          <div><span className="gr-footer__brand">GOLDEN ROSE</span><span className="gr-footer__subtitle">PERFUME · BEAUTY OF FRAGRANCE</span><p>Beautiful scents. Memorable moments.</p></div>
-          <div className="gr-footer__links"><Link href="/shop">Shop</Link><a href="#collections">Collections</a><Link href="/account">Account</Link><Link href="/cart">Shopping bag</Link></div>
-          <div className="gr-footer__icon"><Flower2 size={64} strokeWidth={.65} aria-hidden="true" /></div>
+              <ArrowRight
+                size={15}
+                aria-hidden="true"
+              />
+            </Link>
+          )}
         </div>
-        <div className="gr-wrap gr-footer__bottom"><span>© {new Date().getFullYear()} Golden Rose Perfume</span></div>
-      </footer>
-    </div>
+
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {visibleShortcuts.map(link => {
+            const Icon = link.icon;
+
+            return (
+              <Link
+                key={link.id}
+                href={link.href}
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#eadbd8] bg-[#fffdf9] p-4 shadow-[0_4px_20px_rgba(70,23,47,0.03)] transition-colors hover:border-[#d8b68e] hover:bg-[#fff8ef]"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#f9ecd9] text-[#a47636]">
+                  <Icon
+                    size={19}
+                    aria-hidden="true"
+                  />
+                </span>
+
+                <span className="grid min-w-0 flex-1 gap-1">
+                  <strong className="text-sm text-[#4c293a]">
+                    {link.label}
+                  </strong>
+
+                  <small className="text-xs text-[#8a7880]">
+                    {link.detail}
+                  </small>
+                </span>
+
+                <ArrowRight
+                  size={16}
+                  className="shrink-0 text-[#ad8248] transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+    </section>
   );
 }

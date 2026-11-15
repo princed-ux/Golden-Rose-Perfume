@@ -7,6 +7,8 @@ export const employeeRoles = {
 } as const;
 
 export type EmployeeRole = keyof typeof employeeRoles;
+export type EmployeeAccountState = 'ready' | 'awaiting_verification' | 'change_required' | 'expired' | 'replacing';
+export type EmployeeAccountSetupIssue = 'server-key' | 'migration' | 'connection';
 export const employeeInviteCode = /^[a-zA-Z0-9_-]{43}$/;
 
 export function isEmployeeRole(value: string): value is EmployeeRole {

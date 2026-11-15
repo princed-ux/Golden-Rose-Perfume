@@ -3,7 +3,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/src/lib/supabase/server';
-import { verifyStaffToken } from '@/src/lib/golden-rose/staff';
+import { getStaffPasswordState, verifyStaffToken } from '@/src/lib/golden-rose/staff';
 import { getRoleHome } from '@/src/domain/permissions';
 import type { OperationResult } from '@/src/lib/golden-rose/contracts';
 
@@ -28,7 +28,7 @@ export async function signInStaff(
     };
   }
 
-  let destination = '/workspace';
+  let destination = '/workspace?notice=signed-in';
 
   try {
     const supabase = await createClient();
@@ -59,18 +59,29 @@ export async function signInStaff(
     }
 
     try {
-      const role = await verifyStaffToken(data.session.access_token);
-
-      if (!role) {
+      const passwordState = await getStaffPasswordState(supabase);
+      if (passwordState === 'change_required') {
+        destination = '/staff/change-password';
+      } else if (passwordState === 'expired') {
         await supabase.auth.signOut({ scope: 'local' });
+        return { status: 'error', message: 'Your temporary password expired. Ask the owner for a replacement.' };
+      } else if (passwordState !== 'none') {
+        await supabase.auth.signOut({ scope: 'local' });
+        return { status: 'error', message: 'This staff session could not be verified. If you just confirmed your email, sign in again.' };
+      } else {
+        const role = await verifyStaffToken(data.session.access_token);
 
-        return {
-          status: 'error',
-          message: 'This account has no active staff access.',
-        };
+        if (!role) {
+          await supabase.auth.signOut({ scope: 'local' });
+
+          return {
+            status: 'error',
+            message: 'This account has no active staff access.',
+          };
+        }
+
+        destination = getRoleHome(role) + '?notice=signed-in';
       }
-
-      destination = getRoleHome(role);
     } catch {
       await supabase.auth.signOut({ scope: 'local' });
 
@@ -90,7 +101,7 @@ export async function signInStaff(
     };
   }
 
-  redirect(`${destination}?notice=signed-in`);
+  redirect(destination);
 }
 
 export async function signOutStaff() {

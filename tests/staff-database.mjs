@@ -19,9 +19,12 @@ test('employee invitations, role and store changes, and scoped POS transactions'
       create schema auth;
       grant usage on schema auth to service_role,authenticated;
       create table auth.users (id uuid primary key,email text unique,email_confirmed_at timestamptz,
-        is_anonymous boolean,banned_until timestamptz,raw_user_meta_data jsonb);
+        is_anonymous boolean,banned_until timestamptz,raw_user_meta_data jsonb,raw_app_meta_data jsonb,encrypted_password text);
+      create table auth.sessions (id uuid primary key,user_id uuid references auth.users(id),created_at timestamptz);
       create function auth.uid() returns uuid language sql stable as
         $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+      create function auth.jwt() returns jsonb language sql stable as
+        $$ select coalesce(nullif(current_setting('request.jwt.claims',true),'')::jsonb,'{}'::jsonb) $$;
     `);
     for (const filename of [
       '20261112003607_golden_rose_replace_kolextrader_with_catalogue_inventory.sql',
@@ -31,6 +34,7 @@ test('employee invitations, role and store changes, and scoped POS transactions'
       '20261114141844_golden_rose_pos_price_verification.sql',
       '20261114172002_golden_rose_pos_actor_authorization.sql',
       '20261115131653_golden_rose_staff_management.sql',
+      '20261115170000_owner_created_employee_accounts.sql',
     ]) await db.exec(migration(filename));
 
     const [owner, otherOwner, cashier, shopper, expired, firstStore, otherStore, product, variant] =
@@ -136,6 +140,100 @@ test('employee invitations, role and store changes, and scoped POS transactions'
     await db.exec('set role service_role');
     assert.equal((await session(cashier)).isStaff,false);
     assert.equal((await session(otherOwner)).role,'owner');
+
+    // Auth emulator: the only simulated operations are Admin user/password writes
+    // and confirmation. All membership, authorization and session checks are real SQL.
+    const [directUser, directSession, currentSession, replacementSession, finalSession] = Array.from({ length: 5 }, randomUUID);
+    const payload = { fullName: 'Direct Cashier', email: 'direct@fixture.example', username: 'direct.cashier', role: 'cashier', locationId: firstStore };
+    const provision = (actor, action, input) => call(
+      'select public.gr_owner_employee_account($1,$2,$3::jsonb) as value', [actor, action, JSON.stringify(input)]);
+    const credentials = (id, sid) => call('select public.gr_employee_session_allowed($1,$2) as value',[id,sid]);
+    const passwordState = async (id, sid, finish=false) => {
+      if (finish) {
+        await db.exec('set role service_role');
+        return call('select public.gr_employee_password_complete($1,$2) as value',[id,sid]);
+      }
+      await login(id);
+      await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({session_id:sid})]);
+      return call('select public.gr_employee_password_state() as value');
+    };
+    const addSession = async (id, sid) => {
+      await db.exec('reset role');
+      await db.query('insert into auth.sessions values ($1,$2,clock_timestamp())',[sid,id]);
+    };
+
+    await login(owner);
+    await assert.rejects(provision(owner,'reserve',payload), { code:'42501' });
+    await db.exec('set role service_role');
+    await assert.rejects(provision(shopper,'reserve',payload), { code:'42501' });
+    await assert.rejects(provision(cashier,'reserve',payload), { code:'42501' });
+    await assert.rejects(provision(owner,'reserve',{...payload,email:emails[3]}), { code:'22023' });
+    const held = await provision(owner,'reserve',payload);
+    assert.equal(held.userId, null);
+    await assert.rejects(provision(owner,'complete_creation',{...payload,id:shopper}), {code:'22023'});
+    await db.exec('reset role');
+    await db.query('insert into auth.users (id,email,raw_app_meta_data,encrypted_password) values ($1,$2,$3,$4)',
+      [directUser,payload.email,JSON.stringify({gr_staff_provision:held.version}),'fixture-initial-hash']);
+    await db.exec('set role service_role');
+    assert.deepEqual(await provision(otherOwner,'reserve',payload),{ version:held.version, userId:directUser });
+    await provision(otherOwner,'complete_creation',{...payload,id:directUser});
+    await assert.rejects(provision(owner,'reserve',payload), { code:'22023' });
+    assert.equal((await session(directUser)).isStaff,false);
+    assert.equal(await credentials(directUser,null),false);
+    await assert.rejects(pos(directUser), { code:'GR403' });
+    assert.equal(await credentials(owner,null),true);
+    assert.equal((await pos(owner)).locations.length,2);
+    assert.equal((await provision(owner,'list',{}))[directUser],'awaiting_verification');
+    await login(owner);
+    await assert.rejects(manage('restore',{id:directUser}), { code:'22023' });
+
+    await addSession(directUser,directSession);
+    await login(directUser);
+    await assert.rejects(call('select public.gr_employee_password_complete($1,$2) as value',[directUser,directSession]),{code:'42501'});
+    assert.equal(await passwordState(directUser,directSession,true),'denied');
+    await db.exec('reset role');
+    await db.query('update auth.users set email_confirmed_at=now() where id=$1',[directUser]);
+    assert.equal(await passwordState(directUser,directSession),'change_required');
+    assert.equal(await passwordState(directUser,directSession,true),'change_required');
+    await db.exec('reset role');
+    await db.query("update auth.users set encrypted_password='fixture-changed-hash' where id=$1",[directUser]);
+    assert.equal(await passwordState(directUser,directSession,true),'complete');
+    await db.exec('set role service_role');
+    assert.equal((await session(directUser)).role,'cashier');
+    assert.equal(await credentials(directUser,directSession),false);
+    await addSession(directUser,currentSession);
+    await db.exec('set role service_role');
+    assert.equal(await credentials(directUser,currentSession),true);
+    assert.deepEqual((await pos(directUser)).locations.map(store=>store.id),[firstStore]);
+
+    const reset = await provision(owner,'begin_reset',{id:directUser});
+    await assert.rejects(provision(owner,'begin_reset',{id:directUser}), { code:'22023' });
+    await assert.rejects(provision(owner,'begin_reset',{id:otherOwner}), { code:'22023' });
+    await assert.rejects(provision(owner,'complete_reset',{id:directUser,version:reset.version}), {code:'22023'});
+    assert.equal(await credentials(directUser,currentSession),false);
+    await assert.rejects(pos(directUser), { code:'GR403' });
+    await db.exec('reset role');
+    await db.query("update auth.users set encrypted_password='fixture-replacement-hash',raw_app_meta_data=raw_app_meta_data || $2::jsonb where id=$1",
+      [directUser,JSON.stringify({gr_staff_reset:reset.version})]);
+    await db.exec('set role service_role');
+    await provision(owner,'complete_reset',{id:directUser,version:reset.version});
+    await addSession(directUser,replacementSession);
+    assert.equal(await passwordState(directUser,currentSession,true),'denied');
+    assert.equal(await passwordState(directUser,replacementSession,true),'change_required');
+    await db.exec('reset role');
+    await db.query("update auth.users set encrypted_password='fixture-final-hash' where id=$1",[directUser]);
+    assert.equal(await passwordState(directUser,replacementSession,true),'complete');
+    await addSession(directUser,finalSession);
+    await db.exec('set role service_role');
+    assert.equal(await credentials(directUser,finalSession),true);
+    assert.equal(await credentials(directUser,replacementSession),false);
+    await login(owner);
+    const audit = (await manage('list')).audit;
+    for (const event of ['account_created','temporary_password_replaced','password_changed']) assert.ok(audit.some(entry=>entry.action===event));
+    await manage('suspend',{id:directUser});
+    await db.exec('set role service_role');
+    assert.equal((await session(directUser)).isStaff,false);
+    await assert.rejects(pos(directUser), {code:'GR403'});
   } finally {
     await db.close();
   }

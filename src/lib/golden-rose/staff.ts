@@ -8,6 +8,14 @@ import { createClient } from '@/src/lib/supabase/server';
 import { callEdge, EdgeError } from './edge';
 import type { StaffRole } from './contracts';
 
+export async function getStaffPasswordState(client: Awaited<ReturnType<typeof createClient>>) {
+  const { data, error } = await client.rpc('gr_employee_password_state');
+  // Existing invited employees and owners remain supported before the release.
+  if (error?.code === 'PGRST202') return 'none';
+  if (error || typeof data !== 'string') return 'unavailable';
+  return data;
+}
+
 export async function verifyStaffToken(token: string): Promise<StaffRole | null> {
   const { isStaff, role } = await callEdge<{ isStaff: boolean; role?: string }>('staff-session', { token });
   const activeRole = ROLES.find((candidate): candidate is StaffRole => candidate !== 'customer' && candidate === role);
@@ -24,6 +32,8 @@ export const getStaffAccess = cache(async () => {
     // The Edge Function verifies the bearer token and reads the active staff role.
     const role = await verifyStaffToken(session.access_token);
     if (!role) return { reason: 'denied' } as const;
+    const passwordState = await getStaffPasswordState(supabase);
+    if (passwordState !== 'none') return { reason: passwordState === 'unavailable' ? 'unavailable' : 'denied' } as const;
 
     // Verify the subject before using it to scope a browser's pending receipt.
     const { data: verified } = await supabase.auth.getClaims(session.access_token);

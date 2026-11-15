@@ -12,6 +12,7 @@ const notices: Record<string, string> = {
   denied: 'This account does not have active staff access. Contact your owner or manager.',
   unavailable: 'Staff access could not be verified. Try signing in again.',
   signout: 'Sign-out could not be confirmed. Try again from the workspace.',
+  'password-changed': 'Your password was changed. Sign in with your new password to continue.',
 };
 
 async function AccessNotice({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
@@ -39,7 +40,7 @@ export default function Page({ searchParams }: { searchParams: Promise<{ reason?
         <nav className="gr-auth-links" aria-label="Staff access">
           <Link href="/staff/accept-invite">Have an invitation? Accept it here</Link>
         </nav>
-        <p className="gr-auth-footnote">Invitation-only access. Ask your owner or manager for an invitation. There is no public staff registration.</p>
+        <p className="gr-auth-footnote">Use your assigned work account or a private invitation from the owner. Staff accounts cannot be registered here.</p>
       </section>
       <footer className="gr-auth-footer">Golden Rose Perfume · Internal business access</footer>
     </main>
