@@ -9,7 +9,7 @@ export const importLabels: Record<ImportKind, string> = {
   template: 'Product templates', variant: 'Product variants', brand: 'Brands', category: 'Categories',
 };
 export const fields = {
-  externalId: ['Source / external ID', 'external id', 'external_id', 'source_id', 'source id', 'id'],
+  externalId: ['Source / external ID', 'external id', 'external_id', 'source_id', 'source id', 'id', 'product id', 'item id', 'variant id'],
   databaseId: ['Source database ID', 'database id', '.id', 'database_id', 'odoo id'],
   parentExternalId: ['Product source ID', 'product template/external id', 'product_tmpl_id/id', 'template_id', 'product_source_id', 'parent_external_id'],
   parentDatabaseId: ['Product database ID', 'product template/database id', 'product_tmpl_id/.id', 'parent_database_id'],
@@ -17,10 +17,10 @@ export const fields = {
   categoryExternalId: ['Category source ID', 'product category/external id', 'categ_id/id', 'category_source_id'],
   name: ['Name', 'name', 'product name', 'display name', 'brand name', 'category name'],
   description: ['Description', 'description', 'sales description', 'description_sale'],
-  sku: ['SKU', 'sku', 'internal reference', 'default_code', 'item code'],
-  barcode: ['Barcode', 'barcode', 'ean', 'upc'],
+  sku: ['SKU', 'sku', 'internal reference', 'default_code', 'item code', 'product code', 'stock code'],
+  barcode: ['Barcode', 'barcode', 'ean', 'ean13', 'upc', 'gtin'],
   sizeMl: ['Bottle size (ml)', 'size_ml', 'size ml', 'bottle size (ml)', 'volume ml'],
-  priceMinor: ['Selling price (NGN)', 'sales price', 'selling price', 'price', 'list_price', 'lst_price'],
+  priceMinor: ['Selling price (NGN)', 'sales price', 'selling price', 'retail price', 'unit price', 'price', 'list_price', 'lst_price'],
   costMinor: ['Cost (NGN)', 'cost', 'standard_price', 'unit cost'],
   currency: ['Currency', 'currency', 'currency code'],
   imageReference: ['Image reference', 'image path', 'image url', 'image_reference', 'image'],
@@ -48,9 +48,9 @@ export function fieldNames(kind: ImportKind): Field[] {
 }
 
 export function guessMapping(headers: string[], kind: ImportKind, preset = 'auto'): Mapping {
-  const normalize = (text: string) => text.toLowerCase().trim();
+  const normalize = (text: string) => text.toLowerCase().trim().replace(/[_-]/g, ' ').replace(/\s+/g, ' ');
   return Object.fromEntries(fieldNames(kind).flatMap(field => {
-    const aliases: readonly string[] = fields[field].slice(1);
+    const aliases = fields[field].slice(1).map(normalize);
     const index = headers.findIndex(header => aliases.includes(normalize(header)) ||
       (preset === 'odoo' && field === 'priceMinor' && normalize(header) === 'public price'));
     return index === -1 ? [] : [[field, index]];

@@ -109,12 +109,18 @@ export async function findCatalogProduct(idOrSlug: string) {
   return null;
 }
 
+export async function getAdminProductsPage(token: string, offset: number, limit = PAGE_SIZE) {
+  const params = new URLSearchParams({ offset: String(offset), limit: String(limit) });
+  return itemsOf(await callEdge<{ items: AdminProduct[] }>('inventory-admin', { token, params }));
+}
+
+export function adminProductPages(token: string) {
+  return readPages(async offset => ({ items: await getAdminProductsPage(token, offset) }));
+}
+
 export async function listAdminProducts(token: string) {
   const products = new Map<string, AdminProduct>();
-  const pages = readPages(offset => callEdge<{ items: AdminProduct[] }>('inventory-admin', {
-    token, params: pageParams(offset),
-  }));
-  for await (const page of pages) {
+  for await (const page of adminProductPages(token)) {
     for (const product of page) products.set(product.productId, product);
   }
   return [...products.values()];

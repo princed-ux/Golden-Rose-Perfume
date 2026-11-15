@@ -1,10 +1,15 @@
-import { createHash, createHmac } from 'node:crypto';
+import 'server-only';
+
+import { createHmac } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { getStaffAccess } from '@/src/lib/golden-rose/staff';
 import { getSupabaseConfig } from '@/src/lib/supabase/config';
 import { UUID } from '@/src/lib/golden-rose/contracts';
-import { batches, canImportData, isKind, MAX_UPLOAD, summarize, validateRows, type Mapping, type Issue } from '@/src/lib/imports/model';
-import { parseUpload } from '@/src/lib/imports/parser';
+import { canImportData, isKind, MAX_UPLOAD, type Mapping, type RecordData } from '@/src/lib/imports/model';
+import { digest } from '@/src/lib/imports/prepare';
+import { createPackageService, WorkflowError } from '@/src/lib/imports/package-service';
+import type { DatasetSettings } from '@/src/lib/imports/workflow';
+import { adminProductPages } from '@/src/lib/golden-rose/edge';
 
 const bucket = 'golden-rose-imports';
 const limit = MAX_UPLOAD + 96_000;
@@ -15,8 +20,11 @@ function reply(data: object, status = 200) {
 
 async function checkOwner() {
   const staff = await getStaffAccess();
-  if ('reason' in staff) return reply({ error: 'Sign in with an active owner account.' }, staff.reason === 'session' ? 401 : 403);
-  return canImportData(staff.role) ? staff.userId : reply({ error: 'Data imports require owner access.' }, 403);
+  if ('reason' in staff) {
+    if (staff.reason === 'unavailable') return reply({ error: 'Could not verify owner access. Check the Supabase connection and retry.' }, 503);
+    return reply({ error: 'Sign in with an active owner account.' }, staff.reason === 'session' ? 401 : 403);
+  }
+  return canImportData(staff.role) ? staff : reply({ error: 'Data imports require owner access.' }, 403);
 }
 
 class ImportServiceError extends Error {
@@ -31,7 +39,9 @@ class ImportServiceError extends Error {
 
 function importKey() {
   const key = process.env.SUPABASE_IMPORT_SECRET_KEY?.trim();
-  if (!key || !/^sb_secret_[A-Za-z0-9_-]+$/.test(key)) throw new ImportServiceError(true);
+  if (!key || !/^sb_secret_[A-Za-z0-9_-]+$/.test(key)) {
+    throw new ImportServiceError(true, 'Set the Golden Rose Supabase secret as SUPABASE_IMPORT_SECRET_KEY on the server, then restart the app.');
+  }
   return key;
 }
 
@@ -43,11 +53,21 @@ function importClient() {
 
 async function rpc(client: ReturnType<typeof importClient>, actor: string, action: string, payload: object = {}) {
   const { data, error } = await client.rpc('gr_bulk_import', { p_action: action, p_payload: { ...payload, actor } });
-  if (error) throw new ImportServiceError(
-    ['PGRST202', '42883'].includes(error.code),
-    error.code === '22023' ? error.message : undefined,
-    error.code === '22023' ? 409 : error.code === '42501' ? 403 : 503,
-  );
+  if (error) {
+    if (['PGRST202', '42883'].includes(error.code)) {
+      throw new ImportServiceError(true, 'The bulk-import function is unavailable. Check that the app points to the Golden Rose project.');
+    }
+    if (error.code === '42501') {
+      if (error.message === 'Active owner access required.') throw new ImportServiceError(false, 'Data imports require an active owner account.', 403);
+      throw new ImportServiceError(true, 'The server credential cannot access bulk imports. Verify the Golden Rose import secret and RPC grants.');
+    }
+    if (error.code === '22023') throw new ImportServiceError(false, error.message, 409);
+    if (error.code === 'P0002') throw new ImportServiceError(false, 'Import job not found. Refresh import history and try again.', 404);
+    if (error.code === 'PGRST301' || error.code === 'PGRST302' || /invalid api key/i.test(error.message)) {
+      throw new ImportServiceError(true, 'The server import secret was rejected. Configure the active Golden Rose Supabase secret and restart the app.');
+    }
+    throw new ImportServiceError(false);
+  }
   return data;
 }
 
@@ -74,154 +94,171 @@ function dataField(form: FormData, key: string) {
   return typeof value === 'string' ? value : '';
 }
 
+
+function storageMissing(error: { status?: number | string; statusCode?: string; message: string }) {
+  return Number(error.statusCode ?? error.status) === 404 || /^(object not found|the resource was not found)$/i.test(error.message);
+}
+
+function packageService(client: ReturnType<typeof importClient>, owner: { userId: string; token: string }) {
+  const files = client.storage.from(bucket);
+
+  async function read(path: string) {
+    const { data, error } = await files.download(path).asStream();
+    if (error) {
+      if (storageMissing(error)) return null;
+      throw new WorkflowError('Private import storage could not be read. Try again.', 503);
+    }
+    const reader = data.getReader();
+    const chunks: Uint8Array[] = [];
+    let length = 0;
+    try {
+      while (true) {
+        const next = await reader.read();
+        if (next.done) return Buffer.concat(chunks);
+        length += next.value.byteLength;
+        if (length > MAX_UPLOAD) {
+          await reader.cancel();
+          throw new WorkflowError('The stored source exceeds the supported upload size.', 413);
+        }
+        chunks.push(next.value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
+  async function verifyStored(path: string, expectedHash: string) {
+    const stored = await read(path);
+    if (!stored || digest(stored) !== expectedHash) {
+      throw new WorkflowError('The private import source could not be saved. Retry or reselect the same export.', 503);
+    }
+  }
+
+  async function barcodeConflicts(records: RecordData[]) {
+    const bySku = new Map<string, number>();
+    const byBarcode = new Map<string, number>();
+    const conflicts = new Set<number>();
+    for (const record of records) {
+      if (typeof record.sku === 'string') bySku.set(record.sku.toLowerCase(), record.row);
+      if (typeof record.barcode === 'string') byBarcode.set(record.barcode, record.row);
+    }
+    if (!bySku.size && !byBarcode.size) return conflicts;
+    for await (const page of adminProductPages(owner.token)) {
+      for (const product of page) {
+        for (const variant of product.variants) {
+          const sku = variant.sku && bySku.get(variant.sku.toLowerCase());
+          const barcode = variant.barcode && byBarcode.get(variant.barcode);
+          if (sku) conflicts.add(sku);
+          if (barcode) conflicts.add(barcode);
+        }
+      }
+      if (conflicts.size === records.length) break;
+    }
+    return conflicts;
+  }
+
+  return createPackageService({
+    rpc: (action, payload) => rpc(client, owner.userId, action, payload),
+    sign: value => createHmac('sha256', importKey()).update(owner.userId + ':' + value).digest('hex'),
+    barcodeConflicts,
+    storage: {
+      read,
+      put: async (path, bytes, contentType) => {
+        const { error } = await files.upload(path, bytes, { contentType, upsert: false });
+        if (error) await verifyStored(path, digest(bytes));
+      },
+      copy: async (from, to, hash) => {
+        const { error } = await files.copy(from, to);
+        if (error) await verifyStored(to, hash);
+      },
+      recent: async () => {
+        const { data, error } = await files.list('workflows', {
+          limit: 12, sortBy: { column: 'created_at', order: 'desc' },
+        });
+        if (error) throw new WorkflowError('Saved import packages could not be loaded. Check private import storage and retry.', 503);
+        return data.flatMap(item => /^[a-f0-9]{64}\.json$/.test(item.name) ? [item.name.slice(0, -5)] : []);
+      },
+    },
+  });
+}
+
+function serviceError(error: unknown) {
+  if (error instanceof ImportServiceError || error instanceof WorkflowError) return reply({ error: error.message }, error.status);
+  return null;
+}
+
 export async function GET(request: Request) {
-  const actor = await checkOwner();
-  if (actor instanceof Response) return actor;
-  const job = new URL(request.url).searchParams.get('job');
+  const owner = await checkOwner();
+  if (owner instanceof Response) return owner;
+  const { searchParams } = new URL(request.url);
+  const job = searchParams.get('job');
+  const workflow = searchParams.get('workflow');
   if (job && !UUID.test(job)) return reply({ error: 'Invalid import job.' }, 400);
   try {
     const client = importClient();
-    return reply(await rpc(client, actor, job ? 'job' : 'history', job ? { job } : {}));
+    const packages = packageService(client, owner);
+    if (workflow) return reply(await packages.get(workflow));
+    const data = await rpc(client, owner.userId, job ? 'job' : 'history', job ? { job } : {});
+    if (job) return reply(data);
+    if (data?.available !== true || !Array.isArray(data.jobs)) {
+      return reply({ error: 'The import service returned unexpected history data.' }, 502);
+    }
+    try {
+      return reply({ ...data, packages: await packages.recent() });
+    } catch {
+      return reply({ ...data, packages: [], packageError: 'Saved import packages could not be loaded. Refresh history to try again.' });
+    }
   } catch (error) {
-    if (error instanceof ImportServiceError && error.unavailable) return reply({ available: false, jobs: [] });
-    return reply({ error: 'Import history could not be loaded.' }, 502);
+    return serviceError(error) ?? reply({ error: 'Import history could not be loaded. Check the connection and retry.' }, 502);
   }
 }
 
+function datasetSettings(raw: string): DatasetSettings[] {
+  if (!raw) return [];
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed) || parsed.length > 48) throw new WorkflowError('Invalid column settings.', 400);
+  return parsed.map((item: DatasetSettings | null) => {
+    if (!item || typeof item.key !== 'string' || item.key.length > 1100 ||
+      (item.kind !== undefined && !isKind(item.kind)) ||
+      (item.mapping !== undefined && (!item.mapping || typeof item.mapping !== 'object' || Array.isArray(item.mapping) ||
+        Object.keys(item.mapping).length > 20))) throw new WorkflowError('Invalid column settings.', 400);
+    return { key: item.key, kind: item.kind, mapping: item.mapping as Mapping | undefined };
+  });
+}
+
 export async function POST(request: Request) {
-  const actor = await checkOwner();
-  if (actor instanceof Response) return actor;
+  const owner = await checkOwner();
+  if (owner instanceof Response) return owner;
   const origin = request.headers.get('origin');
   if ((origin && (!URL.canParse(origin) || new URL(origin).host !== request.headers.get('host'))) ||
       request.headers.get('sec-fetch-site') === 'cross-site') return reply({ error: 'Use the business workspace to start an import.' }, 403);
   try {
     if (Number(request.headers.get('content-length')) > limit) return reply({ error: 'Choose an export of up to 4 MB.' }, 413);
     const body = await boundedRequest(request);
+    const client = importClient();
+    const packages = packageService(client, owner);
     if (request.headers.get('content-type')?.startsWith('application/json')) {
-      const { action, job } = await body.json();
-      if (!['apply', 'cancel', 'resume'].includes(action) || typeof job !== 'string' || !UUID.test(job)) return reply({ error: 'Invalid job action.' }, 400);
-      return reply(await rpc(importClient(), actor, action, { job }));
+      const { action, id, job, plan, signature } = await body.json();
+      if (action === 'start' && typeof signature === 'string') return reply(await packages.start(plan, signature));
+      if (action === 'step' && typeof id === 'string') return reply(await packages.step(id));
+      if (['apply', 'cancel', 'resume'].includes(action) && typeof job === 'string' && UUID.test(job)) {
+        return reply(await rpc(client, owner.userId, action, { job }));
+      }
+      return reply({ error: 'Invalid import action.' }, 400);
     }
 
     const form = await body.formData();
     const file = form.get('file');
-    const action = dataField(form, 'action');
-    if (!(file instanceof File) || !['inspect', 'validate', 'stage'].includes(action)) return reply({ error: 'Choose an export and a supported action.' }, 400);
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const parsed = await parseUpload(bytes, file.name, dataField(form, 'entry') || undefined);
-    const { dataset, files, images } = parsed;
-    if (action === 'inspect') return reply({
-      headers: dataset?.headers ?? [], rowCount: dataset?.records.length ?? 0, detected: dataset?.kind,
-      entry: dataset?.entry, files, images,
-    });
-    const kind = dataField(form, 'kind');
-    const source = dataField(form, 'source').trim().toLowerCase();
-    const currency = dataField(form, 'currency');
-    if (!dataset || !isKind(kind) || !/^[a-z0-9][a-z0-9-]{1,63}$/.test(source) || !['', 'NGN'].includes(currency)) {
-      return reply({ error: 'Select a supported record type and a stable source key such as shop-erp.' }, 400);
-    }
-    const mapping: Mapping = JSON.parse(dataField(form, 'mapping'));
-    if (!mapping || typeof mapping !== 'object' || Array.isArray(mapping)) return reply({ error: 'Map the source columns first.' }, 400);
-    const { results, records } = validateRows(dataset, kind, mapping, currency);
-    const sourceHash = createHash('sha256').update(bytes).digest('hex');
-    const fingerprint = createHash('sha256').update(sourceHash + ':' + (dataset.entry ?? '')).digest('hex');
-    if (action === 'stage' && dataField(form, 'fingerprint') !== fingerprint) return reply({ error: 'The source file or ZIP entry changed. Validate it again before importing.' }, 409);
-
-    const extension = file.name.toLowerCase().split('.').at(-1);
-    const metadata = {
-      source, kind, fingerprint, sourceHash, extension, entry: dataset.entry ?? null,
-      mapping, currency, expected: results.length,
-    };
-    if (action === 'stage') {
-      const client = importClient();
-      const existing = await rpc(client, actor, 'find', metadata) as { id?: string; status?: string };
-      if (existing.id && existing.status !== 'uploading') return reply(await rpc(client, actor, 'job', { job: existing.id }));
-    }
-    let verified = true;
-    const matches = new Map<number, Issue & { targetId?: string }>();
-    try {
-      const client = importClient();
-      for (const group of batches(batches(records), 6)) {
-        const responses = await Promise.all(group.map(rows =>
-          rpc(client, actor, 'preflight', { source, kind, rows }) as Promise<{ results: (Issue & { targetId?: string })[] }>));
-        responses.forEach(response => response.results.forEach(item => matches.set(item.row, item)));
-      }
-    } catch (error) {
-      if (!(error instanceof ImportServiceError) || !error.unavailable) throw error;
-      verified = false;
-    }
-    if (verified) {
-      const byTarget = new Map<string, typeof results>();
-      for (const result of results) {
-        const match = matches.get(result.row);
-        if (!match) continue;
-        result.status = match.status;
-        result.message = match.message;
-        if (match.targetId) {
-          const group = byTarget.get(match.targetId) ?? [];
-          group.push(result);
-          byTarget.set(match.targetId, group);
-        }
-      }
-      for (const group of byTarget.values()) {
-        if (group.length < 2) continue;
-        for (const row of group) {
-          row.status = 'invalid';
-          row.message = 'Multiple rows resolve to the same Golden Rose record.';
-        }
-      }
-      if (results.some(result => result.status === 'unverified')) throw new ImportServiceError(false);
-    }
-    const counts = summarize(results);
-    const review = verified ? createHmac('sha256', importKey())
-      .update(JSON.stringify(['golden-rose-import-review-v1', source, kind, fingerprint, extension, currency, Object.entries(mapping).sort()]))
-      .update(JSON.stringify(results.map(({ row, status, message }) => [row, status, message, matches.get(row)?.targetId ?? null])))
-      .digest('hex') : '';
-    if (action === 'validate') return reply({
-      verified, counts, fingerprint, review,
-      rows: results.slice(0, 50),
-      issues: results.filter(row => ['invalid','skipped'].includes(row.status))
-        .map(({ row, status, message }) => ({ row, status, message })),
-    });
-    if (!verified) throw new ImportServiceError(true);
-    if (dataField(form, 'review') !== review) return reply({ error: 'The mapping or catalogue matches changed. Validate again before staging this file.' }, 409);
-    if (!counts.new && !counts.updated) return reply({ error: 'There are no eligible changes in this upload.' }, 409);
-
-    const client = importClient();
+    if (!(file instanceof File) || !file.size) return reply({ error: 'Choose a non-empty export.' }, 400);
+    if (file.size > MAX_UPLOAD) return reply({ error: 'Choose an export of up to 4 MB.' }, 413);
     const filename = file.name.replace(/[^\p{L}\p{N}_. -]/gu, '_').slice(-160);
-    const job = await rpc(client, actor, 'begin', { ...metadata, filename, review }) as {
-      id: string; status: string; objectPath: string;
-    };
-    if (job.status !== 'uploading') return reply(await rpc(client, actor, 'job', { job: job.id }));
-    const mime = extension === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      : extension === 'csv' ? 'text/csv' : extension === 'json' ? 'application/json' : 'application/zip';
-    const { error: uploadError } = await client.storage.from(bucket).upload(job.objectPath, bytes, { contentType: mime, upsert: false });
-    if (uploadError) {
-      if (String(uploadError.statusCode) !== '409') throw new ImportServiceError(false, 'The private source upload failed. Re-select the same file and retry.');
-      const { data: original, error } = await client.storage.from(bucket).download(job.objectPath);
-      if (error || !original || original.size !== bytes.length ||
-        createHash('sha256').update(Buffer.from(await original.arrayBuffer())).digest('hex') !== sourceHash) {
-        throw new ImportServiceError(false, 'The stored source does not match the reviewed file.');
-      }
-    }
-    const normalized = new Map(records.map(record => [record.row, record]));
-    for (const group of batches(batches(results), 4)) {
-      await Promise.all(group.map(rows => rpc(client, actor, 'stage', {
-        job: job.id,
-        review,
-        rows: rows.map(({ row, status, message }) => ({
-          row, status, message,
-          data: status === 'new' || status === 'updated' ? normalized.get(row) : null,
-          targetId: matches.get(row)?.targetId ?? null,
-        })),
-      })));
-    }
-    return reply(await rpc(client, actor, 'ready', { job: job.id, review }));
+    const source = dataField(form, 'source').trim().toLowerCase();
+    const settings = datasetSettings(dataField(form, 'settings'));
+    return reply(await packages.review(Buffer.from(await file.arrayBuffer()), filename, source, settings));
   } catch (error) {
-    if (error instanceof ImportServiceError) return reply({
-      error: error.unavailable ? 'Catalogue matching and job writes require the reviewed migration and server import key.' : error.message,
-    }, error.status);
-    return reply({ error: error instanceof Error && !/Unexpected token|JSON at position/.test(error.message)
-      ? error.message.slice(0, 250) : 'The export or mapping could not be read.' }, 400);
+    return serviceError(error) ?? reply({
+      error: error instanceof Error && !/Unexpected token|JSON at position|fetch failed/.test(error.message)
+        ? error.message.slice(0, 250) : 'The export could not be read. Check the file and try again.',
+    }, 400);
   }
 }

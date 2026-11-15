@@ -3,6 +3,24 @@ import { strict as assert } from 'node:assert';
 import { crc32 } from 'node:zlib';
 import { batches, canImportData, guessMapping, summarize, validateRows } from './model';
 import { parseUpload } from './parser';
+import { prepareImport } from './prepare';
+
+test('recognizes a flat spreadsheet and maps related records without dropping identifier zeroes', async () => {
+  const input = Buffer.from('Product Name,Manufacturer,Product Category,Product Code,GTIN,Retail Price\n' +
+    'Rose,Fixture Brand,Floral,0001,001234567890,100.04\nRose,Fixture Brand,Floral,0002,001234567891,120');
+  const { prepared } = await prepareImport(input, 'perfume-catalogue.csv');
+  assert.deepEqual(prepared.map(item => [item.kind, item.records.length, item.error]), [
+    ['brand', 1, undefined], ['category', 1, undefined], ['template', 1, undefined], ['variant', 2, undefined],
+  ]);
+  const brand = prepared[0].records[0];
+  const template = prepared[2].records[0];
+  const variant = prepared[3].records[0];
+  assert.equal(template.brandExternalId, brand.externalId);
+  assert.equal(variant.parentExternalId, template.externalId);
+  assert.equal(variant.sku, '0001');
+  assert.equal(variant.barcode, '001234567890');
+  assert.equal(variant.priceMinor, 10004);
+});
 
 function archive(files: Record<string, string>) {
   const locals: Buffer[] = [];

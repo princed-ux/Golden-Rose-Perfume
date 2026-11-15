@@ -13,6 +13,12 @@ async function requireRegisterToken(): Promise<string> {
   const staff = await getStaffAccess();
 
   if ('reason' in staff) {
+    if (staff.reason === 'unavailable') {
+      throw new Error('Staff access could not be checked. Check your connection and try again.');
+    }
+    if (staff.reason === 'denied') {
+      throw new Error('Your account is not authorized to operate the register.');
+    }
     throw new Error('Your staff session expired. Sign in again.');
   }
 
@@ -40,6 +46,9 @@ async function callRegister<T>(
   }
 
   let response: Response;
+  const unavailable = body
+    ? 'Register confirmation unavailable. Retry the same transaction reference.'
+    : 'The register catalogue is temporarily unavailable. Check your connection and try again.';
 
   try {
     response = await fetch(endpoint, {
@@ -57,43 +66,28 @@ async function callRegister<T>(
     });
   } catch {
     // A sale may have committed even if the response was lost.
-    throw new Error(
-      'Connection interrupted. Retry using the SAME transaction reference.',
-    );
+    throw new Error(unavailable);
   }
 
-  const parsed: unknown = await response.json().catch(() => null);
-
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error(
-      'Unrecognized register response. Retry the SAME transaction.',
-    );
+  if (response.status === 401) {
+    throw new Error('Session expired. Sign in again.');
   }
 
-  const data = parsed as {
-    ok?: boolean;
-    error?: string;
-  };
+  if (response.status === 403) {
+    throw new Error('Your staff role cannot perform this operation.');
+  }
 
-  if (!response.ok || data.ok !== true) {
-    if (response.status === 401) {
-      throw new Error('Session expired. Sign in again.');
-    }
+  const data = await response.json().catch(() => null) as { ok?: boolean; error?: unknown } | null;
 
-    if (response.status === 403) {
-      throw new Error('Your staff role cannot perform this operation.');
-    }
-
-    if (response.status < 500 && typeof data.error === 'string') {
+  if (!response.ok || data?.ok !== true) {
+    if (!response.ok && response.status < 500 && typeof data?.error === 'string') {
       throw new Error(data.error.slice(0, 220));
     }
 
-    throw new Error(
-      'Register confirmation unavailable. Retry the SAME transaction.',
-    );
+    throw new Error(unavailable);
   }
 
-  return parsed as T;
+  return data as T;
 }
 
 /**

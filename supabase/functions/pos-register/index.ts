@@ -6,7 +6,7 @@ const respond = (data: unknown, status = 200) =>
 
 function problem(error: unknown): Response {
   const issue = error as { code?: string; message?: string };
-  if (issue.code === "42501") return respond({ ok: false, error: "Your active staff role does not permit this POS operation." }, 403);
+  if (issue.code === "GR403") return respond({ ok: false, error: "Your active staff role does not permit this POS operation." }, 403);
   if (issue.code === "23514") return respond({ ok: false, error: "Insufficient available stock. Refresh the register and check quantities." }, 409);
   if (issue.code === "22023" || issue.code === "22P02") return respond({ ok: false, error: issue.message ?? "Invalid register request." }, 400);
   if (issue.code === "P0002") return respond({ ok: false, error: "Receipt was not found." }, 404);
@@ -14,7 +14,7 @@ function problem(error: unknown): Response {
   return respond({ ok: false, error: "The register could not complete the request. Retry using the same transaction." }, 503);
 }
 
-export default {
+const register = {
   fetch: withSupabase({ auth: "user" }, async (request, context) => {
     const actor = context.userClaims?.id ?? context.jwtClaims?.sub;
     if (typeof actor !== "string" || !uuid.test(actor)) return respond({ ok: false, error: "Invalid staff session" }, 401);
@@ -68,3 +68,5 @@ export default {
     return respond(data);
   }),
 };
+
+export default register;

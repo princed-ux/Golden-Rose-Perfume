@@ -9,6 +9,7 @@ const MAX_EXPANDED = 32_000_000;
 const textDecoder = new TextDecoder('utf-8', { fatal: true });
 const dataExtensions = ['.csv', '.xlsx', '.json'];
 const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
+const MAX_DATASETS = 12;
 
 function zipDirectory(buffer: Buffer) {
   let end = -1;
@@ -151,4 +152,34 @@ export async function parseUpload(bytes: Buffer, filename: string, entry?: strin
   if (!files.includes(selected)) throw new Error('Choose a data file from this ZIP package.');
   const dataset = await parseDataset(readEntry(bytes, directory.get(selected)!), selected);
   return { dataset: { ...dataset, entry: selected }, files, images };
+}
+
+export async function parseImportPackage(bytes: Buffer, filename: string) {
+  if (!bytes.length || bytes.length > MAX_UPLOAD) throw new Error('Choose an export of up to 4 MB.');
+  if (extname(filename).toLowerCase() !== '.zip') {
+    return { datasets: [{ name: filename, dataset: await parseDataset(bytes, filename) }], images: 0 };
+  }
+
+  const directory = zipDirectory(bytes);
+  const paths = [...directory.keys()].filter(path => !path.endsWith('/'));
+  const files = paths.filter(path => dataExtensions.includes(extname(path).toLowerCase()));
+  const images = paths.filter(path => imageExtensions.includes(extname(path).toLowerCase())).length;
+  if (!files.length || files.length + images !== paths.length) {
+    throw new Error('ZIP packages must contain CSV, XLSX or JSON exports and optional product images.');
+  }
+  if (files.length > MAX_DATASETS) throw new Error('Use up to 12 datasets per ZIP.');
+
+  let rowCount = 0;
+  const datasets: { name: string; dataset?: Dataset; error?: string }[] = [];
+  for (const name of files) {
+    try {
+      const dataset = await parseDataset(readEntry(bytes, directory.get(name)!), name);
+      datasets.push({ name, dataset: { ...dataset, entry: name } });
+      rowCount += dataset.records.length;
+    } catch (error) {
+      datasets.push({ name, error: error instanceof Error ? error.message : 'This dataset could not be read.' });
+    }
+    if (rowCount > MAX_ROWS) throw new Error('Use up to 25,000 source rows across the files in one ZIP.');
+  }
+  return { datasets, images };
 }

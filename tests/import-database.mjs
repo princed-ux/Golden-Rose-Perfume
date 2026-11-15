@@ -9,6 +9,128 @@ const { PGlite } = load(process.env.GR_PGLITE_MODULE || '@electric-sql/pglite');
 const readMigration = suffix => fs.readFileSync('supabase/migrations/' + fs.readdirSync('supabase/migrations').find(name => name.endsWith(suffix)), 'utf8');
 const hash = value => createHash('sha256').update(value).digest('hex');
 
+function loadPackageService() {
+  const ts = load('typescript');
+  const previous = load.extensions['.ts'];
+  load.extensions['.ts'] = (module, filename) => {
+    const source = fs.readFileSync(filename, 'utf8');
+    const { outputText } = ts.transpileModule(source, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
+    });
+    module._compile(outputText, filename);
+  };
+  try {
+    return load('../src/lib/imports/package-service.ts');
+  } finally {
+    if (previous) load.extensions['.ts'] = previous;
+    else delete load.extensions['.ts'];
+  }
+}
+
+test('one approved ZIP stages dependent datasets, resumes, and preserves draft barcodes', async () => {
+  const db = await fixture();
+  const { createPackageService } = loadPackageService();
+  const { zipSync, strToU8 } = createRequire(load.resolve('read-excel-file/node'))('fflate');
+  const archive = files => Buffer.from(zipSync(Object.fromEntries(Object.entries(files).map(
+    ([name, contents]) => [name, strToU8(contents)],
+  ))));
+  const objects = new Map();
+  try {
+    const owner = randomUUID();
+    await db.query('insert into auth.users(id) values ($1)', [owner]);
+    await db.query("insert into golden_rose.staff_members(user_id,role,status) values ($1,'owner','active')", [owner]);
+    await db.exec('set role service_role');
+    const invoke = call(db, 'public.gr_bulk_import');
+    const rpc = (action, payload) => invoke(action, { ...payload, actor: owner });
+    const storage = {
+      read: async path => objects.get(path) ?? null,
+      put: async (path, bytes) => {
+        if (objects.has(path)) assert.deepEqual(objects.get(path), bytes);
+        else objects.set(path, bytes);
+      },
+      copy: async (from, to) => {
+        assert.ok(objects.has(from));
+        objects.set(to, objects.get(from));
+        await db.query("insert into storage.objects values ('golden-rose-imports',$1) on conflict do nothing", [to]);
+      },
+      recent: async () => Array.from(objects.keys()).filter(path => path.startsWith('workflows/')).map(path => path.slice(10, -5)),
+    };
+    const barcodeConflicts = async records => {
+      // This adapter represents the catalogue lookup used while a parent is still pending.
+      return new Set(records.filter(record => record.barcode === '001234000000').map(record => record.row));
+    };
+    const newService = () => createPackageService({ rpc, storage, sign: hash, barcodeConflicts });
+    const service = newService();
+    const variants = 'External ID,Product Source ID,SKU,Barcode,Price\n' +
+      Array.from({ length: 201 }, (_, i) => `v-${i},p1,00${i},001234${String(i + 100).padStart(6, '0')},99.99`).join('\n');
+    const bytes = archive({
+      '04_product.product.csv': variants,
+      '03_product.template.csv': 'External ID,Name,Brand Source ID,Category Source ID\np1,Amber fixture,b1,c1',
+      '02_categories.csv': 'External ID,Name\nc1,Eau de parfum',
+      '01_brands.csv': 'External ID,Name\nb1,Fixture brand',
+    });
+    const blocked = await service.review(archive({
+      'products.csv': 'External ID,Name\np,Fixture',
+      'variants.csv': 'External ID,Product Source ID,SKU,Barcode,Price\na,p,SKU-A,001234000000,90\nb,missing,SKU-B,001234000005,90',
+      'variants-2.csv': 'External ID,Product Source ID,SKU,Barcode,Price\nc,p,SKU-C,001234000006,90\nd,p,SKU-D,001234000006,91',
+    }), 'conflicts.zip', 'fixture', []);
+    assert.equal(blocked.approval, undefined);
+    const errors = blocked.datasets.flatMap(dataset => dataset.issues.map(issue => issue.message));
+    for (const expected of [/already belongs/i, /unresolved/i, /conflicting.*barcode/i]) {
+      assert.ok(errors.some(message => expected.test(message)), errors.join('\n'));
+    }
+
+    const review = await service.review(bytes, 'catalogue.zip', 'fixture', []);
+    assert.ok(review.approval, JSON.stringify(review.datasets.map(({ name, error, issues }) => ({ name, error, issues }))));
+    assert.deepEqual(review.datasets.map(dataset => dataset.kind), ['brand', 'category', 'template', 'variant']);
+    assert.equal(review.datasets.at(-1).counts.new, 201);
+    assert.deepEqual((await rpc('history')).jobs, []);
+    const { plan, signature } = review.approval;
+    await assert.rejects(service.start({ ...plan, source: 'different' }, signature), /Review the current export/);
+    let status = await service.start(plan, signature);
+    assert.equal((await newService().recent())[0].id, plan.id);
+    for (let step = 0; step < 8; step++) status = await service.step(plan.id);
+    assert.deepEqual(status.datasets.map(({ job }) => job.status), ['complete', 'complete', 'complete', 'processing']);
+    assert.equal(status.datasets.at(-1).job.pending, 1);
+
+    const restored = newService();
+    assert.equal((await restored.get(plan.id)).datasets.at(-1).job.new, 200);
+    status = await restored.step(plan.id);
+    assert.equal(status.status, 'complete');
+    assert.equal(status.datasets.at(-1).job.new, 201);
+    assert.equal((await restored.review(bytes, 'catalogue.zip', 'fixture', [])).existing.id, plan.id);
+    assert.equal((await restored.step(plan.id)).datasets.at(-1).job.new, 201);
+    assert.equal((await rpc('history')).jobs.length, 4);
+    await db.exec('reset role');
+    const [result] = await query(db, `
+      select count(*)::int variants, count(distinct barcode)::int barcodes,
+        count(*) filter (where p.is_published)::int published, min(barcode) first_barcode
+      from golden_rose.product_variants v join golden_rose.products p on p.id=v.product_id`);
+    assert.deepEqual(result, { variants: 201, barcodes: 201, published: 0, first_barcode: '001234000100' });
+    assert.equal((await query(db, 'select count(*)::int count from golden_rose.stock_movements'))[0].count, 0);
+
+    await db.exec('set role service_role');
+    const race = await restored.review(archive({
+      'variants-a.csv': 'External ID,Product Source ID,SKU,Barcode,Price\na,p1,RACE-A,009999000001,90',
+      'variants-b.csv': 'External ID,Product Source ID,SKU,Barcode,Price\nb,p1,RACE-B,009999000002,90',
+    }), 'concurrent-export.zip', 'fixture', []);
+    assert.ok(race.approval);
+    const raceId = race.approval.plan.id;
+    await restored.start(race.approval.plan, race.approval.signature);
+    assert.equal((await restored.step(raceId)).datasets[0].job.status, 'ready');
+    await db.exec('reset role');
+    await query(db, "update golden_rose.product_variants set barcode='009999000001' where sku='000'");
+    await db.exec('set role service_role');
+    const failed = await restored.step(raceId);
+    assert.equal(failed.status, 'failed');
+    assert.equal(failed.datasets[0].job.invalid, 1);
+    assert.equal(failed.datasets[1].job, null);
+    assert.equal((await newService().step(raceId)).datasets[1].job, null);
+  } finally {
+    await db.close();
+  }
+});
+
 async function fixture() {
   const db = new PGlite();
   try {

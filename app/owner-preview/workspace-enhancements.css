@@ -1,0 +1,634 @@
+
+/*
+  GOLDEN ROSE BUSINESS WORKSPACE
+  Personalization and Amara drawer improvements.
+
+  Extends the approved dashboard.
+  Does not replace page.css.
+*/
+
+/* ========================================
+   FULL-WIDTH BUSINESS WORKSPACE
+======================================== */
+
+.owner-suite--full-workspace
+.owner-columns {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.owner-suite--full-workspace
+.owner-main {
+  min-width: 0;
+  width: 100%;
+}
+
+.owner-suite--full-workspace
+.owner-live-content {
+  width: 100%;
+  min-width: 0;
+}
+
+.owner-suite--full-workspace
+.owner-workspace {
+  min-width: 0;
+  width: 100%;
+}
+
+/* ========================================
+   PERSONALIZED HEADER
+======================================== */
+
+.owner-suite--full-workspace
+.owner-topbar-welcome {
+  min-width: 0;
+}
+
+.owner-suite--full-workspace
+.owner-topbar-welcome > strong {
+  display: block;
+  min-width: 0;
+  max-width: min(220px, 32vw);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-weight: 750;
+  color: #32222c;
+}
+
+.owner-suite--full-workspace
+.owner-profile {
+  min-width: 0;
+}
+
+.owner-suite--full-workspace
+.owner-profile-name {
+  min-width: 0;
+}
+
+.owner-suite--full-workspace
+.owner-profile-name strong {
+  display: block;
+  max-width: 150px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.owner-suite--full-workspace
+.owner-avatar {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+/* ========================================
+   AMARA TOP-BAR TOGGLE
+======================================== */
+
+.owner-amara-top-toggle {
+  color: #9b6c32;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.owner-amara-top-toggle:hover {
+  color: #5d213c;
+  background: #fbefd9;
+}
+
+/* ========================================
+   FLOATING AMARA BUTTON
+======================================== */
+
+.owner-amara-launch {
+  position: fixed;
+  z-index: 80;
+
+  right: 24px;
+  bottom: 23px;
+
+  min-height: 51px;
+  padding: 11px 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  border: 1px solid #8e5363;
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      125deg,
+      #641a39 0%,
+      #390e21 100%
+    );
+
+  color: #fff5ee;
+
+  font-size: 12px;
+  font-weight: 750;
+
+  box-shadow:
+    0 6px 18px #3b0c2040,
+    0 2px 6px #3b0c2019;
+
+  cursor: pointer;
+
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.owner-amara-launch svg {
+  color: #efc67d;
+  flex-shrink: 0;
+}
+
+.owner-amara-launch:hover {
+  transform: translateY(-3px);
+
+  background:
+    linear-gradient(
+      125deg,
+      #762343 0%,
+      #4b1029 100%
+    );
+
+  box-shadow:
+    0 10px 25px #3b0c2048;
+}
+
+.owner-amara-launch:active {
+  transform: translateY(-1px);
+}
+
+.owner-amara-launch:focus-visible {
+  outline: 3px solid #d6a866;
+  outline-offset: 4px;
+}
+
+/* ========================================
+   AMARA MODAL DRAWER
+======================================== */
+
+.owner-amara-dialog {
+  position: fixed;
+
+  inset: 0 0 0 auto;
+  margin: 0;
+
+  width: min(420px, 100vw);
+  height: 100dvh;
+
+  max-width: none;
+  max-height: none;
+
+  padding: 0;
+  border: 0;
+  border-left: 1px solid #e8d9db;
+
+  border-radius: 16px 0 0 16px;
+
+  background: #fffdfb;
+  color: #382832;
+
+  overflow: hidden;
+
+  box-shadow:
+    -12px 0 45px #2e0a1d2b;
+}
+
+.owner-amara-dialog::backdrop {
+  background: #17091382;
+  backdrop-filter: blur(2px);
+}
+
+.owner-amara-dialog-content {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+/* The original Amara component is now inside
+   the dialog instead of the page grid. */
+
+.owner-amara-dialog
+.owner-amara {
+  position: static !important;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+
+  min-height: 0 !important;
+  max-height: none !important;
+
+  border: 0;
+  border-radius: 0;
+
+  box-shadow: none;
+  overflow: hidden;
+}
+
+/* ========================================
+   CLOSE BUTTON
+======================================== */
+
+.owner-amara-dialog-close {
+  position: absolute;
+  z-index: 4;
+
+  top: 16px;
+  right: 16px;
+
+  display: grid;
+  place-items: center;
+
+  width: 35px;
+  height: 35px;
+
+  border: 1px solid #e5be9c70;
+  border-radius: 9px;
+
+  background: #ffffff17;
+  color: #f4dabb;
+
+  cursor: pointer;
+
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.owner-amara-dialog-close:hover {
+  background: #ffffff2a;
+  color: white;
+}
+
+.owner-amara-dialog-close:focus-visible {
+  outline: 2px solid #efc67d;
+  outline-offset: 2px;
+}
+
+/* ========================================
+   AMARA HEADER
+======================================== */
+
+.owner-amara-dialog
+.owner-amara-head {
+  flex-shrink: 0;
+
+  min-height: 116px;
+  padding: 21px 65px 16px 20px;
+
+  background:
+    radial-gradient(
+      ellipse at 85% 85%,
+      #752441,
+      transparent 58%
+    ),
+    linear-gradient(
+      145deg,
+      #501229,
+      #2d0a1b
+    );
+}
+
+.owner-amara-dialog
+.owner-amara-brand {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.owner-amara-dialog
+.owner-amara-brand > svg {
+  width: 23px;
+  height: 23px;
+
+  color: #e5bb70;
+}
+
+.owner-amara-dialog
+.owner-amara-brand h2 {
+  font: 400 28px Georgia, serif;
+  color: #fff7ee;
+}
+
+.owner-amara-dialog
+.owner-amara-brand p {
+  margin-top: 6px;
+
+  color: #f1d6d8;
+  font-size: 11px;
+}
+
+.owner-amara-dialog
+.owner-amara-mode {
+  display: inline-block;
+
+  margin-top: 12px;
+  margin-left: 35px;
+
+  padding: 4px 9px;
+  border-radius: 30px;
+
+  font-size: 10px;
+  font-weight: 650;
+
+  color: #f2d29e;
+  border: 1px solid #deb87970;
+  background: #ffffff0b;
+}
+
+/* ========================================
+   AMARA CONVERSATION
+======================================== */
+
+.owner-amara-dialog
+.owner-amara-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  min-height: 0;
+
+  gap: 13px;
+  padding: 17px;
+
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #dec9d0 transparent;
+}
+
+.owner-amara-dialog
+.owner-amara-intro {
+  padding: 15px;
+
+  border: 1px solid #f0e3e5;
+  border-radius: 11px;
+
+  background: #faf3f5;
+}
+
+.owner-amara-dialog
+.owner-amara-intro strong {
+  font-size: 14px;
+  color: #3c2631;
+}
+
+.owner-amara-dialog
+.owner-amara-intro p {
+  color: #88717d;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.owner-amara-dialog
+.owner-amara-topics {
+  display: grid;
+  gap: 9px;
+}
+
+.owner-amara-dialog
+.owner-amara-topics button {
+  min-height: 47px;
+
+  border: 1px solid #eee1e1;
+  border-radius: 10px;
+
+  padding: 10px 12px;
+
+  background: #fffdfc;
+  color: #573641;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.owner-amara-dialog
+.owner-amara-topics button:hover {
+  background: #fbf0df;
+  border-color: #e3c59b;
+}
+
+.owner-amara-dialog
+.owner-amara-log {
+  flex: 1;
+  min-height: 35px;
+  max-height: none;
+
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+
+  padding-right: 3px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #e1cdd2 transparent;
+}
+
+.owner-amara-dialog
+.owner-amara-exchange {
+  display: grid;
+  gap: 7px;
+
+  margin: 8px 0 17px;
+
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.owner-amara-dialog
+.owner-amara-question {
+  justify-self: end;
+
+  max-width: 90%;
+  padding: 9px 12px;
+
+  border-radius: 11px 11px 3px 11px;
+
+  background: #f7e9cb;
+  color: #5d3924;
+}
+
+.owner-amara-dialog
+.owner-amara-answer {
+  max-width: 95%;
+  padding: 10px 12px;
+
+  border-radius: 11px 11px 11px 3px;
+
+  background: #f7eff1;
+  color: #563747;
+}
+
+/* ========================================
+   AMARA INPUT
+======================================== */
+
+.owner-amara-dialog
+.owner-amara-form {
+  position: sticky;
+  bottom: 0;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  min-height: 54px;
+
+  margin-top: auto;
+  padding: 6px;
+
+  border: 1px solid #e8d8da;
+  border-radius: 11px;
+
+  background: white;
+
+  box-shadow:
+    0 2px 9px #38101b0b;
+}
+
+.owner-amara-dialog
+.owner-amara-form input {
+  flex: 1;
+  min-width: 0;
+
+  padding: 9px 10px;
+
+  color: #4b2e3b;
+  background: transparent;
+
+  border: 0;
+  outline: 0;
+
+  font-size: 13px;
+}
+
+.owner-amara-dialog
+.owner-amara-form input::placeholder {
+  color: #a59ba0;
+}
+
+.owner-amara-dialog
+.owner-amara-form button {
+  flex: 0 0 38px;
+
+  width: 38px;
+  height: 38px;
+
+  border-radius: 9px;
+
+  background: #57203b;
+  color: #fff6e8;
+}
+
+.owner-amara-dialog
+.owner-amara-form button:hover:not(:disabled) {
+  background: #732c50;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 900px) {
+  .owner-amara-launch {
+    right: 18px;
+    bottom: 20px;
+  }
+
+  .owner-suite--full-workspace
+  .owner-topbar-welcome > strong {
+    max-width: 175px;
+  }
+}
+
+@media (max-width: 650px) {
+  .owner-suite--full-workspace
+  .owner-topbar-welcome > strong {
+    max-width: 150px;
+    font-size: 12px;
+  }
+
+  .owner-amara-launch {
+    bottom: max(
+      17px,
+      env(safe-area-inset-bottom)
+    );
+
+    right: 14px;
+
+    min-height: 47px;
+    padding: 10px 15px;
+  }
+
+  .owner-amara-dialog {
+    width: 100vw;
+    height: 100dvh;
+
+    border: 0;
+    border-radius: 0;
+  }
+
+  .owner-amara-dialog
+  .owner-amara-head {
+    min-height: 105px;
+  }
+
+  .owner-amara-dialog
+  .owner-amara-body {
+    padding: 13px;
+    padding-bottom:
+      max(13px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent floating Amara from covering
+   the POS mobile checkout button. */
+
+@media (max-width: 780px) {
+  .owner-suite:has(.pos-mobile-cart-button)
+  .owner-amara-launch {
+    bottom: 85px;
+  }
+
+  .owner-suite:has(.grpos-mobile-basket-toggle)
+  .owner-amara-launch {
+    bottom: 85px;
+  }
+}
+
+/* ========================================
+   MOTION ACCESSIBILITY
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .owner-amara-launch,
+  .owner-amara-top-toggle,
+  .owner-amara-dialog-close,
+  .owner-amara-dialog .owner-amara-topics button {
+    transition: none;
+  }
+}
