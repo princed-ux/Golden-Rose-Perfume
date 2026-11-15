@@ -18,7 +18,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { WorkspaceModuleId } from '@/src/domain/modules';
 
-export const previewRoles = [
+export const workspaceRoles = [
   {
     id: 'owner',
     label: 'Owner',
@@ -51,13 +51,13 @@ export const previewRoles = [
   },
 ] as const;
 
-export type PreviewRole =
-  (typeof previewRoles)[number]['id'];
+export type WorkspaceRole =
+  (typeof workspaceRoles)[number]['id'];
 
 export type SuiteModuleId =
   WorkspaceModuleId | 'migration';
 
-interface PreviewModule {
+export interface WorkspaceModule {
   id: SuiteModuleId;
   label: string;
   icon: LucideIcon;
@@ -65,7 +65,7 @@ interface PreviewModule {
   empty: string;
 }
 
-export const previewModules: PreviewModule[] = [
+export const coreWorkspaceModules: WorkspaceModule[] = [
   {
     id: 'overview',
     label: 'Executive Overview',
@@ -165,7 +165,7 @@ export const previewModules: PreviewModule[] = [
   },
 ];
 
-export const liveOnlyModules: PreviewModule[] = [
+export const additionalWorkspaceModules: WorkspaceModule[] = [
   {
     id: 'suppliers',
     label: 'Suppliers',
@@ -195,3 +195,5 @@ export const liveOnlyModules: PreviewModule[] = [
     empty: 'Choose an export to get started.',
   },
 ];
+
+export const workspaceModules = [...coreWorkspaceModules, ...additionalWorkspaceModules];

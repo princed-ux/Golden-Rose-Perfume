@@ -1,0 +1,329 @@
+
+/*
+ * GOLDEN ROSE — EXECUTIVE OVERVIEW
+ *
+ * Uses actual catalogue and inventory responses.
+ * Does not invent revenue or financial data.
+ */
+
+.gr-executive {
+  --gr-exec-wine: #4c1730;
+  --gr-exec-gold: #a8793e;
+  --gr-exec-line: #eadfe1;
+
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+
+/* Place the operational summary directly after
+   the existing executive hero. */
+
+.owner-main:has(.gr-executive) > .owner-hero {
+  order: 0;
+}
+
+.owner-main:has(.gr-executive) > .owner-metrics {
+  display: none;
+}
+
+.owner-main:has(.gr-executive) > .gr-executive {
+  order: 1;
+}
+
+.owner-main:has(.gr-executive) > .owner-analysis {
+  order: 2;
+}
+
+.owner-main:has(.gr-executive) > .owner-activity {
+  order: 3;
+}
+
+.owner-main:has(.gr-executive) > .owner-footer {
+  order: 4;
+}
+
+.gr-executive * {
+  box-sizing: border-box;
+}
+
+.gr-executive-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 4px 2px;
+}
+
+.gr-executive-eyebrow {
+  color: var(--gr-exec-gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+
+.gr-executive-heading h2 {
+  margin: 5px 0;
+  color: var(--gr-exec-wine);
+  font: 400 clamp(22px, 2.5vw, 30px)/1.2 Georgia, serif;
+}
+
+.gr-executive-heading p:last-child {
+  color: #92828a;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.gr-executive-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid #e3d7c4;
+  border-radius: 25px;
+  color: #916c3f;
+  background: #fff8ea;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.gr-executive-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.gr-executive-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid var(--gr-exec-line);
+  border-radius: 12px;
+  background: #fffefd;
+  box-shadow: 0 3px 14px #42152c08;
+}
+
+.gr-executive-item-icon {
+  display: grid;
+  place-items: center;
+  width: 39px;
+  height: 39px;
+  flex: 0 0 39px;
+  color: var(--gr-exec-gold);
+  background: #fcf0dd;
+  border-radius: 10px;
+}
+
+.gr-executive-item > div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.gr-executive-label {
+  color: #9a878e;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.gr-executive-item strong {
+  color: #4b2237;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.gr-executive-item small {
+  color: #96848b;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.gr-executive-state {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  padding: 4px 7px;
+  border-radius: 15px;
+  color: #8f7e84;
+  background: #f6f1f2;
+  font-size: 9px;
+}
+
+.gr-executive-state[data-state="ready"] {
+  color: #38734a;
+  background: #e8f5eb;
+}
+
+.gr-executive-state[data-state="needs-setup"] {
+  color: #966b32;
+  background: #fff0d9;
+}
+
+.gr-executive-state[data-state="unavailable"] {
+  color: #a33a4c;
+  background: #fff0f2;
+}
+
+.gr-executive-workflow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 12px;
+}
+
+.gr-executive-panel {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--gr-exec-line);
+  border-radius: 12px;
+  background: #fffefd;
+}
+
+.gr-executive-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--gr-exec-gold);
+}
+
+.gr-executive-panel-heading h3 {
+  color: #512a3f;
+  font: 400 20px Georgia, serif;
+}
+
+.gr-executive-panel-heading p {
+  margin-top: 3px;
+  color: #998a90;
+  font-size: 11px;
+}
+
+.gr-executive-links {
+  display: grid;
+  gap: 8px;
+}
+
+.gr-executive-links a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid #eee3e4;
+  border-radius: 9px;
+  background: #fffdfa;
+  color: #a77d46;
+  text-decoration: none;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.gr-executive-links a:hover {
+  border-color: #dfc39d;
+  background: #fff5e6;
+}
+
+.gr-executive-links a > span {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 3px;
+}
+
+.gr-executive-links strong {
+  color: #573346;
+  font-size: 12px;
+}
+
+.gr-executive-links small {
+  color: #95878d;
+  font-size: 10px;
+}
+
+.gr-executive-checks {
+  display: grid;
+  gap: 16px;
+}
+
+.gr-executive-checks > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.gr-executive-checks svg {
+  flex: 0 0 19px;
+  color: #b28445;
+}
+
+.gr-executive-checks svg.is-ready {
+  color: #438154;
+}
+
+.gr-executive-checks span {
+  display: grid;
+  gap: 4px;
+}
+
+.gr-executive-checks strong {
+  color: #624251;
+  font-size: 12px;
+}
+
+.gr-executive-checks small {
+  color: #95848b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.gr-executive-note {
+  margin-top: 19px;
+  padding: 13px;
+  border: 1px solid #eedfc7;
+  border-radius: 9px;
+  background: #fff8ec;
+  color: #91734d;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1200px) {
+  .gr-executive-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gr-executive-workflow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 690px) {
+  .gr-executive-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .gr-executive-item {
+    min-height: 95px;
+  }
+
+  .gr-executive-heading {
+    align-items: flex-start;
+  }
+
+  .gr-executive-panel {
+    padding: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gr-executive-links a {
+    transition: none;
+  }
+}

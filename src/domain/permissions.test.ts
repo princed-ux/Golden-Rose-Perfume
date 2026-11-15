@@ -1,18 +1,18 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { canViewModule } from './permissions';
+import { canViewModule, getRoleHome } from './permissions';
 import { WORKSPACE_MODULES } from './modules';
 
 describe('Golden Rose preview module permissions', () => {
   it('keeps the customer out of every internal module', () => {
-    for (const module of WORKSPACE_MODULES) {
-      assert.equal(canViewModule('customer', module.id), false);
+    for (const item of WORKSPACE_MODULES) {
+      assert.equal(canViewModule('customer', item.id), false);
     }
   });
 
   it('gives owners module visibility', () => {
-    for (const module of WORKSPACE_MODULES) {
-      assert.equal(canViewModule('owner', module.id), true);
+    for (const item of WORKSPACE_MODULES) {
+      assert.equal(canViewModule('owner', item.id), true);
     }
   });
 
@@ -33,6 +33,16 @@ describe('Golden Rose preview module permissions', () => {
 
 
 describe('Planned financial and staff module separation', () => {
+  it('lands staff on their role home and limits POS to register roles', () => {
+    assert.equal(getRoleHome('owner'), '/workspace');
+    assert.equal(getRoleHome('manager'), '/workspace');
+    assert.equal(getRoleHome('cashier'), '/workspace/pos');
+    assert.equal(getRoleHome('inventory_staff'), '/workspace/inventory');
+    assert.equal(getRoleHome('sales_staff'), '/workspace/orders');
+    assert.equal(getRoleHome('accountant'), '/workspace/invoices');
+    assert.equal(canViewModule('sales_staff', 'pos'), false);
+    assert.equal(canViewModule('cashier', 'products'), false);
+  });
   it('limits accountants to their finance and reporting areas', () => {
     assert.equal(canViewModule('accountant', 'expenses'), true);
     assert.equal(canViewModule('accountant', 'invoices'), true);

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { WorkspaceNotice, WorkspacePageHeader, WorkspacePanel, workspaceSecondary } from '@/src/components/workspace/page-layout';
 import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { EdgeError, getInventoryPage, listAdminProducts } from '@/src/lib/golden-rose/edge';
@@ -30,39 +31,37 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   ) : [];
 
   return (
-    <div className="workspace-page gr-live">
-      <div className="workspace-page__heading">
-        <div><h1>Inventory</h1><p>Review available stock and record deliveries by location.</p></div>
-        <Link className="gr-live-secondary" href="/workspace/products">Manage products</Link>
-      </div>
+    <div className="grid min-w-0 gap-5 gr-live">
+      <WorkspacePageHeader title="Inventory & Stock" description="Review available stock and record deliveries by location."
+        actions={<Link className={workspaceSecondary} href="/workspace/products">Manage products</Link>} />
 
       {canManageStockSetup(role) && (
-        <section className="panel gr-live-panel" aria-labelledby="create-location">
+        <WorkspacePanel className="gr-live-panel" label="create-location">
           <h2 id="create-location">Create a location</h2>
           <OperationForm runAction={createLocation} label="Create location">
             <label>Name<input name="name" required minLength={2} maxLength={150} /></label>
             <label>Location code<input name="code" required minLength={2} maxLength={32} /></label>
             <label>Type<select name="type">{LOCATION_TYPES.map(type => <option key={type} value={type}>{type[0].toUpperCase() + type.slice(1)}</option>)}</select></label>
           </OperationForm>
-        </section>
+        </WorkspacePanel>
       )}
-      {!inventory ? <p className="gr-live-result" data-status="error" role="alert">{loadError} <Link href="/workspace/inventory">Reload inventory</Link></p> : <>
+      {!inventory ? <WorkspaceNotice title="Inventory unavailable" tone="error" action={<Link className={workspaceSecondary} href="/workspace/inventory">Reload inventory</Link>}>{loadError}</WorkspaceNotice> : <>
         {receiveAllowed ? (
-          <section className="panel gr-live-panel" aria-labelledby="receive-stock">
+          <WorkspacePanel className="gr-live-panel" label="receive-stock">
             <h2 id="receive-stock">Receive stock</h2>
             {products.status === 'rejected' && <p className="gr-live-result" data-status="error" role="alert">Product variants could not be loaded. <Link href="/workspace/inventory">Reload inventory</Link></p>}
             <ReceivingForm key={userId} userId={userId} locations={inventory.locations} variants={variants} />
-          </section>
+          </WorkspacePanel>
         ) : <p className="gr-live-note">Only owners, managers and inventory staff can receive stock.</p>}
 
-        <section className="panel gr-live-panel" aria-labelledby="locations">
+        <WorkspacePanel className="gr-live-panel" label="locations">
           <h2 id="locations">Locations</h2>
           {inventory.locations.length ? <ul className="gr-live-locations">{inventory.locations.map(location =>
             <li key={location.id}><strong>{location.name}</strong><span>{location.code} · {location.type}{!location.active ? ' · Inactive' : ''}</span></li>
           )}</ul> : <p>No locations have been created yet.</p>}
-        </section>
+        </WorkspacePanel>
 
-        <section className="panel gr-live-panel" aria-labelledby="balances">
+        <WorkspacePanel className="gr-live-panel" label="balances">
           <h2 id="balances">Stock balances</h2>
           {inventory.items.length ? (
             <div className="data-table-wrap" tabIndex={0} role="region" aria-label="Stock balances by location">
@@ -79,7 +78,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
             {offset > 0 && <Link className="gr-live-secondary" href={'/workspace/inventory?offset=' + Math.max(0, offset - inventory.pageSize)}>Previous</Link>}
             {inventory.hasNext && <Link className="gr-live-secondary" href={'/workspace/inventory?offset=' + (offset + inventory.pageSize)}>Next</Link>}
           </nav>}
-        </section>
+        </WorkspacePanel>
       </>}
     </div>
   );

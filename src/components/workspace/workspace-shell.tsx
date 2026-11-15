@@ -2,7 +2,9 @@
 'use client';
 
 import {
+  useCallback,
   useEffect,
+  useSyncExternalStore,
   useRef,
   useState,
   type FormEvent,
@@ -47,15 +49,15 @@ import {
 } from 'lucide-react';
 
 import {
-  liveOnlyModules,
-  previewModules,
-  previewRoles,
-  type PreviewRole,
+  coreWorkspaceModules,
+  workspaceRoles,
+  workspaceModules,
+  type WorkspaceRole,
   type SuiteModuleId,
 } from './workspace-model';
 
-import './page.css';
-import './workspace-enhancements.css';
+import { WorkspaceBrand, WorkspaceNavigation } from './workspace-navigation';
+import './workspace.css';
 
 const metrics = [
   {
@@ -140,7 +142,6 @@ const amaraTopics = [
 ] as const;
 
 type Overlay =
-  | 'navigation'
   | 'search'
   | 'notifications'
   | 'profile';
@@ -150,61 +151,6 @@ type ConversationEntry = {
   answer: string;
   module?: WorkspaceModuleId;
 };
-
-function Brand() {
-  return (
-    <div className="owner-brand">
-      <span className="owner-brand-logo">
-        <Image
-          src="/assets/brand/golden-rose-logo.png"
-          alt=""
-          width={40}
-          height={44}
-        />
-      </span>
-
-      <span className="owner-wordmark">
-        Golden Rose
-      </span>
-
-      <span className="owner-brand-tagline">
-        Beauty of Fragrance
-      </span>
-    </div>
-  );
-}
-
-function WorkspaceNavigation({
-  label,
-  modules,
-  active,
-  onNavigate,
-}: {
-  label: string;
-  modules: typeof previewModules;
-  active: SuiteModuleId;
-  onNavigate: (id: SuiteModuleId) => void;
-}) {
-  return (
-    <nav className="owner-nav" aria-label={label}>
-      {modules.map(({ id, label: itemLabel, icon: Icon }) => (
-        <button
-          key={id}
-          type="button"
-          aria-current={active === id ? 'page' : undefined}
-          onClick={() => onNavigate(id)}
-        >
-          <Icon
-            size={18}
-            strokeWidth={1.65}
-            aria-hidden="true"
-          />
-          <span>{itemLabel}</span>
-        </button>
-      ))}
-    </nav>
-  );
-}
 
 function PanelTitle({
   title,
@@ -557,19 +503,39 @@ function AmaraPanel({
   );
 }
 
-interface OwnerPrototypeProps {
-  staffRole?: StaffRole;
+const mobileNavigationQuery = '(max-width: 900px)';
+
+function isMobileViewport() {
+  return window.matchMedia(mobileNavigationQuery).matches;
+}
+
+function subscribeToMobileNavigation(change: () => void) {
+  const media = window.matchMedia(mobileNavigationQuery);
+  media.addEventListener('change', change);
+  return () => media.removeEventListener('change', change);
+}
+
+interface WorkspaceShellProps {
+  staffRole: StaffRole;
   displayName?: string;
   children?: ReactNode;
 }
 
-export function OwnerPrototype({
+export function WorkspaceShell(props: WorkspaceShellProps) {
+  return <WorkspaceFrame {...props} />;
+}
+
+export function WorkspacePreview() {
+  return <WorkspaceFrame />;
+}
+
+function WorkspaceFrame({
   staffRole,
   displayName = '',
   children,
-}: OwnerPrototypeProps) {
+}: Partial<WorkspaceShellProps>) {
   const [previewRole, setRole] =
-    useState<PreviewRole>('owner');
+    useState<WorkspaceRole>('owner');
 
   const live = staffRole !== undefined;
   const role = staffRole ?? previewRole;
@@ -585,6 +551,64 @@ export function OwnerPrototype({
 
   const [query, setQuery] = useState('');
 
+
+  const isMobileNavigation = useSyncExternalStore(subscribeToMobileNavigation, isMobileViewport, () => false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileNavigation, setMobileNavigation] = useState(false);
+  const [navigationContext, setNavigationContext] = useState({ pathname, mobile: isMobileNavigation });
+  const sidebar = useRef<HTMLElement>(null);
+  const sidebarToggle = useRef<HTMLButtonElement>(null);
+
+  if (navigationContext.pathname !== pathname || navigationContext.mobile !== isMobileNavigation) {
+    setNavigationContext({ pathname, mobile: isMobileNavigation });
+    setMobileNavigation(false);
+  }
+
+  const closeSidebar = useCallback(() => {
+    setMobileNavigation(false);
+    requestAnimationFrame(() => sidebarToggle.current?.focus());
+  }, []);
+
+  useEffect(() => {
+    if (!mobileNavigation || !isMobileNavigation) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    sidebar.current?.querySelector('button')?.focus();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeSidebar();
+      } else if (event.key === 'Tab') {
+        const buttons = sidebar.current?.querySelectorAll<HTMLButtonElement>('button');
+        const first = buttons?.[0];
+        const last = buttons?.[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first && last) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last && first) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [closeSidebar, isMobileNavigation, mobileNavigation]);
+
+  function toggleSidebar() {
+    if (isMobileNavigation) {
+      if (mobileNavigation) closeSidebar();
+      else setMobileNavigation(true);
+    } else {
+      setSidebarCollapsed(current => !current);
+    }
+  }
+
   const [amaraOpen, setAmaraOpen] =
     useState(false);
 
@@ -595,7 +619,7 @@ export function OwnerPrototype({
   const content = useRef<HTMLElement>(null);
 
   const currentRole =
-    previewRoles.find(item => item.id === role) ?? {
+    workspaceRoles.find(item => item.id === role) ?? {
       id: 'sales_staff',
       label: 'Sales Staff',
       scope: 'Permitted sales and customer operations',
@@ -603,8 +627,8 @@ export function OwnerPrototype({
 
   const visible = (
     live
-      ? [...previewModules, ...liveOnlyModules]
-      : previewModules
+      ? workspaceModules
+      : coreWorkspaceModules
   ).filter(item =>
     item.id === 'migration'
       ? role === 'owner'
@@ -678,6 +702,7 @@ export function OwnerPrototype({
   }
 
   function openOverlay(view: Overlay) {
+    setMobileNavigation(false);
     closeAmara();
 
     setQuery('');
@@ -696,6 +721,7 @@ export function OwnerPrototype({
       ) {
         event.preventDefault();
 
+        setMobileNavigation(false);
         setQuery('');
         setOverlay('search');
 
@@ -740,6 +766,10 @@ export function OwnerPrototype({
       return;
     }
 
+    // Close the actual mobile sidebar when a module is selected,
+    // including when selecting the current route.
+    setMobileNavigation(false);
+
     // The Amara navigation item opens the assistant,
     // rather than navigating to another placeholder page.
     if (id === 'assistant') {
@@ -761,9 +791,7 @@ export function OwnerPrototype({
 
     dialog.current?.close();
 
-    content.current?.focus({
-      preventScroll: true,
-    });
+    requestAnimationFrame(() => content.current?.focus({ preventScroll: true }));
 
     window.scrollTo({
       top: 0,
@@ -771,7 +799,7 @@ export function OwnerPrototype({
     });
   }
 
-  function changeRole(next: PreviewRole) {
+  function changeRole(next: WorkspaceRole) {
     setRole(next);
 
     if (!canViewModule(next, active)) {
@@ -782,7 +810,11 @@ export function OwnerPrototype({
   }
 
   return (
-    <div className="owner-suite owner-suite--full-workspace">
+    <div
+  className="owner-suite owner-suite--full-workspace"
+  data-sidebar-collapsed={sidebarCollapsed}
+  data-mobile-navigation={mobileNavigation}
+>
       <a
         className="owner-skip"
         href="#owner-main"
@@ -790,48 +822,49 @@ export function OwnerPrototype({
         Skip to dashboard
       </a>
 
-      {/* Existing burgundy navigation */}
-      <aside className="owner-sidebar">
-        <Brand />
-
-        <p className="owner-sidebar-title">
-          Business Workspace
-        </p>
-
-        <WorkspaceNavigation
-          label="Business workspace"
-          modules={visible}
-          active={selected.id}
-          onNavigate={openModule}
-        />
-
-        <div
-          className="owner-sidebar-rose"
-          aria-hidden="true"
-        />
-
-        <p className="owner-sidebar-footer">
-          {live
-            ? 'Golden Rose Perfume'
-            : 'Development preview'}
-        </p>
+      <aside
+        ref={sidebar}
+        id="owner-primary-sidebar"
+        className="owner-sidebar"
+        aria-label="Business workspace navigation"
+        role={mobileNavigation ? 'dialog' : undefined}
+        aria-modal={mobileNavigation || undefined}
+        inert={isMobileNavigation && !mobileNavigation}
+      >
+        <button
+          type="button"
+          className="self-end rounded-md p-2 text-[#f2d5a4] hover:bg-white/10 min-[901px]:hidden"
+          aria-label="Close workspace navigation"
+          onClick={closeSidebar}
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
+        <WorkspaceBrand />
+        <p className="owner-sidebar-title">Business Workspace</p>
+        <WorkspaceNavigation label="Business workspace" modules={visible} active={selected.id} onNavigate={openModule} />
+        <div className="owner-sidebar-rose" aria-hidden="true" />
+        <p className="owner-sidebar-footer">{live ? 'Golden Rose Perfume' : 'Development preview'}</p>
       </aside>
 
-      <div className="owner-workspace">
+      {mobileNavigation && (
+        <div className="owner-sidebar-backdrop" aria-hidden="true" onClick={closeSidebar} />
+      )}
+
+      <div className="owner-workspace min-w-0" inert={mobileNavigation}>
         {/* Personalized top navigation */}
         <header className="owner-topbar">
           <div className="owner-topbar-welcome">
-            <button
+            
+<button
+              ref={sidebarToggle}
               type="button"
               className="owner-icon-button"
-              aria-label="Open workspace navigation"
-              aria-haspopup="dialog"
-              onClick={() => openOverlay('navigation')}
+              aria-label={isMobileNavigation ? 'Open workspace navigation' : sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-controls="owner-primary-sidebar"
+              aria-expanded={isMobileNavigation ? mobileNavigation : !sidebarCollapsed}
+              onClick={toggleSidebar}
             >
-              <Menu
-                size={20}
-                aria-hidden="true"
-              />
+              <Menu size={20} aria-hidden="true" />
             </button>
 
             <span className="owner-crown">
@@ -925,7 +958,6 @@ export function OwnerPrototype({
         {/* Full-width business content: no permanent Amara column */}
         <div
           className="owner-columns"
-          data-assistant="false"
         >
           <main
             className="owner-main"
@@ -1200,7 +1232,7 @@ export function OwnerPrototype({
       </div>
 
       {/* Floating Amara launcher on every authorized business page */}
-      {showAmara && !amaraOpen && (
+      {showAmara && !amaraOpen && !mobileNavigation && (
         <button
           type="button"
           className="owner-amara-launch"
@@ -1272,15 +1304,13 @@ export function OwnerPrototype({
       >
         <header className="owner-dialog-head">
           <h2 id="owner-dialog-title">
-            {overlay === 'navigation'
-              ? 'Business workspace'
-              : overlay === 'search'
-                ? 'Search workspace'
-                : overlay === 'notifications'
-                  ? 'Notifications'
-                  : live
-                    ? 'Staff profile'
-                    : 'Profile & role preview'}
+            {overlay === 'search'
+              ? 'Search workspace'
+              : overlay === 'notifications'
+                ? 'Notifications'
+                : live
+                  ? 'Staff profile'
+                  : 'Profile & role preview'}
           </h2>
 
           <button
@@ -1295,15 +1325,6 @@ export function OwnerPrototype({
             />
           </button>
         </header>
-
-        {overlay === 'navigation' && (
-          <WorkspaceNavigation
-            label="Workspace navigation menu"
-            modules={visible}
-            active={selected.id}
-            onNavigate={openModule}
-          />
-        )}
 
         {overlay === 'search' && (
           <div className="owner-dialog-search">
@@ -1413,11 +1434,11 @@ export function OwnerPrototype({
                     value={role}
                     onChange={event =>
                       changeRole(
-                        event.target.value as PreviewRole,
+                        event.target.value as WorkspaceRole,
                       )
                     }
                   >
-                    {previewRoles.map(item => (
+                    {workspaceRoles.map(item => (
                       <option
                         key={item.id}
                         value={item.id}

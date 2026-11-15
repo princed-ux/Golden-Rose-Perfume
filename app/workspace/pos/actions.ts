@@ -7,7 +7,7 @@ import { getSupabaseConfig } from '@/src/lib/supabase/config';
 import type { CashSaleRequest, PosCatalogue, PosReceipt } from './types';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const POS_ROLES = new Set(['owner', 'manager', 'cashier', 'sales_staff']);
+const POS_ROLES = new Set(['owner', 'manager', 'cashier']);
 
 async function requireRegisterToken(): Promise<string> {
   const staff = await getStaffAccess();

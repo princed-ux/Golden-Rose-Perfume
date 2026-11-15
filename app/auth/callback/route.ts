@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { getSupabaseConfig } from '@/src/lib/supabase/config';
 import { RECOVERY_COOKIE, resolveAuthOrigin } from '@/src/lib/customer/auth-policy';
+import { employeeInviteCode } from '@/src/lib/golden-rose/employees';
 
 export async function GET(request: NextRequest) {
   const origin = resolveAuthOrigin(process.env.NEXT_PUBLIC_SITE_URL, request.headers.get('host'));
@@ -12,6 +13,7 @@ export async function GET(request: NextRequest) {
   }
 
   const params = request.nextUrl.searchParams;
+  const employeeInvite = params.get('employee_invite');
   const recovery = params.get('mode') === 'recovery' || params.get('type') === 'recovery';
   const errorPath = recovery ? '/account/forgot-password?notice=expired' : '/account/login?notice=callback';
   const response = NextResponse.redirect(new URL(errorPath, origin), 303);
@@ -61,7 +63,13 @@ export async function GET(request: NextRequest) {
       response.headers.set('Location', new URL('/account/reset-password', origin).toString());
     } else {
       response.cookies.delete(RECOVERY_COOKIE);
-      response.headers.set('Location', new URL('/account/dashboard', origin).toString());
+      const destination = new URL('/account/dashboard', origin);
+      if (employeeInvite && employeeInviteCode.test(employeeInvite)) {
+        destination.pathname = '/staff/employee-invite';
+        destination.searchParams.set('invite', employeeInvite);
+        destination.searchParams.set('confirmed', '1');
+      }
+      response.headers.set('Location', destination.toString());
     }
     return response;
   } catch {

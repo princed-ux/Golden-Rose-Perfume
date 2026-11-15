@@ -2,13 +2,17 @@
 import type { Role } from './types';
 import type { WorkspaceModuleId } from './modules';
 
-export function getRoleHome(
-  role: Role,
-): '/account' | '/workspace' | '/workspace/pos' {
-  if (role === 'customer') return '/account';
-  if (role === 'cashier') return '/workspace/pos';
-  return '/workspace';
-}
+const roleHomes = {
+  customer: '/account',
+  owner: '/workspace',
+  manager: '/workspace',
+  cashier: '/workspace/pos',
+  inventory_staff: '/workspace/inventory',
+  sales_staff: '/workspace/orders',
+  accountant: '/workspace/invoices',
+} satisfies Record<Role, string>;
+
+export function getRoleHome(role: Role) { return roleHomes[role]; }
 
 export const ROLE_MODULES: Record<
   Exclude<Role, 'customer'>,
@@ -51,7 +55,6 @@ export const ROLE_MODULES: Record<
   cashier: ['pos'],
 
   inventory_staff: [
-    'overview',
     'products',
     'inventory',
     'purchases',
@@ -59,20 +62,14 @@ export const ROLE_MODULES: Record<
   ],
 
   sales_staff: [
-    'overview',
-    'pos',
     'orders',
     'products',
-    'inventory',
     'customers',
   ],
 
   accountant: [
-    'overview',
-    'orders',
     'invoices',
     'expenses',
-    'purchases',
     'reports',
   ],
 };

@@ -1,0 +1,415 @@
+
+/*
+ * GOLDEN ROSE — PRODUCT CATALOGUE REFINEMENT
+ *
+ * Compact management cards for large catalogues.
+ * Load after products.css.
+ * No changes to data fetching, publishing or imports.
+ */
+
+.catalogue-shell {
+  min-width: 0;
+  gap: 16px;
+  padding: 8px 0 32px;
+}
+
+/* Compact business header */
+
+.catalogue-shell .catalogue-hero {
+  padding: 20px;
+  gap: 17px;
+  border-radius: 14px;
+}
+
+.catalogue-shell .catalogue-hero__copy h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(27px, 3vw, 39px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.catalogue-shell .catalogue-hero__copy p:last-child {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.catalogue-shell .catalogue-hero__cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.catalogue-shell .catalogue-stat {
+  min-width: 0;
+  gap: 10px;
+  padding: 13px;
+  border-radius: 11px;
+}
+
+.catalogue-shell .catalogue-stat__icon {
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  border-radius: 9px;
+}
+
+.catalogue-shell .catalogue-stat p {
+  font-size: 10px;
+}
+
+.catalogue-shell .catalogue-stat strong {
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Slim status and filter controls */
+
+.catalogue-shell .catalogue-banner {
+  padding: 13px 17px;
+  border-radius: 12px;
+}
+
+.catalogue-shell .catalogue-banner__badge {
+  margin-bottom: 6px;
+  padding: 5px 9px;
+  font-size: 10px;
+}
+
+.catalogue-shell .catalogue-banner__left h2 {
+  font-family: Georgia, serif;
+  font-size: 19px;
+}
+
+.catalogue-shell .catalogue-banner__left p {
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+.catalogue-shell .catalogue-banner__right {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.catalogue-shell .catalogue-banner__right div {
+  min-width: 90px;
+  padding: 9px 12px;
+  border-radius: 8px;
+}
+
+.catalogue-shell .catalogue-toolbar {
+  padding: 13px;
+  gap: 10px;
+  border-radius: 12px;
+}
+
+.catalogue-shell .catalogue-search {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 2fr)
+    minmax(175px, 1fr)
+    auto auto;
+  gap: 9px;
+}
+
+.catalogue-shell .catalogue-search__field,
+.catalogue-shell .catalogue-select {
+  min-width: 0;
+  min-height: 42px;
+  border-radius: 9px;
+}
+
+.catalogue-shell .catalogue-btn {
+  min-height: 39px;
+  border-radius: 8px;
+  padding: 8px 13px;
+  font-size: 11px;
+}
+
+.catalogue-shell .catalogue-chip {
+  min-height: 30px;
+  padding: 5px 12px;
+  font-size: 11px;
+}
+
+/* The important change:
+   products now form a compact responsive grid,
+   rather than one enormous vertical column. */
+
+.catalogue-shell .catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 14px;
+}
+
+.catalogue-shell .catalogue-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+
+  border: 1px solid #e9dadd;
+  border-radius: 13px;
+  background: #fffefd;
+
+  box-shadow: 0 3px 14px #441c3009;
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.catalogue-shell .catalogue-card:hover {
+  border-color: #d4b692;
+  box-shadow: 0 8px 26px #441c3012;
+}
+
+.catalogue-shell .catalogue-card__top {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 13px;
+  padding: 18px 18px 13px;
+}
+
+.catalogue-shell .catalogue-card__identity {
+  min-width: 0;
+}
+
+.catalogue-shell .catalogue-card__label {
+  padding: 4px 9px;
+  font-size: 10px;
+}
+
+.catalogue-shell .catalogue-card__identity h3 {
+  margin-top: 10px;
+  color: #47152d;
+  font-family: Georgia, serif;
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.catalogue-shell .catalogue-card__meta {
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.catalogue-shell .catalogue-card__description {
+  margin-top: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.catalogue-shell .catalogue-card__status {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-items: stretch;
+  width: 100%;
+  min-width: 0;
+  gap: 9px;
+}
+
+.catalogue-shell .catalogue-pill {
+  align-self: flex-start;
+  min-height: 24px;
+  padding: 3px 9px;
+  font-size: 10px;
+}
+
+.catalogue-shell .catalogue-card__quickstats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  gap: 7px;
+}
+
+.catalogue-shell .catalogue-card__quickstats div {
+  min-width: 0;
+  padding: 9px;
+  border-radius: 8px;
+  background: #fcf8f3;
+}
+
+.catalogue-shell .catalogue-card__quickstats span {
+  font-size: 10px;
+}
+
+.catalogue-shell .catalogue-card__quickstats strong {
+  margin-top: 5px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* Variants are readable, without huge gaps */
+
+.catalogue-shell .catalogue-card__body {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 18px;
+  border-top: 1px solid #f0e7e7;
+}
+
+.catalogue-shell .catalogue-card__section-head {
+  margin-bottom: 10px;
+}
+
+.catalogue-shell .catalogue-card__section-head h4 {
+  font-size: 12px;
+}
+
+.catalogue-shell .catalogue-card__section-head span {
+  font-size: 10px;
+}
+
+.catalogue-shell .catalogue-variants {
+  gap: 7px;
+}
+
+.catalogue-shell .catalogue-variant {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.catalogue-shell .catalogue-variant__line strong {
+  color: #4b1b34;
+  font-size: 11px;
+}
+
+.catalogue-shell .catalogue-variant__line span {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.catalogue-shell .catalogue-variant__meta {
+  margin-top: 6px;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+/* Card actions */
+
+.catalogue-shell .catalogue-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding: 12px 18px;
+  border-top: 1px solid #f0e7e7;
+  background: #fffaf6;
+}
+
+.catalogue-shell .catalogue-footnote {
+  font-size: 10px;
+}
+
+.catalogue-shell .catalogue-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.catalogue-shell .catalogue-pagination {
+  padding: 12px 0;
+}
+
+.catalogue-shell .catalogue-pagination__meta {
+  font-size: 12px;
+}
+
+/* Responsive workspace */
+
+@media (min-width: 1800px) {
+  .catalogue-shell .catalogue-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .catalogue-shell .catalogue-hero__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .catalogue-shell .catalogue-search {
+    grid-template-columns: minmax(0, 1fr) minmax(155px, .55fr);
+  }
+}
+
+@media (max-width: 1000px) {
+  .catalogue-shell .catalogue-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .catalogue-shell {
+    padding: 8px 0 25px;
+  }
+
+  .catalogue-shell .catalogue-hero__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .catalogue-shell .catalogue-stat {
+    padding: 10px;
+  }
+
+  .catalogue-shell .catalogue-stat__icon {
+    display: none;
+  }
+
+  .catalogue-shell .catalogue-search {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalogue-shell .catalogue-banner {
+    align-items: stretch;
+  }
+
+  .catalogue-shell .catalogue-banner__right {
+    width: 100%;
+  }
+
+  .catalogue-shell .catalogue-banner__right div {
+    flex: 1;
+  }
+
+  .catalogue-shell .catalogue-card__top,
+  .catalogue-shell .catalogue-card__body {
+    padding: 13px;
+  }
+
+  .catalogue-shell .catalogue-card__footer {
+    padding: 12px 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .catalogue-shell .catalogue-hero__cards {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogue-shell .catalogue-card__quickstats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalogue-shell .catalogue-card {
+    transition: none;
+  }
+}

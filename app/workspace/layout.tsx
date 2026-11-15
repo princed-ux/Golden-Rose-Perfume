@@ -2,7 +2,7 @@
 import { Suspense } from 'react';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { createClient } from '@/src/lib/supabase/server';
-import { OwnerPrototype } from '@/app/owner-preview/owner-prototype';
+import { WorkspaceShell } from '@/src/components/workspace/workspace-shell';
 import { SignedInToast } from '@/src/components/auth-toast';
 import './page.css';
 
@@ -19,12 +19,12 @@ export default function WorkspaceLayout({
         </p>
       }
     >
-      <WorkspaceShell>{children}</WorkspaceShell>
+      <AuthenticatedWorkspace>{children}</AuthenticatedWorkspace>
     </Suspense>
   );
 }
 
-async function WorkspaceShell({
+async function AuthenticatedWorkspace({
   children,
 }: {
   children: React.ReactNode;
@@ -59,11 +59,11 @@ async function WorkspaceShell({
   }
 
   return (
-    <OwnerPrototype staffRole={role} displayName={displayName}>
+    <WorkspaceShell staffRole={role} displayName={displayName}>
       <Suspense fallback={null}>
         <SignedInToast destination="workspace" />
       </Suspense>
       {children}
-    </OwnerPrototype>
+    </WorkspaceShell>
   );
 }

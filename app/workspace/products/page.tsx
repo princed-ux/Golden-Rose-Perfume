@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { WorkspaceNotice, WorkspacePageHeader } from '@/src/components/workspace/page-layout';
 import { notFound } from 'next/navigation';
 import {
   ArrowUpRight,
@@ -20,6 +21,7 @@ import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { adminProductPages } from '@/src/lib/golden-rose/edge';
 import './products.css';
+import './catalogue-layout.css';
 
 export const metadata: Metadata = {
   title: 'Products & Catalogue | Golden Rose',
@@ -308,20 +310,11 @@ export default async function ProductsCataloguePage({
   if (!payload) {
     return (
       <section className="catalogue-shell">
-        <header className="catalogue-hero">
-          <div className="catalogue-hero__copy">
-            <p className="catalogue-eyebrow">Catalogue workspace</p>
-            <h1>Products &amp; Catalogue.</h1>
-            <p>
-              Review imported fragrances, confirm variant data, and prepare Golden Rose products for publishing.
-            </p>
-          </div>
-        </header>
-
-        <div className="catalogue-error">
-          <strong>Catalogue unavailable</strong>
-          <p>{loadError ?? 'Something went wrong while loading products.'}</p>
-        </div>
+        <WorkspacePageHeader title="Products & Catalogue" kicker="Catalogue workspace"
+          description="Review imported fragrances, confirm variant data, and prepare Golden Rose products for publishing." />
+        <WorkspaceNotice title="Catalogue unavailable" tone="error">
+          {loadError ?? 'Something went wrong while loading products.'}
+        </WorkspaceNotice>
       </section>
     );
   }
@@ -330,17 +323,9 @@ export default async function ProductsCataloguePage({
 
   return (
     <section className="catalogue-shell">
-      <header className="catalogue-hero">
-        <div className="catalogue-hero__copy">
-          <p className="catalogue-eyebrow">Catalogue workspace</p>
-          <h1>Products &amp; Catalogue.</h1>
-          <p>
-            Review imported fragrances, confirm barcode coverage, and prepare your collection for publishing without
-            losing the clean Golden Rose flow.
-          </p>
-        </div>
-
-        <div className="catalogue-hero__cards">
+      <WorkspacePageHeader title="Products & Catalogue" kicker="Catalogue workspace"
+        description="Review fragrances, confirm barcode coverage, and prepare products for publishing." />
+      <div className="catalogue-hero__cards" aria-label="Catalogue summary">
           <article className="catalogue-stat">
             <span className="catalogue-stat__icon">
               <Package2 size={18} aria-hidden="true" />
@@ -380,8 +365,7 @@ export default async function ProductsCataloguePage({
               <strong>{compactNumber(payload.overview.barcodedVariants)}</strong>
             </div>
           </article>
-        </div>
-      </header>
+      </div>
 
       <section className="catalogue-banner">
         <div className="catalogue-banner__left">

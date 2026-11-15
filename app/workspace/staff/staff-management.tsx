@@ -1,780 +1,244 @@
-
 'use client';
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-} from 'react';
-
-import {
-  ArrowRight,
-  BadgeCheck,
-  Check,
-  CheckCircle2,
-  ClipboardCopy,
-  FileText,
-  KeyRound,
-  LockKeyhole,
-  Mail,
-  MapPin,
-  Plus,
-  ScanBarcode,
-  Search,
-  Shield,
-  ShieldCheck,
-  ShoppingBag,
-  UserRound,
-  UserRoundPlus,
-  UsersRound,
-  X,
-  type LucideIcon,
-} from 'lucide-react';
-
 import Link from 'next/link';
+import { useActionState, useRef, useState } from 'react';
+import { History, LockKeyhole, Mail, Plus, Search, UsersRound, X } from 'lucide-react';
+import { employeeRoles, type EmployeeRole, type StaffDirectory } from '@/src/lib/golden-rose/employees';
+import {
+  WorkspaceNotice, WorkspacePageHeader, WorkspacePanel,
+  workspaceInput, workspaceLabel, workspacePrimary, workspaceSecondary,
+} from '@/src/components/workspace/page-layout';
+import { manageEmployee, type EmployeeAction } from './actions';
 
-type EmployeeRole =
-  | 'manager'
-  | 'cashier'
-  | 'sales_staff'
-  | 'inventory_staff'
-  | 'accountant';
-
-type StaffDraft = {
-  fullName: string;
-  email: string;
-  role: EmployeeRole;
+const date = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Lagos' });
+const sectionTitle = 'font-serif text-xl font-normal text-[#41172a] sm:text-2xl';
+const rowLayout = 'grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_7rem] lg:items-center';
+const mobileLabel = 'block text-xs font-semibold text-[#6d5b64] lg:hidden';
+const pillColors: Record<string, string> = {
+  active: 'bg-[#e6f1e8] text-[#2d5b3c]',
+  accepted: 'bg-[#e6f1e8] text-[#2d5b3c]',
+  pending: 'bg-[#fff0d8] text-[#69461b]',
+  suspended: 'bg-[#fff0d8] text-[#69461b]',
+  revoked: 'bg-[#fae7eb] text-[#7b3045]',
+  expired: 'bg-[#f3ecee] text-[#644b56]',
+};
+const auditLabels: Record<string, string> = {
+  invited: 'Invitation created', invite_reissued: 'Invitation reissued', invite_revoked: 'Invitation revoked',
+  invite_accepted: 'Invitation accepted', permissions_updated: 'Permissions changed',
+  suspended: 'Access suspended', restored: 'Access restored', revoked: 'Access revoked',
 };
 
-type RoleDefinition = {
-  id: EmployeeRole;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  features: string[];
-  restricted: string[];
-};
-
-const ROLES: RoleDefinition[] = [
-  {
-    id: 'cashier',
-    title: 'Cashier',
-    description:
-      'For employees who sell fragrances at the physical counter.',
-    icon: ScanBarcode,
-    features: [
-      'Point of Sale',
-      'Barcode scanner',
-      'Register calculator',
-      'Authorized receipts',
-    ],
-    restricted: [
-      'Business settings',
-      'Staff management',
-      'Financial reports',
-      'Invoices and purchasing',
-    ],
-  },
-  {
-    id: 'manager',
-    title: 'Store Manager',
-    description:
-      'Day-to-day retail operations and authorized supervision.',
-    icon: ShieldCheck,
-    features: [
-      'Point of Sale',
-      'Products and inventory',
-      'Customer and sales operations',
-      'Operational reports',
-    ],
-    restricted: [
-      'Owner access management',
-      'Owner-only business administration',
-    ],
-  },
-  {
-    id: 'sales_staff',
-    title: 'Sales Staff',
-    description:
-      'Customer assistance, orders and permitted sales operations.',
-    icon: ShoppingBag,
-    features: [
-      'Sales and orders',
-      'Point of Sale',
-      'Customer CRM',
-      'Product availability',
-    ],
-    restricted: [
-      'Staff management',
-      'Owner settings',
-      'Financial administration',
-    ],
-  },
-  {
-    id: 'inventory_staff',
-    title: 'Inventory Staff',
-    description:
-      'Stock receiving, stock monitoring and catalogue operations.',
-    icon: MapPin,
-    features: [
-      'Inventory and stock',
-      'Products and variants',
-      'Purchase receiving',
-      'Store and warehouse balances',
-    ],
-    restricted: [
-      'Cash checkout',
-      'Owner settings',
-      'Staff management',
-      'Invoices',
-    ],
-  },
-  {
-    id: 'accountant',
-    title: 'Accountant',
-    description:
-      'Financial records, invoice review and authorized reporting.',
-    icon: FileText,
-    features: [
-      'Invoices and quotes',
-      'Expenses',
-      'Sales summaries',
-      'Financial reports',
-    ],
-    restricted: [
-      'POS checkout',
-      'Owner settings',
-      'Staff administration',
-    ],
-  },
-];
-
-function getRole(id: EmployeeRole) {
-  return ROLES.find(role => role.id === id) ?? ROLES[0];
+function Status({ status }: { status: string }) {
+  return <span className={'inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ' + pillColors[status]}>
+    <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />{status}
+  </span>;
 }
 
-function prettyRole(id: EmployeeRole) {
-  return getRole(id).title;
+function RoleSelect({ role }: { role?: EmployeeRole }) {
+  return <label className={workspaceLabel}>Role<select className={workspaceInput} name="role" defaultValue={role ?? ''} required>
+    <option value="" disabled>Choose a role</option>
+    {Object.entries(employeeRoles).map(([key, name]) => <option key={key} value={key}>{name}</option>)}
+  </select></label>;
 }
 
-function RoleCard({
-  role,
-  selected,
-  onChoose,
-}: {
-  role: RoleDefinition;
-  selected: boolean;
-  onChoose: (role: EmployeeRole) => void;
+function StoreSelect({ locations, locationId }: { locations: StaffDirectory['locations']; locationId?: string | null }) {
+  return <label className={workspaceLabel}>Assigned store<select className={workspaceInput} name="locationId" defaultValue={locationId ?? ''} required>
+    <option value="" disabled>Choose an active store</option>
+    {locations.filter(store => store.active || store.id === locationId).map(store =>
+      <option key={store.id} value={store.id} disabled={!store.active}>{store.name}{store.active ? '' : ' (inactive)'}</option>)}
+  </select></label>;
+}
+
+export function StaffSectionLinks() {
+  return <nav aria-label="Staff sections" className="flex flex-wrap gap-2">
+    <a href="#staff-employees" className={workspaceSecondary}><UsersRound size={16} aria-hidden="true" />Employees</a>
+    <a href="#staff-owners" className={workspaceSecondary}><LockKeyhole size={16} aria-hidden="true" />Business Owners</a>
+  </nav>;
+}
+
+export function StaffManagement({ directory, unavailable }: {
+  directory: StaffDirectory | null; unavailable?: 'pending' | 'error';
 }) {
-  const Icon = role.icon;
+  const inviteDialog = useRef<HTMLDialogElement>(null);
+  const [copyStatus, setCopyStatus] = useState('');
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [result, action, pending] = useActionState(async (previous: EmployeeAction & { operation: string }, form: FormData) => {
+    setCopyStatus('');
+    const operation = String(form.get('operation') ?? '');
+    const next = await manageEmployee(previous, form);
+    if (operation === 'invite' && next.status === 'success') inviteDialog.current?.close();
+    return { ...next, operation };
+  }, { status: 'idle', message: '', operation: '' });
+  const storeName = (id: string | null) => directory?.locations.find(store => store.id === id)?.name ?? 'Unassigned';
+  const activeStore = directory?.locations.some(store => store.active) ?? false;
+  const q = query.trim().toLowerCase();
+  const employees = directory?.employees ?? [];
+  const filtered = employees.filter(employee => (statusFilter === 'all' || employee.status === statusFilter) &&
+    [employee.fullName, employee.email, employee.username, employeeRoles[employee.role], storeName(employee.locationId)]
+      .some(value => value?.toLowerCase().includes(q)));
+  const invitationError = result.operation === 'invite' && result.status === 'error';
 
-  return (
-    <button
-      type="button"
-      className={`grstaff-role-card ${selected ? 'is-selected' : ''}`}
-      onClick={() => onChoose(role.id)}
-      aria-pressed={selected}
-    >
-      <span className="grstaff-role-icon">
-        <Icon size={22} aria-hidden="true" />
-      </span>
+  return <div className="grid min-w-0 gap-5">
+    <WorkspacePageHeader title="Staff & Permissions" kicker="Team & access"
+      description="Manage employee access, store assignments and business ownership."
+      actions={activeStore && <button type="button" className={workspacePrimary} aria-haspopup="dialog"
+        disabled={pending} onClick={() => inviteDialog.current?.showModal()}><Plus size={17} aria-hidden="true" />Add Employee</button>} />
+    <StaffSectionLinks />
 
-      <span className="grstaff-role-content">
-        <strong>{role.title}</strong>
-        <small>{role.description}</small>
-      </span>
-
-      {selected && (
-        <CheckCircle2
-          className="grstaff-role-selected"
-          size={19}
-          aria-hidden="true"
-        />
-      )}
-    </button>
-  );
-}
-
-function PermissionPreview({
-  role,
-}: {
-  role: EmployeeRole;
-}) {
-  const definition = getRole(role);
-
-  return (
-    <div className="grstaff-permission-preview">
-      <div className="grstaff-permission-heading">
-        <span>
-          <ShieldCheck size={20} />
-        </span>
-
-        <div>
-          <strong>{definition.title} permissions</strong>
-          <small>
-            Intended workspace access for this employee role
-          </small>
+    <div id="staff-employees" className="grid min-w-0 scroll-mt-24 gap-5">
+      {!directory ? <WorkspacePanel label="employee-directory-title" className="grid gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="employee-directory-title" className={sectionTitle}>Employee directory</h2>
+          {unavailable === 'pending' && <span className="rounded-full bg-[#fff0d8] px-3 py-1 text-xs font-semibold text-[#69461b]">Deployment pending</span>}
         </div>
-      </div>
+        <WorkspaceNotice title={unavailable === 'pending' ? 'Employee management awaits deployment' : 'Employee directory could not load'}
+          tone={unavailable === 'pending' ? 'pending' : 'error'}
+          action={unavailable !== 'pending' && <Link className={workspaceSecondary} href="/workspace/staff">Reload staff</Link>}>
+          {unavailable === 'pending'
+            ? 'Invitations, employee roles and store assignments will be available after the staff migration is deployed. Business owner access is managed below.'
+            : 'Refresh the page to try again.'}
+        </WorkspaceNotice>
+      </WorkspacePanel> : <>
+        {result.message && !invitationError && <WorkspaceNotice title={result.status === 'error' ? 'Action could not be completed' : 'Staff access updated'}
+          tone={result.status === 'error' ? 'error' : 'neutral'}>
+          <p>{result.message}</p>
+          {result.inviteUrl && <div className="mt-3 flex flex-wrap items-center gap-2">
+            <input className={workspaceInput + ' flex-[1_1_15rem]'} type="url" aria-label="Private invitation link"
+              readOnly value={result.inviteUrl} onFocus={event => event.target.select()} />
+            <button type="button" className={workspaceSecondary} onClick={async () => {
+              try { await navigator.clipboard.writeText(result.inviteUrl!); setCopyStatus('Invitation link copied.'); }
+              catch { setCopyStatus('Select the link to copy it manually.'); }
+            }}>Copy link</button>
+            <span aria-live="polite">{copyStatus}</span>
+          </div>}
+        </WorkspaceNotice>}
 
-      <div className="grstaff-permission-columns">
-        <div>
-          <h4>Allowed modules</h4>
-
-          <ul>
-            {definition.features.map(feature => (
-              <li key={feature}>
-                <Check size={15} />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h4>Restricted modules</h4>
-
-          <ul className="grstaff-denied-list">
-            {definition.restricted.map(feature => (
-              <li key={feature}>
-                <X size={14} />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      <p className="grstaff-permission-note">
-        Final permissions must also be enforced by the
-        authenticated backend. Hiding a menu item alone
-        does not authorize or restrict an employee.
-      </p>
-    </div>
-  );
-}
-
-export function StaffManagement() {
-  const [search, setSearch] = useState('');
-  const [selectedRole, setSelectedRole] =
-    useState<EmployeeRole>('cashier');
-
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [draftRole, setDraftRole] =
-    useState<EmployeeRole>('cashier');
-
-  const [draft, setDraft] = useState<StaffDraft | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [error, setError] = useState('');
-
-  const visibleRoles = useMemo(
-    () =>
-      ROLES.filter(role =>
-        `${role.title} ${role.description}`
-          .toLowerCase()
-          .includes(search.trim().toLowerCase()),
-      ),
-    [search],
-  );
-
-  useEffect(() => {
-    if (!inviteOpen) return;
-
-    function escape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setInviteOpen(false);
-      }
-    }
-
-    window.addEventListener('keydown', escape);
-
-    return () => {
-      window.removeEventListener('keydown', escape);
-    };
-  }, [inviteOpen]);
-
-  function openInvite(role: EmployeeRole = selectedRole) {
-    setDraftRole(role);
-    setError('');
-    setInviteOpen(true);
-  }
-
-  function prepareInvitation(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const name = fullName.trim().replace(/\s+/g, ' ');
-    const address = email.trim().toLowerCase();
-
-    if (name.length < 2 || name.length > 100) {
-      setError('Enter an employee name between 2 and 100 characters.');
-      return;
-    }
-
-    if (
-      address.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)
-    ) {
-      setError('Enter a valid work email address.');
-      return;
-    }
-
-    setDraft({
-      fullName: name,
-      email: address,
-      role: draftRole,
-    });
-
-    setCopied(false);
-    setError('');
-    setInviteOpen(false);
-  }
-
-  async function copyDraft() {
-    if (!draft) return;
-
-    const text = [
-      'Golden Rose — Employee onboarding draft',
-      `Employee: ${draft.fullName}`,
-      `Work email: ${draft.email}`,
-      `Role: ${prettyRole(draft.role)}`,
-      'Status: NOT SENT — awaiting secure invitation service',
-      'Store assignment: Pending',
-    ].join('\n');
-
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-    } catch {
-      setError('Clipboard access was blocked by your browser.');
-    }
-  }
-
-  return (
-    <>
-      <header className="grstaff-header">
-        <div>
-          <p className="grstaff-eyebrow">
-            BUSINESS WORKSPACE / TEAM ADMINISTRATION
-          </p>
-
-          <h1>
-            Staff Management<span>.</span>
-          </h1>
-
-          <p>
-            Organize your team, prepare employee access
-            and control what each role can do.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="grstaff-primary"
-          onClick={() => openInvite()}
-        >
-          <UserRoundPlus size={19} />
-          Add staff
-          <Plus size={16} />
-        </button>
-      </header>
-
-      <section className="grstaff-intro">
-        <div className="grstaff-intro-main">
-          <span className="grstaff-intro-icon">
-            <UsersRound size={25} />
-          </span>
-
-          <div>
-            <strong>One team. Controlled access.</strong>
-
-            <p>
-              Employees will use their own work email and
-              individual account. They will only access
-              the modules authorized for their assigned role.
-            </p>
+        <WorkspacePanel label="employee-directory-title" className="grid gap-4">
+          <div className="grid gap-1">
+            <h2 id="employee-directory-title" className={sectionTitle}>Employee directory</h2>
+            <p className="text-sm text-[#6d5b64]">{employees.length} {employees.length === 1 ? 'employee account' : 'employee accounts'}</p>
           </div>
-        </div>
-
-        <div className="grstaff-intro-feature">
-          <LockKeyhole size={20} />
-          <span>Role-based security</span>
-        </div>
-      </section>
-
-      <div className="grstaff-benefits">
-        <article>
-          <span><UserRound size={20} /></span>
-          <div>
-            <strong>Personal accounts</strong>
-            <small>No shared staff passwords</small>
-          </div>
-        </article>
-
-        <article>
-          <span><ScanBarcode size={20} /></span>
-          <div>
-            <strong>Cashier-only POS</strong>
-            <small>Focused selling workspace</small>
-          </div>
-        </article>
-
-        <article>
-          <span><MapPin size={20} /></span>
-          <div>
-            <strong>Location assignments</strong>
-            <small>Planned branch-level authorization</small>
-          </div>
-        </article>
-      </div>
-
-      <div className="grstaff-content-grid">
-        <section
-          className="grstaff-panel"
-          aria-labelledby="grstaff-roles-heading"
-        >
-          <div className="grstaff-panel-header">
-            <div>
-              <p className="grstaff-eyebrow">
-                PERMISSION TEMPLATES
-              </p>
-
-              <h2 id="grstaff-roles-heading">
-                Employee roles
-              </h2>
-
-              <p>
-                Choose a role to inspect its intended permissions.
-              </p>
-            </div>
-          </div>
-
-          <div className="grstaff-search">
-            <Search size={18} aria-hidden="true" />
-
-            <input
-              type="search"
-              value={search}
-              onChange={event => setSearch(event.target.value)}
-              placeholder="Find employee roles..."
-              aria-label="Search employee roles"
-            />
-          </div>
-
-          <div className="grstaff-role-list">
-            {visibleRoles.map(role => (
-              <RoleCard
-                key={role.id}
-                role={role}
-                selected={selectedRole === role.id}
-                onChoose={setSelectedRole}
-              />
-            ))}
-
-            {visibleRoles.length === 0 && (
-              <p className="grstaff-no-match">
-                No roles match your search.
-              </p>
-            )}
-          </div>
-        </section>
-
-        <section
-          className="grstaff-panel grstaff-access-panel"
-          aria-labelledby="grstaff-access-heading"
-        >
-          <div className="grstaff-panel-header">
-            <div>
-              <p className="grstaff-eyebrow">
-                WORKSPACE ACCESS
-              </p>
-
-              <h2 id="grstaff-access-heading">
-                Role permissions
-              </h2>
-
-              <p>
-                See which parts of Golden Rose
-                the selected employee role should access.
-              </p>
-            </div>
-
-            <span className="grstaff-shield-icon">
-              <Shield size={19} />
-            </span>
-          </div>
-
-          <PermissionPreview role={selectedRole} />
-
-          <button
-            type="button"
-            className="grstaff-secondary grstaff-choose-role"
-            onClick={() => openInvite(selectedRole)}
-          >
-            Prepare {prettyRole(selectedRole)} invitation
-            <ArrowRight size={17} />
-          </button>
-        </section>
-      </div>
-
-      <section
-        className="grstaff-panel grstaff-directory"
-        aria-labelledby="grstaff-directory-heading"
-      >
-        <div className="grstaff-panel-header">
-          <div>
-            <p className="grstaff-eyebrow">
-              EMPLOYEE DIRECTORY
-            </p>
-
-            <h2 id="grstaff-directory-heading">
-              Team members
-            </h2>
-
-            <p>
-              This section will list verified employees,
-              assigned locations and account status.
-            </p>
-          </div>
-
-          <span className="grstaff-status">
-            <ShieldCheck size={14} />
-            Owner controlled
-          </span>
-        </div>
-
-        {draft && (
-          <div className="grstaff-draft">
-            <div className="grstaff-draft-identity">
-              <span className="grstaff-avatar">
-                {draft.fullName
-                  .split(/\s+/)
-                  .slice(0, 2)
-                  .map(part => part[0]?.toUpperCase())
-                  .join('')}
+          {!activeStore && <WorkspaceNotice tone="pending" title="Set up a store to invite employees"
+            action={<Link className={workspaceSecondary} href="/workspace/inventory">Open inventory</Link>}>
+            An employee needs an active store before you can send an invitation.
+          </WorkspaceNotice>}
+          {employees.length > 0 && <div className="grid gap-3 border-b border-[#e8dcd7] pb-4 sm:grid-cols-[minmax(0,1fr)_12rem]">
+            <label className={workspaceLabel}>Search employees
+              <span className="relative">
+                <Search size={16} aria-hidden="true" className="pointer-events-none absolute top-3.5 left-3 text-[#8a5b2d]" />
+                <input className={workspaceInput + ' pl-9'} type="search" value={query}
+                  onChange={event => setQuery(event.target.value)} placeholder="Name, email, role or store" />
               </span>
-
-              <div>
-                <strong>{draft.fullName}</strong>
-                <small>{draft.email}</small>
-              </div>
-            </div>
-
-            <div className="grstaff-draft-role">
-              <span>{prettyRole(draft.role)}</span>
-              <small>Unsaved invitation draft</small>
-            </div>
-
-            <button
-              type="button"
-              className="grstaff-secondary"
-              onClick={() => void copyDraft()}
-            >
-              {copied ? <Check size={15} /> : <ClipboardCopy size={15} />}
-              {copied ? 'Copied' : 'Copy details'}
-            </button>
-          </div>
-        )}
-
-        <div className="grstaff-directory-state">
-          <span>
-            <KeyRound size={28} />
-          </span>
-
-          <div>
-            <h3>Employee directory integration</h3>
-
-            <p>
-              Staff invitations and the live employee directory
-              require a separately authorized backend workflow.
-              No employee is added or granted access from
-              this screen until that service is connected.
-            </p>
-
-            <p>
-              The business-owner accounts are managed in
-              the ownership section below.
-            </p>
-          </div>
-        </div>
-
-        <div className="grstaff-next-actions">
-          <div>
-            <strong>Employee onboarding workflow</strong>
-            <p>
-              Prepare details → issue expiring invite → employee
-              accepts → verify role → assign location → activate access.
-            </p>
-          </div>
-
-          <Link href="/workspace/pos" className="grstaff-secondary">
-            View POS
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-
-      <section className="grstaff-security-note">
-        <BadgeCheck size={19} />
-
-        <p>
-          Access must be verified against active staff records
-          on every protected request. Suspending an employee
-          must prevent further business operations, including
-          direct API calls.
-        </p>
-      </section>
-
-      {error && (
-        <div className="grstaff-toast" role="alert">
-          <span>{error}</span>
-          <button
-            aria-label="Dismiss error"
-            onClick={() => setError('')}
-          >
-            <X size={17} />
-          </button>
-        </div>
-      )}
-
-      {inviteOpen && (
-        <div
-          className="grstaff-modal-backdrop"
-          onMouseDown={event => {
-            if (event.target === event.currentTarget) {
-              setInviteOpen(false);
-            }
-          }}
-        >
-          <section
-            className="grstaff-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="grstaff-modal-title"
-          >
-            <header className="grstaff-modal-header">
-              <div>
-                <p className="grstaff-eyebrow">
-                  EMPLOYEE ONBOARDING
-                </p>
-
-                <h2 id="grstaff-modal-title">
-                  Add a staff member
-                </h2>
-
-                <p>
-                  Prepare the employee details for
-                  a secure invitation.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="grstaff-close"
-                aria-label="Close"
-                onClick={() => setInviteOpen(false)}
-              >
-                <X size={20} />
-              </button>
-            </header>
-
-            <form onSubmit={prepareInvitation}>
-              <label>
-                Employee full name
-                <input
-                  required
-                  autoFocus
-                  type="text"
-                  value={fullName}
-                  onChange={event => setFullName(event.target.value)}
-                  placeholder="Enter employee's full name"
-                  minLength={2}
-                  maxLength={100}
-                  autoComplete="name"
-                />
-              </label>
-
-              <label>
-                Work email address
-                <span className="grstaff-input-icon">
-                  <Mail size={17} />
-
-                  <input
-                    required
-                    type="email"
-                    value={email}
-                    onChange={event => setEmail(event.target.value)}
-                    placeholder="employee@example.com"
-                    maxLength={254}
-                    autoComplete="email"
-                  />
-                </span>
-              </label>
-
-              <label>
-                Assign employee role
-                <select
-                  value={draftRole}
-                  onChange={event =>
-                    setDraftRole(event.target.value as EmployeeRole)
-                  }
-                >
-                  {ROLES.map(role => (
-                    <option key={role.id} value={role.id}>
-                      {role.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="grstaff-modal-location">
-                <MapPin size={19} />
-
-                <div>
-                  <strong>Assigned store</strong>
-                  <p>
-                    Store assignments will come from verified
-                    inventory locations. They cannot be assigned
-                    until that backend is connected.
-                  </p>
+            </label>
+            <label className={workspaceLabel}>Access status<select className={workspaceInput} value={statusFilter} onChange={event => setStatusFilter(event.target.value)}>
+              <option value="all">All statuses</option><option value="active">Active</option>
+              <option value="suspended">Suspended</option><option value="revoked">Revoked</option>
+            </select></label>
+          </div>}
+          {!filtered.length ? <WorkspaceNotice title={employees.length ? 'No employees match' : 'No employees yet'}>
+            {employees.length ? 'Change the search or status filter to see more results.' : 'Use Add Employee to send the first invitation once a store is active.'}
+          </WorkspaceNotice> : <ul className="grid gap-3">
+            <li className={rowLayout + ' hidden bg-[#f7eee8] px-4 py-2 text-xs font-semibold text-[#684b56] lg:grid'} aria-hidden="true">
+              <span>Employee</span><span>Role</span><span>Assigned store</span><span>Status</span>
+            </li>
+            {filtered.map(employee => <li key={employee.id} className="grid gap-3 rounded-lg border border-[#ebded8] bg-white p-4">
+              <div className={rowLayout}>
+                <div className="grid min-w-0 gap-0.5 break-words">
+                  <strong className="text-[#3f2632]">{employee.fullName}</strong>
+                  <span className="text-xs text-[#6d5b64]">{employee.email}{employee.username ? ' · @' + employee.username : ''}</span>
                 </div>
+                <span className="text-sm text-[#523a46]"><span className={mobileLabel}>Role</span>{employeeRoles[employee.role]}</span>
+                <span className="text-sm text-[#523a46]"><span className={mobileLabel}>Assigned store</span>{storeName(employee.locationId)}</span>
+                <Status status={employee.status} />
               </div>
+              {employee.status !== 'revoked' && <details className="border-t border-[#f0e6e1] pt-3">
+                <summary className="w-fit cursor-pointer rounded-sm text-sm font-semibold text-[#54213a] focus-visible:outline-2 focus-visible:outline-offset-2">Manage access for {employee.fullName}</summary>
+                <form action={action} key={employee.role + ':' + (employee.locationId ?? '')} className="mt-4" onSubmit={event => {
+                  const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+                  if (submitter?.value === 'revoke' && !window.confirm('Revoke this employee’s access? A new invitation will be required.')) event.preventDefault();
+                }}>
+                  <fieldset className="grid min-w-0 gap-3 sm:grid-cols-2" disabled={pending}>
+                    <input type="hidden" name="id" value={employee.id} />
+                    <RoleSelect role={employee.role} />
+                    <StoreSelect locations={directory.locations} locationId={employee.locationId} />
+                    <div className="flex flex-wrap gap-2 sm:col-span-2">
+                      <button className={workspacePrimary} name="operation" value="update" disabled={!activeStore}>Save role and store</button>
+                      <button className={workspaceSecondary} name="operation" value={employee.status === 'active' ? 'suspend' : 'restore'} formNoValidate>
+                        {employee.status === 'active' ? 'Suspend' : 'Restore'}
+                      </button>
+                      <button className={workspaceSecondary} name="operation" value="revoke" formNoValidate>Revoke access</button>
+                    </div>
+                  </fieldset>
+                </form>
+              </details>}
+            </li>)}
+          </ul>}
+        </WorkspacePanel>
 
-              <div className="grstaff-modal-note">
-                <LockKeyhole size={17} />
+        <div className="grid min-w-0 gap-5 xl:grid-cols-2">
+          <WorkspacePanel label="staff-invitations-title" className="grid content-start gap-4">
+            <h2 id="staff-invitations-title" className={sectionTitle}>Invitations</h2>
+            {!directory.invitations.length ? <p className="text-sm text-[#6d5b64]">No employee invitations yet.</p> : <ul className="divide-y divide-[#ebe0db]">
+              {directory.invitations.map(invite => <li key={invite.id} className="grid min-w-0 gap-2 py-3 first:pt-0">
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+                  <div className="grid min-w-0 gap-1 break-words">
+                    <strong>{invite.fullName}</strong><span className="text-xs text-[#6d5b64]">{invite.email}</span>
+                  </div><Status status={invite.status} />
+                </div>
+                <p className="text-sm text-[#6d5b64]">{employeeRoles[invite.role]} · {storeName(invite.locationId)}
+                  {invite.status === 'pending' && ' · Expires ' + date.format(new Date(invite.expiresAt))}</p>
+                {(invite.status === 'pending' || invite.status === 'expired') && <form action={action} className="flex flex-wrap gap-2">
+                  <input type="hidden" name="id" value={invite.id} />
+                  <button className={workspaceSecondary} name="operation" value="reissue" disabled={pending}>Reissue invitation</button>
+                  {invite.status === 'pending' && <button className={workspaceSecondary} name="operation" value="cancel_invite" disabled={pending}>Revoke invitation</button>}
+                </form>}
+              </li>)}
+            </ul>}
+          </WorkspacePanel>
 
-                <p>
-                  Preparing this form does not create an account
-                  or send an invitation. The employee will set up
-                  their own credentials once secure invitations
-                  are enabled.
-                </p>
-              </div>
-
-              <div className="grstaff-modal-actions">
-                <button
-                  type="button"
-                  className="grstaff-secondary"
-                  onClick={() => setInviteOpen(false)}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="grstaff-primary"
-                >
-                  <CheckCircle2 size={17} />
-                  Review invitation
-                  <ArrowRight size={16} />
-                </button>
-              </div>
-            </form>
-          </section>
+          <WorkspacePanel label="staff-audit-title" className="grid content-start gap-4">
+            <div className="flex items-center gap-2 text-[#8a5b2d]"><History size={19} aria-hidden="true" />
+              <h2 id="staff-audit-title" className={sectionTitle}>Staff audit history</h2></div>
+            {!directory.audit.length ? <p className="text-sm text-[#6d5b64]">No employee access changes yet.</p> : <ul className="divide-y divide-[#ebe0db]">
+              {directory.audit.map(event => <li key={event.id} className="grid min-w-0 gap-1 py-3 break-words first:pt-0">
+                <strong>{auditLabels[event.action] ?? event.action} · {event.subject}</strong>
+                <span className="text-xs text-[#6d5b64]">{event.actor} · {date.format(new Date(event.createdAt))}</span>
+                {event.detail.role && <span className="text-sm">{event.detail.fromRole ? employeeRoles[event.detail.fromRole] + ' → ' : ''}
+                  {employeeRoles[event.detail.role]}{event.detail.store ? ' · ' + storeName(event.detail.store) : ''}</span>}
+              </li>)}
+            </ul>}
+          </WorkspacePanel>
         </div>
-      )}
-    </>
-  );
+
+        <dialog ref={inviteDialog} aria-labelledby="invite-employee-title"
+          className="m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-xl overflow-auto rounded-2xl border border-[#e9d8cf] bg-[#fffdf9] p-5 text-[#38252f] shadow-xl backdrop:bg-[#2b0b15]/65 sm:p-7">
+          <header className="mb-5 flex items-start justify-between gap-3">
+            <div className="grid gap-1">
+              <h2 id="invite-employee-title" className={sectionTitle}>Invite an employee</h2>
+              <p className="text-sm text-[#6d5b64]">They’ll use their work email to set their own password.</p>
+            </div>
+            <button type="button" aria-label="Close employee invitation" className="rounded-lg p-2 text-[#54213a] hover:bg-[#f7eee8]"
+              onClick={() => inviteDialog.current?.close()}><X size={20} aria-hidden="true" /></button>
+          </header>
+          <form action={action} aria-busy={pending}>
+            <fieldset className="grid min-w-0 gap-4 sm:grid-cols-2" disabled={pending || !activeStore}>
+              <input type="hidden" name="operation" value="invite" />
+              <label className={workspaceLabel + ' sm:col-span-2'}>Full name<input className={workspaceInput} name="fullName"
+                autoComplete="off" required minLength={2} maxLength={120} /></label>
+              <label className={workspaceLabel}>Work email<input className={workspaceInput} name="email" type="email"
+                autoComplete="off" required maxLength={254} /></label>
+              <label className={workspaceLabel}>Username (optional)<input className={workspaceInput} name="username"
+                autoComplete="off" maxLength={32} /></label>
+              <RoleSelect /><StoreSelect locations={directory.locations} />
+              {invitationError && <p className="text-sm text-[#74263e] sm:col-span-2" role="alert">{result.message}</p>}
+              <div className="flex flex-wrap justify-end gap-2 border-t border-[#e9d8cf] pt-4 sm:col-span-2">
+                <button className={workspacePrimary} type="submit"><Mail size={16} aria-hidden="true" />{pending ? 'Saving…' : 'Send invitation'}</button>
+              </div>
+            </fieldset>
+          </form>
+        </dialog>
+      </>}
+    </div>
+  </div>;
 }

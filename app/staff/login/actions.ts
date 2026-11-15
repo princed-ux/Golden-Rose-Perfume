@@ -4,6 +4,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/src/lib/supabase/server';
 import { verifyStaffToken } from '@/src/lib/golden-rose/staff';
+import { getRoleHome } from '@/src/domain/permissions';
 import type { OperationResult } from '@/src/lib/golden-rose/contracts';
 
 export async function signInStaff(
@@ -69,10 +70,7 @@ export async function signInStaff(
         };
       }
 
-      destination =
-        role === 'cashier'
-          ? '/workspace/pos'
-          : '/workspace';
+      destination = getRoleHome(role);
     } catch {
       await supabase.auth.signOut({ scope: 'local' });
 

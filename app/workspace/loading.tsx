@@ -1,3 +1,5 @@
+import { WorkspaceNotice } from '@/src/components/workspace/page-layout';
+
 export default function LoadingWorkspace() {
-  return <p className="container page-spacing" role="status">Loading Golden Rose operations…</p>;
+  return <WorkspaceNotice title="Loading workspace…">Retrieving the requested page.</WorkspaceNotice>;
 }
