@@ -166,18 +166,24 @@ export default async function SalesOrdersPage({
         Return to <Link href="/workspace/orders" className="underline">Sales & Orders</Link> and select a recorded sale.
       </WorkspaceNotice>;
     }
+    let receipt: RecordedReceipt | null = null;
+    let receiptError = '';
     try {
-      const receipt = await loadRecordedReceipt(token, requestedReceipt);
-      return <SaleReceipt receipt={receipt} />;
+      receipt = await loadRecordedReceipt(token, requestedReceipt);
     } catch (error) {
-      return <div className="grid gap-4">
-        <WorkspacePageHeader title="Receipt unavailable" kicker="Sales & Orders"
-          actions={<Link className={workspaceSecondary} href="/workspace/orders">Back to sales</Link>} />
-        <WorkspaceNotice title="Could not retrieve receipt" tone="error">
-          {error instanceof Error ? error.message : 'Try again later.'}
-        </WorkspaceNotice>
-      </div>;
+      receiptError = error instanceof Error ? error.message : 'Try again later.';
     }
+
+    // JSX is rendered outside the data-fetch try/catch.
+    // Rendering errors should propagate to the Next.js error boundary.
+    if (receipt) return <SaleReceipt receipt={receipt} />;
+    return <div className="grid gap-4">
+      <WorkspacePageHeader title="Receipt unavailable" kicker="Sales & Orders"
+        actions={<Link className={workspaceSecondary} href="/workspace/orders">Back to sales</Link>} />
+      <WorkspaceNotice title="Could not retrieve receipt" tone="error">
+        {receiptError || 'Receipt data is unavailable.'}
+      </WorkspaceNotice>
+    </div>;
   }
 
   const search = single(params, 'search').trim().slice(0, 100);
