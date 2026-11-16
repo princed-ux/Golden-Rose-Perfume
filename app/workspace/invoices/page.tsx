@@ -1,6 +1,7 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
@@ -16,7 +17,13 @@ export const metadata: Metadata = {
     'Save quotations and invoices, issue official documents, and reconcile verified payments.',
 };
 
-export default async function InvoicesPage() {
+export default function InvoicesPage() {
+  return <Suspense fallback={<p role="status" className="p-5 text-sm text-[#6f5162]">Loading Invoice Studio…</p>}>
+    <AuthorizedInvoiceStudio />
+  </Suspense>;
+}
+
+async function AuthorizedInvoiceStudio() {
   const { role } = await requireStaff();
 
   if (!canViewModule(role, 'invoices')) {
