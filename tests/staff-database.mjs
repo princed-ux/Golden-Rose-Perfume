@@ -92,6 +92,8 @@ test('employee invitations, role and store changes, and scoped POS transactions'
 
     const pos = (id, action = 'catalog', payload = {}) => call(
       'select public.gr_pos_register($1,$2,$3::jsonb) as value', [id,action,JSON.stringify(payload)]);
+    const posSession = (id, sid, action = 'catalog', payload = {}) => call(
+      'select public.gr_pos_session_request($1,$2,$3,$4::jsonb) as value', [id,sid,action,JSON.stringify(payload)]);
     const cart = { idempotencyKey:randomUUID(), locationId:firstStore, method:'cash', discountMinor:0,
       tenderedMinor:15000, items:[{ variantId:variant, quantity:1, expectedPriceMinor:10000 }] };
     const checkout = (id, payload = cart) => call(
@@ -164,6 +166,7 @@ test('employee invitations, role and store changes, and scoped POS transactions'
 
     await login(owner);
     await assert.rejects(provision(owner,'reserve',payload), { code:'42501' });
+    await assert.rejects(posSession(owner,directSession), { code:'42501' });
     await db.exec('set role service_role');
     await assert.rejects(provision(shopper,'reserve',payload), { code:'42501' });
     await assert.rejects(provision(cashier,'reserve',payload), { code:'42501' });
@@ -181,11 +184,15 @@ test('employee invitations, role and store changes, and scoped POS transactions'
     assert.equal((await session(directUser)).isStaff,false);
     assert.equal(await credentials(directUser,null),false);
     await assert.rejects(pos(directUser), { code:'GR403' });
+    await assert.rejects(posSession(directUser,directSession), { code:'GR403' });
+    await assert.rejects(posSession(shopper,directSession), { code:'GR403' });
     assert.equal(await credentials(owner,null),true);
     assert.equal((await pos(owner)).locations.length,2);
+    assert.equal((await posSession(owner,randomUUID())).locations.length,2);
     assert.equal((await provision(owner,'list',{}))[directUser],'awaiting_verification');
     await login(owner);
     await assert.rejects(manage('restore',{id:directUser}), { code:'22023' });
+    await assert.rejects(manage('suspend',{id:directUser}), { code:'22023' });
 
     await addSession(directUser,directSession);
     await login(directUser);
@@ -196,15 +203,24 @@ test('employee invitations, role and store changes, and scoped POS transactions'
     assert.equal(await passwordState(directUser,directSession),'change_required');
     assert.equal(await passwordState(directUser,directSession,true),'change_required');
     await db.exec('reset role');
+    await db.query("update golden_rose_employment.password_enrollment set expires_at=now()-interval '1 second' where user_id=$1",[directUser]);
+    assert.equal(await passwordState(directUser,directSession),'expired');
+    assert.equal(await passwordState(directUser,directSession,true),'expired');
+    await db.exec('reset role');
+    await db.query("update golden_rose_employment.password_enrollment set expires_at=now()+interval '1 hour' where user_id=$1",[directUser]);
     await db.query("update auth.users set encrypted_password='fixture-changed-hash' where id=$1",[directUser]);
     assert.equal(await passwordState(directUser,directSession,true),'complete');
     await db.exec('set role service_role');
     assert.equal((await session(directUser)).role,'cashier');
     assert.equal(await credentials(directUser,directSession),false);
+    await assert.rejects(posSession(directUser,directSession), { code:'GR403' });
     await addSession(directUser,currentSession);
     await db.exec('set role service_role');
     assert.equal(await credentials(directUser,currentSession),true);
     assert.deepEqual((await pos(directUser)).locations.map(store=>store.id),[firstStore]);
+    assert.deepEqual((await posSession(directUser,currentSession)).locations.map(store=>store.id),[firstStore]);
+    await assert.rejects(posSession(directUser,currentSession,'catalog',{locationId:otherStore}), { code:'GR403' });
+    await assert.rejects(posSession(directUser,currentSession,'checkout',{...cart,locationId:otherStore}), { code:'GR403' });
 
     const reset = await provision(owner,'begin_reset',{id:directUser});
     await assert.rejects(provision(owner,'begin_reset',{id:directUser}), { code:'22023' });
@@ -227,6 +243,9 @@ test('employee invitations, role and store changes, and scoped POS transactions'
     await db.exec('set role service_role');
     assert.equal(await credentials(directUser,finalSession),true);
     assert.equal(await credentials(directUser,replacementSession),false);
+    await assert.rejects(posSession(directUser,currentSession,'checkout',cart), { code:'GR403' });
+    await assert.rejects(posSession(directUser,replacementSession), { code:'GR403' });
+    assert.deepEqual((await posSession(directUser,finalSession)).locations.map(store=>store.id),[firstStore]);
     await login(owner);
     const audit = (await manage('list')).audit;
     for (const event of ['account_created','temporary_password_replaced','password_changed']) assert.ok(audit.some(entry=>entry.action===event));
@@ -234,6 +253,7 @@ test('employee invitations, role and store changes, and scoped POS transactions'
     await db.exec('set role service_role');
     assert.equal((await session(directUser)).isStaff,false);
     await assert.rejects(pos(directUser), {code:'GR403'});
+    await assert.rejects(posSession(directUser,finalSession), {code:'GR403'});
   } finally {
     await db.close();
   }

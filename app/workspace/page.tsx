@@ -4,19 +4,25 @@ import { redirect } from 'next/navigation';
 
 import {
   ArrowRight,
-  Box,
-  CheckCircle2,
+  Barcode,
+  Boxes,
+  Building2,
+  CircleAlert,
+  CircleCheck,
   ClipboardList,
-  MapPin,
+  FileText,
+  Package,
   ScanBarcode,
   ShieldCheck,
   ShoppingBag,
-  TriangleAlert,
+  Truck,
   UsersRound,
+  ChartNoAxesCombined,
+  type LucideIcon,
 } from 'lucide-react';
 
 import { canViewModule } from '@/src/domain/permissions';
-import { WorkspacePageHeader } from '@/src/components/workspace/page-layout';
+import type { WorkspaceModuleId } from '@/src/domain/modules';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 
 import {
@@ -24,13 +30,225 @@ import {
   getInventoryPage,
 } from '@/src/lib/golden-rose/edge';
 
-import './executive-overview.css';
+import { createClient } from '@/src/lib/supabase/server';
 
-type CheckState =
-  | 'ready'
-  | 'needs-setup'
-  | 'unavailable'
-  | 'restricted';
+import './executive-operations.css';
+
+type Metric = {
+  title: string;
+  value: string;
+  detail: string;
+  icon: LucideIcon;
+  status: 'connected' | 'attention' | 'unavailable';
+};
+
+type WorkspaceShortcut = {
+  id: WorkspaceModuleId;
+  href: string;
+  label: string;
+  detail: string;
+  icon: LucideIcon;
+};
+
+const shortcuts: WorkspaceShortcut[] = [
+  {
+    id: 'pos',
+    href: '/workspace/pos',
+    label: 'Point of Sale',
+    detail: 'Open the barcode register',
+    icon: ScanBarcode,
+  },
+  {
+    id: 'products',
+    href: '/workspace/products',
+    label: 'Products',
+    detail: 'Review fragrances and prices',
+    icon: Package,
+  },
+  {
+    id: 'inventory',
+    href: '/workspace/inventory',
+    label: 'Inventory & Stock',
+    detail: 'Stores, receipts and balances',
+    icon: Boxes,
+  },
+  {
+    id: 'staff',
+    href: '/workspace/staff',
+    label: 'Staff & Permissions',
+    detail: 'Manage employee accounts',
+    icon: UsersRound,
+  },
+  {
+    id: 'orders',
+    href: '/workspace/orders',
+    label: 'Sales & Orders',
+    detail: 'Review order operations',
+    icon: ShoppingBag,
+  },
+  {
+    id: 'customers',
+    href: '/workspace/customers',
+    label: 'Customers',
+    detail: 'Customer relationships',
+    icon: UsersRound,
+  },
+  {
+    id: 'invoices',
+    href: '/workspace/invoices',
+    label: 'Invoices & Quotes',
+    detail: 'Billing and outstanding work',
+    icon: FileText,
+  },
+  {
+    id: 'purchases',
+    href: '/workspace/purchases',
+    label: 'Purchasing',
+    detail: 'Supplier purchase workflow',
+    icon: Truck,
+  },
+  {
+    id: 'reports',
+    href: '/workspace/reports',
+    label: 'Reports',
+    detail: 'Verified business reporting',
+    icon: ChartNoAxesCombined,
+  },
+];
+
+function MetricCard({ metric }: { metric: Metric }) {
+  const Icon = metric.icon;
+
+  const styles = {
+    connected: 'bg-[#e8f5ed] text-[#266746]',
+    attention: 'bg-[#fff1dc] text-[#915d22]',
+    unavailable: 'bg-[#f5edf0] text-[#86546a]',
+  }[metric.status];
+
+  return (
+    <article className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-4 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f9ecda] text-[#9d702f]">
+          <Icon
+            size={21}
+            strokeWidth={1.7}
+            aria-hidden="true"
+          />
+        </span>
+
+        <span
+          className={
+            'rounded-full px-2.5 py-1 text-[10px] font-semibold ' +
+            styles
+          }
+        >
+          {metric.status === 'connected'
+            ? 'Connected'
+            : metric.status === 'attention'
+              ? 'Needs attention'
+              : 'Unavailable'}
+        </span>
+      </div>
+
+      <p className="mt-4 text-xs font-semibold text-[#826f7a]">
+        {metric.title}
+      </p>
+
+      <p className="mt-1 font-serif text-[clamp(1.5rem,2.6vw,2rem)] leading-tight text-[#46172f]">
+        {metric.value}
+      </p>
+
+      <p className="mt-2 text-xs leading-5 text-[#8a7782]">
+        {metric.detail}
+      </p>
+    </article>
+  );
+}
+
+function ReadinessRow({
+  title,
+  detail,
+  ready,
+}: {
+  title: string;
+  detail: string;
+  ready: boolean;
+}) {
+  return (
+    <li className="flex items-start gap-3 border-b border-[#f0e5e1] py-3 last:border-0">
+      <span
+        className={
+          'mt-0.5 grid size-8 shrink-0 place-items-center rounded-full ' +
+          (ready
+            ? 'bg-[#eaf5ec] text-[#37764d]'
+            : 'bg-[#fff1df] text-[#a26f2c]')
+        }
+      >
+        {ready ? (
+          <CircleCheck size={17} aria-hidden="true" />
+        ) : (
+          <CircleAlert size={17} aria-hidden="true" />
+        )}
+      </span>
+
+      <span className="grid min-w-0 gap-1">
+        <strong className="text-sm font-semibold text-[#4e2b3d]">
+          {title}
+        </strong>
+
+        <small className="text-xs leading-5 text-[#87747e]">
+          {detail}
+        </small>
+      </span>
+    </li>
+  );
+}
+
+async function ownerStaffCounts() {
+  try {
+    const client = await createClient();
+
+    const { data, error } = await client.rpc(
+      'gr_staff_manage',
+      { p_action: 'list' },
+    );
+
+    if (
+      error ||
+      !data ||
+      typeof data !== 'object'
+    ) {
+      return null;
+    }
+
+    const result = data as {
+      employees?: unknown;
+      invitations?: unknown;
+    };
+
+    if (
+      !Array.isArray(result.employees) ||
+      !Array.isArray(result.invitations)
+    ) {
+      return null;
+    }
+
+    const pending = result.invitations.filter(
+      (value: unknown) =>
+        value !== null &&
+        typeof value === 'object' &&
+        'status' in value &&
+        value.status === 'pending',
+    ).length;
+
+    return {
+      employees: result.employees.length,
+      pending,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export default async function WorkspaceOverview() {
   const { role, token } = await requireStaff();
@@ -43,320 +261,475 @@ export default async function WorkspaceOverview() {
     );
   }
 
-  const catalogueAllowed = canViewModule(role, 'products');
-  const inventoryAllowed = canViewModule(role, 'inventory');
+  const mayViewProducts = canViewModule(
+    role,
+    'products',
+  );
 
-  // Read a small catalogue page rather than downloading
-  // thousands of products simply to render the dashboard.
-  const [catalogue, inventory] = await Promise.all([
-    catalogueAllowed
-      ? getAdminProductsPage(token, 0, 1)
-          .then(items => ({
-            available: true,
-            hasProducts: items.length > 0,
-          }))
-          .catch(() => ({
-            available: false,
-            hasProducts: false,
-          }))
-      : Promise.resolve(null),
+  const mayViewInventory = canViewModule(
+    role,
+    'inventory',
+  );
 
-    inventoryAllowed
-      ? getInventoryPage(token, 0)
-          .then(snapshot => ({
-            available: true,
-            locations: snapshot.locations,
-          }))
-          .catch(() => ({
-            available: false,
-            locations: [],
-          }))
-      : Promise.resolve(null),
-  ]);
+  const [catalogue, inventory, staff] =
+    await Promise.all([
+      mayViewProducts
+        ? getAdminProductsPage(token, 0, 1)
+            .then(items => ({
+              reachable: true,
+              hasProducts: items.length > 0,
+            }))
+            .catch(() => ({
+              reachable: false,
+              hasProducts: false,
+            }))
+        : Promise.resolve(null),
 
-  const activeLocations =
-    inventory?.available
-      ? inventory.locations.filter(location => location.active).length
-      : null;
+      mayViewInventory
+        ? getInventoryPage(token, 0)
+            .catch(() => null)
+        : Promise.resolve(null),
 
-  const catalogueState: CheckState =
-    !catalogueAllowed
-      ? 'restricted'
-      : !catalogue?.available
+      role === 'owner'
+        ? ownerStaffCounts()
+        : Promise.resolve(null),
+    ]);
+
+  const stores =
+    inventory?.locations.filter(
+      location =>
+        location.active &&
+        location.type === 'store',
+    ).length ?? null;
+
+  const stockRows =
+    inventory?.items.length ?? null;
+
+  const lowStockOnPage =
+    inventory?.items.filter(
+      item => item.available <= 5,
+    ).length ?? null;
+
+  const catalogueReady =
+    catalogue?.reachable === true &&
+    catalogue.hasProducts;
+
+  const storeReady =
+    stores !== null && stores > 0;
+
+  const staffReady =
+    staff !== null && staff.employees > 0;
+
+  const visibleShortcuts = shortcuts.filter(
+    link => canViewModule(role, link.id),
+  );
+
+  const metrics: Metric[] = [
+    {
+      title: 'Product catalogue',
+      value: catalogue?.reachable
+        ? catalogue.hasProducts
+          ? 'Accessible'
+          : 'Empty'
+        : '—',
+      detail: catalogue?.reachable
+        ? 'Live catalogue connection checked'
+        : 'Unable to confirm catalogue access',
+      icon: Package,
+      status: catalogue?.reachable
+        ? catalogue.hasProducts
+          ? 'connected'
+          : 'attention'
+        : 'unavailable',
+    },
+    {
+      title: 'Active retail stores',
+      value: stores === null
+        ? '—'
+        : stores.toLocaleString('en-NG'),
+      detail: 'Real store locations in Inventory',
+      icon: Building2,
+      status: stores === null
         ? 'unavailable'
-        : catalogue.hasProducts
-          ? 'ready'
-          : 'needs-setup';
-
-  const locationState: CheckState =
-    !inventoryAllowed
-      ? 'restricted'
-      : !inventory?.available
+        : stores > 0
+          ? 'connected'
+          : 'attention',
+    },
+    {
+      title: 'Employee accounts',
+      value: staff
+        ? staff.employees.toLocaleString('en-NG')
+        : '—',
+      detail: staff
+        ? `${staff.pending} pending invitation${staff.pending === 1 ? '' : 's'}`
+        : role === 'owner'
+          ? 'Employee directory not available'
+          : 'Owner-only information',
+      icon: UsersRound,
+      status: staff
+        ? staff.employees
+          ? 'connected'
+          : 'attention'
+        : 'unavailable',
+    },
+    {
+      title: 'Inventory snapshot',
+      value: stockRows === null
+        ? '—'
+        : stockRows.toLocaleString('en-NG'),
+      detail: stockRows === null
+        ? 'Stock service unavailable'
+        : 'Stock balance rows on the first page',
+      icon: Barcode,
+      status: stockRows === null
         ? 'unavailable'
-        : activeLocations !== null && activeLocations > 0
-          ? 'ready'
-          : 'needs-setup';
-
-  const registerState: CheckState =
-    !canViewModule(role, 'pos')
-      ? 'restricted'
-      : locationState === 'needs-setup'
-        ? 'needs-setup'
-        : locationState === 'unavailable'
-          ? 'unavailable'
-          : 'ready';
-
-  function stateLabel(state: CheckState) {
-    switch (state) {
-      case 'ready':
-        return 'Connected';
-      case 'needs-setup':
-        return 'Needs setup';
-      case 'restricted':
-        return 'Restricted';
-      default:
-        return 'Unavailable';
-    }
-  }
+        : stockRows > 0
+          ? 'connected'
+          : 'attention',
+    },
+  ];
 
   return (
-    <section className="gr-executive" aria-labelledby="gr-executive-title">
-      <WorkspacePageHeader id="gr-executive-title" level="h2" kicker="Golden Rose / Daily operations"
-        title="Your business at a glance" description="Review your connected business systems and jump directly into the work that needs attention."
-        actions={<span className="gr-executive-indicator">
-          <ShieldCheck size={16} />
-          Authenticated workspace
-        </span>} />
+    <section
+      className="gr-executive grid min-w-0 gap-5"
+      aria-labelledby="gr-operations-title"
+    >
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="grid min-w-0 gap-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#a47636]">
+            Golden Rose / Operations
+          </p>
 
-      <div className="gr-executive-summary">
-        <article className="gr-executive-item">
-          <span className="gr-executive-item-icon">
-            <Box size={20} />
-          </span>
-
-          <div>
-            <span className="gr-executive-label">
-              Product catalogue
-            </span>
-
-            <strong>
-              {catalogueState === 'ready'
-                ? 'Products detected'
-                : catalogueState === 'needs-setup'
-                  ? 'No products yet'
-                  : stateLabel(catalogueState)}
-            </strong>
-
-            <small>
-              {catalogueState === 'ready'
-                ? 'Catalogue records are accessible.'
-                : 'Open Products to review catalogue data.'}
-            </small>
-          </div>
-
-          <span
-            className="gr-executive-state"
-            data-state={catalogueState}
+          <h2
+            id="gr-operations-title"
+            className="font-serif text-[clamp(1.75rem,3vw,2.35rem)] leading-tight tracking-tight text-[#46172f]"
           >
-            {stateLabel(catalogueState)}
-          </span>
-        </article>
+            Executive overview
+          </h2>
 
-        <article className="gr-executive-item">
-          <span className="gr-executive-item-icon">
-            <MapPin size={20} />
-          </span>
+          <p className="max-w-2xl text-sm leading-6 text-[#85717d]">
+            Live operational readiness, your next
+            priorities and access to every permitted
+            workspace.
+          </p>
+        </div>
 
-          <div>
-            <span className="gr-executive-label">
-              Selling locations
-            </span>
+        <span className="inline-flex items-center gap-2 rounded-full border border-[#e9d8bb] bg-[#fff7e8] px-3 py-2 text-xs font-semibold text-[#8c612b]">
+          <ShieldCheck size={16} aria-hidden="true" />
+          Authenticated business workspace
+        </span>
+      </header>
 
-            <strong>
-              {activeLocations !== null
-                ? `${activeLocations} active`
-                : stateLabel(locationState)}
-            </strong>
-
-            <small>
-              Physical POS sales require an active location.
-            </small>
-          </div>
-
-          <span
-            className="gr-executive-state"
-            data-state={locationState}
-          >
-            {stateLabel(locationState)}
-          </span>
-        </article>
-
-        <article className="gr-executive-item">
-          <span className="gr-executive-item-icon">
-            <ScanBarcode size={20} />
-          </span>
-
-          <div>
-            <span className="gr-executive-label">
-              Point of Sale
-            </span>
-
-            <strong>
-              {registerState === 'needs-setup'
-                ? 'Store setup required'
-                : registerState === 'ready'
-                  ? 'Open register'
-                  : stateLabel(registerState)}
-            </strong>
-
-            <small>
-              POS transactions require separate payment
-              and stock verification.
-            </small>
-          </div>
-
-          <span
-            className="gr-executive-state"
-            data-state={registerState}
-          >
-            {stateLabel(registerState)}
-          </span>
-        </article>
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {metrics.map(metric => (
+          <MetricCard
+            key={metric.title}
+            metric={metric}
+          />
+        ))}
       </div>
 
-      <div className="gr-executive-workflow">
-        <section className="gr-executive-panel">
-          <div className="gr-executive-panel-heading">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,1fr)]">
+        <section
+          className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
+          aria-labelledby="gr-ops-priorities"
+        >
+          <div className="flex items-start justify-between gap-3 border-b border-[#f0e6e2] pb-4">
             <div>
-              <h3>Continue your operations</h3>
-              <p>Open an authorized business module.</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+                Recommended next actions
+              </p>
+
+              <h3
+                id="gr-ops-priorities"
+                className="mt-1 font-serif text-2xl text-[#46172f]"
+              >
+                What needs attention
+              </h3>
             </div>
-            <ClipboardList size={20} />
+
+            <ClipboardList
+              className="text-[#ad8247]"
+              size={22}
+              aria-hidden="true"
+            />
           </div>
 
-          <div className="gr-executive-links">
-            {canViewModule(role, 'products') && (
-              <Link href="/workspace/products">
-                <Box size={18} />
-                <span>
-                  <strong>Review products</strong>
-                  <small>Catalogue, variants and barcodes</small>
+          <div className="mt-4 grid gap-3">
+            {!catalogueReady && mayViewProducts && (
+              <Link
+                href="/workspace/products"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+              >
+                <Package
+                  className="shrink-0 text-[#a67532]"
+                  size={19}
+                  aria-hidden="true"
+                />
+
+                <span className="grid min-w-0 flex-1 gap-1">
+                  <strong className="text-sm text-[#4f2b3d]">
+                    Check catalogue access
+                  </strong>
+
+                  <small className="text-xs leading-5 text-[#8a7580]">
+                    Verify imported products and
+                    their publication status.
+                  </small>
                 </span>
-                <ArrowRight size={17} />
+
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[#a67532]"
+                  aria-hidden="true"
+                />
               </Link>
             )}
 
-            {canViewModule(role, 'inventory') && (
-              <Link href="/workspace/inventory">
-                <MapPin size={18} />
-                <span>
-                  <strong>Manage inventory</strong>
-                  <small>Locations and stock receiving</small>
+            {!storeReady && mayViewInventory && (
+              <Link
+                href="/workspace/inventory"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+              >
+                <Building2
+                  className="shrink-0 text-[#a67532]"
+                  size={19}
+                  aria-hidden="true"
+                />
+
+                <span className="grid min-w-0 flex-1 gap-1">
+                  <strong className="text-sm text-[#4f2b3d]">
+                    Verify store setup
+                  </strong>
+
+                  <small className="text-xs leading-5 text-[#8a7580]">
+                    Employees and cash registers
+                    need a real active retail location.
+                  </small>
                 </span>
-                <ArrowRight size={17} />
+
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[#a67532]"
+                  aria-hidden="true"
+                />
               </Link>
             )}
 
-            {canViewModule(role, 'pos') && (
-              <Link href="/workspace/pos">
-                <ScanBarcode size={18} />
-                <span>
-                  <strong>Open Point of Sale</strong>
-                  <small>Register, barcode scanner and calculator</small>
+            {role === 'owner' && !staffReady && (
+              <Link
+                href="/workspace/staff"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+              >
+                <UsersRound
+                  className="shrink-0 text-[#a67532]"
+                  size={19}
+                  aria-hidden="true"
+                />
+
+                <span className="grid min-w-0 flex-1 gap-1">
+                  <strong className="text-sm text-[#4f2b3d]">
+                    Set up employee access
+                  </strong>
+
+                  <small className="text-xs leading-5 text-[#8a7580]">
+                    Create or invite staff and
+                    test role-based sign-in.
+                  </small>
                 </span>
-                <ArrowRight size={17} />
+
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[#a67532]"
+                  aria-hidden="true"
+                />
               </Link>
             )}
+
+            {mayViewInventory &&
+              inventory &&
+              lowStockOnPage !== null &&
+              lowStockOnPage > 0 && (
+                <Link
+                  href="/workspace/inventory#inventory-balances"
+                  className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+                >
+                  <CircleAlert
+                    className="shrink-0 text-[#a67532]"
+                    size={19}
+                    aria-hidden="true"
+                  />
+
+                  <span className="grid min-w-0 flex-1 gap-1">
+                    <strong className="text-sm text-[#4f2b3d]">
+                      Review {lowStockOnPage} low / empty
+                      stock rows
+                    </strong>
+
+                    <small className="text-xs leading-5 text-[#8a7580]">
+                      First inventory page only;
+                      confirm physical quantities.
+                    </small>
+                  </span>
+
+                  <ArrowRight
+                    size={17}
+                    className="shrink-0 text-[#a67532]"
+                    aria-hidden="true"
+                  />
+                </Link>
+              )}
+
+            {catalogueReady &&
+              storeReady &&
+              (role !== 'owner' || staffReady) &&
+              (lowStockOnPage === null ||
+                lowStockOnPage === 0) && (
+                <p className="rounded-xl border border-[#dceadf] bg-[#f3faf5] p-4 text-sm leading-6 text-[#3e6e4a]">
+                  Catalogue, store and available team
+                  checks look good. Continue verifying
+                  actual receiving and POS transactions
+                  before going live.
+                </p>
+              )}
+
+            <p className="rounded-xl bg-[#f8f3ee] p-4 text-xs leading-5 text-[#866f7b]">
+              Financial totals are intentionally not
+              shown until verified sales and reporting
+              endpoints are connected. A working page
+              does not by itself confirm a complete
+              business workflow.
+            </p>
+          </div>
+        </section>
+
+        <section
+          className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
+          aria-labelledby="gr-ops-readiness"
+        >
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+            Live checks
+          </p>
+
+          <h3
+            id="gr-ops-readiness"
+            className="mt-1 font-serif text-2xl text-[#46172f]"
+          >
+            Store readiness
+          </h3>
+
+          <ul className="mt-4">
+            <ReadinessRow
+              title="Catalogue"
+              detail={
+                catalogueReady
+                  ? 'Product records can be retrieved.'
+                  : 'Check the product service.'
+              }
+              ready={catalogueReady}
+            />
+
+            <ReadinessRow
+              title="Retail location"
+              detail={
+                storeReady
+                  ? `${stores} active store${stores === 1 ? '' : 's'} configured.`
+                  : 'No active store could be verified.'
+              }
+              ready={storeReady}
+            />
 
             {role === 'owner' && (
-              <Link href="/workspace/staff">
-                <UsersRound size={18} />
-                <span>
-                  <strong>Staff Management</strong>
-                  <small>Owner-controlled employee access</small>
-                </span>
-                <ArrowRight size={17} />
-              </Link>
+              <ReadinessRow
+                title="Staff directory"
+                detail={
+                  staffReady
+                    ? `${staff!.employees} employee account${staff!.employees === 1 ? '' : 's'} found.`
+                    : 'Review employee invitations and account setup.'
+                }
+                ready={staffReady}
+              />
             )}
 
-            {canViewModule(role, 'orders') && (
-              <Link href="/workspace/orders">
-                <ShoppingBag size={18} />
-                <span>
-                  <strong>Sales &amp; Orders</strong>
-                  <small>Sales records and order operations</small>
-                </span>
-                <ArrowRight size={17} />
-              </Link>
-            )}
-          </div>
-        </section>
-
-        <section className="gr-executive-panel">
-          <div className="gr-executive-panel-heading">
-            <div>
-              <h3>Business readiness</h3>
-              <p>What still needs to be connected.</p>
-            </div>
-            <ShieldCheck size={20} />
-          </div>
-
-          <div className="gr-executive-checks">
-            <div>
-              {catalogueState === 'ready' ? (
-                <CheckCircle2 size={19} className="is-ready" />
-              ) : (
-                <TriangleAlert size={19} />
-              )}
-
-              <span>
-                <strong>Catalogue access</strong>
-                <small>
-                  {catalogueState === 'ready'
-                    ? 'Available for staff catalogue operations.'
-                    : 'Requires a valid catalogue connection or data.'}
-                </small>
-              </span>
-            </div>
-
-            <div>
-              {locationState === 'ready' ? (
-                <CheckCircle2 size={19} className="is-ready" />
-              ) : (
-                <TriangleAlert size={19} />
-              )}
-
-              <span>
-                <strong>Physical store location</strong>
-                <small>
-                  {locationState === 'ready'
-                    ? 'An active location is configured.'
-                    : 'Check Inventory to configure a location.'}
-                </small>
-              </span>
-            </div>
-
-            <div>
-              <TriangleAlert size={19} />
-
-              <span>
-                <strong>Financial reporting</strong>
-                <small>
-                  Revenue, profit and sales charts must use
-                  verified transaction data.
-                </small>
-              </span>
-            </div>
-          </div>
-
-          <p className="gr-executive-note">
-            These checks indicate system connectivity and
-            setup. They are not a certification that cash
-            settlement, stock accounting or reporting
-            integrations have passed acceptance testing.
-          </p>
+            <ReadinessRow
+              title="Financial reporting"
+              detail="Awaiting verified sales, orders and revenue integration."
+              ready={false}
+            />
+          </ul>
         </section>
       </div>
+
+      <section
+        className="min-w-0"
+        aria-labelledby="gr-ops-workspaces"
+      >
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+              Your tools
+            </p>
+
+            <h3
+              id="gr-ops-workspaces"
+              className="mt-1 font-serif text-2xl text-[#46172f]"
+            >
+              Business workspaces
+            </h3>
+          </div>
+
+          {role === 'owner' && (
+            <Link
+              href="/workspace/migration"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#dfc9b6] bg-[#fff8ee] px-3 py-2 text-xs font-semibold text-[#754c27] hover:bg-[#fff1dc]"
+            >
+              Data Management
+
+              <ArrowRight
+                size={15}
+                aria-hidden="true"
+              />
+            </Link>
+          )}
+        </div>
+
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {visibleShortcuts.map(link => {
+            const Icon = link.icon;
+
+            return (
+              <Link
+                key={link.id}
+                href={link.href}
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#eadbd8] bg-[#fffdf9] p-4 shadow-[0_4px_20px_rgba(70,23,47,0.03)] transition-colors hover:border-[#d8b68e] hover:bg-[#fff8ef]"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#f9ecd9] text-[#a47636]">
+                  <Icon
+                    size={19}
+                    aria-hidden="true"
+                  />
+                </span>
+
+                <span className="grid min-w-0 flex-1 gap-1">
+                  <strong className="text-sm text-[#4c293a]">
+                    {link.label}
+                  </strong>
+
+                  <small className="text-xs text-[#8a7880]">
+                    {link.detail}
+                  </small>
+                </span>
+
+                <ArrowRight
+                  size={16}
+                  className="shrink-0 text-[#ad8248] transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </Link>
+            );
+          })}
+        </div>
+      </section>
     </section>
   );
 }

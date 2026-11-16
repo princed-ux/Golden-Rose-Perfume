@@ -7,7 +7,7 @@ function reject(message: string, status: number) {
   return Response.json({ ok: false, error: message }, { status });
 }
 
-export default {
+const inventoryReceive = {
   fetch: withSupabase({ auth: "user" }, async (req, ctx) => {
     if (req.method !== "POST") return reject("Method not allowed", 405);
 
@@ -31,6 +31,16 @@ export default {
     if (typeof actorId !== "string" || !uuid.test(actorId)) {
       return reject("Invalid user session", 401);
     }
+    const sessionId = ctx.jwtClaims?.session_id;
+    if (typeof sessionId !== "string" || !uuid.test(sessionId)) return reject("Invalid user session", 401);
+    const credential = await ctx.supabaseAdmin.rpc("gr_employee_session_allowed", {
+      p_actor: actorId, p_session: sessionId,
+    });
+    if (credential.error) {
+      console.error("inventory-receive credential check failed", credential.error.code);
+      return reject("Unable to verify employee session", 503);
+    }
+    if (credential.data !== true) return reject("Sign in again to receive stock", 403);
 
     const variantId = body.variantId;
     const locationId = body.locationId;
@@ -81,3 +91,5 @@ export default {
     return Response.json({ ok: true, movementId: data }, { status: 200 });
   }),
 };
+
+export default inventoryReceive;

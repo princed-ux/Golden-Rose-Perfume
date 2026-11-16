@@ -50,6 +50,32 @@ CREATE TRIGGER enforce_staff_password_rotation
   BEFORE INSERT OR UPDATE ON golden_rose.staff_members
   FOR EACH ROW EXECUTE FUNCTION golden_rose_employment.require_rotation();
 
+CREATE FUNCTION golden_rose_employment.check_staff_suspension(p_target uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+BEGIN
+  PERFORM 1 FROM golden_rose.staff_members WHERE user_id=auth.uid() AND role='owner' AND status='active' FOR SHARE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'An active owner account is required.' USING ERRCODE='42501'; END IF;
+  PERFORM pg_advisory_xact_lock(109071,3);
+  IF EXISTS (
+    SELECT 1 FROM golden_rose_employment.password_enrollment e
+    JOIN golden_rose.staff_members s ON s.user_id=e.user_id
+    WHERE e.user_id=p_target AND e.phase<>'complete' AND s.revoked_at IS NULL
+  ) THEN
+    RAISE EXCEPTION 'This employee is blocked during onboarding. Revoke access to cancel their onboarding.' USING ERRCODE='22023';
+  END IF;
+END $$;
+REVOKE ALL ON FUNCTION golden_rose_employment.check_staff_suspension(uuid) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION golden_rose_employment.check_staff_suspension(uuid) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.gr_staff_manage(p_action text,p_payload jsonb DEFAULT '{}')
+RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
+BEGIN
+  IF p_action='suspend' THEN
+    PERFORM golden_rose_employment.check_staff_suspension(nullif(p_payload->>'id','')::uuid);
+  END IF;
+  RETURN golden_rose_employment.manage(p_action,p_payload);
+END $$;
+
 -- Only the authenticated application server can call this operation, after verifying the
 -- owner token. The owner and target are checked again in the database for every write.
 CREATE FUNCTION public.gr_owner_employee_account(p_owner uuid, p_action text, p_payload jsonb DEFAULT '{}')
@@ -151,7 +177,7 @@ BEGIN
     IF enrollment.phase='replacing' AND enrollment.expires_at>now() THEN
       RAISE EXCEPTION 'A password replacement is in progress. Wait two minutes before retrying.' USING ERRCODE='22023';
     END IF;
-    UPDATE golden_rose.staff_members SET status='suspended',updated_at=now() WHERE user_id=target;
+    UPDATE golden_rose.staff_members SET status='suspended',updated_at=now() WHERE user_id=target AND status='active';
     INSERT INTO golden_rose_employment.password_enrollment(user_id,phase,work_email,expires_at,ready_after)
       VALUES(target,'replacing',lower(identity.email),now()+interval '2 minutes',clock_timestamp())
       ON CONFLICT(user_id) DO UPDATE SET version=gen_random_uuid(),phase='replacing',
@@ -192,6 +218,33 @@ RETURNS boolean LANGUAGE sql STABLE SET search_path='' AS $$
 $$;
 REVOKE ALL ON FUNCTION public.gr_employee_session_allowed(uuid,uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.gr_employee_session_allowed(uuid,uuid) TO service_role;
+
+-- Hold the staff row until the POS request finishes. Credential eligibility and
+-- the existing store, price and stock checks run in the same transaction.
+CREATE FUNCTION golden_rose_employment.lock_staff_session(p_actor uuid,p_session uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+BEGIN
+  PERFORM 1 FROM golden_rose.staff_members WHERE user_id=p_actor AND status='active' FOR SHARE;
+  IF NOT FOUND OR p_session IS NULL OR NOT golden_rose_employment.session_allowed(p_actor,p_session) THEN
+    RAISE EXCEPTION 'An active staff session is required.' USING ERRCODE='GR403';
+  END IF;
+END $$;
+REVOKE ALL ON FUNCTION golden_rose_employment.lock_staff_session(uuid,uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION golden_rose_employment.lock_staff_session(uuid,uuid) TO service_role;
+
+CREATE FUNCTION public.gr_pos_session_request(p_actor_id uuid,p_session_id uuid,p_action text,p_payload jsonb)
+RETURNS jsonb LANGUAGE plpgsql SET search_path='' AS $$
+BEGIN
+  PERFORM golden_rose_employment.lock_staff_session(p_actor_id,p_session_id);
+  IF p_action='checkout' THEN
+    RETURN public.gr_pos_checked_checkout(p_actor_id,p_payload);
+  ELSIF p_action IN ('catalog','receipt') THEN
+    RETURN public.gr_pos_register(p_actor_id,p_action,p_payload);
+  END IF;
+  RAISE EXCEPTION 'Unsupported POS action.' USING ERRCODE='22023';
+END $$;
+REVOKE ALL ON FUNCTION public.gr_pos_session_request(uuid,uuid,text,jsonb) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.gr_pos_session_request(uuid,uuid,text,jsonb) TO service_role;
 
 CREATE FUNCTION golden_rose_employment.password_state(actor uuid,token_session uuid,p_finish boolean)
 RETURNS text LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$

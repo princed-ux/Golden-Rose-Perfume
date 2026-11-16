@@ -1,0 +1,47 @@
+@page gr-draft {
+  size: A4;
+  margin: 18mm;
+}
+
+@media print {
+  body:has(#gr-draft-print) {
+    page: gr-draft;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  /* Remove the shell from print layout so the draft can flow across pages. */
+  body:has(#gr-draft-print) :not(#gr-draft-print, #gr-draft-print *, :has(#gr-draft-print)) {
+    display: none !important;
+  }
+
+  body :has(#gr-draft-print) {
+    display: block !important;
+    position: static !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: visible !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  #gr-draft-print {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #371628 !important;
+  }
+
+  #gr-draft-print .overflow-x-auto {
+    overflow: visible;
+  }
+
+  #gr-draft-print tr {
+    break-inside: avoid;
+  }
+}

@@ -19,11 +19,9 @@ const register = {
     const actor = context.userClaims?.id ?? context.jwtClaims?.sub;
     if (typeof actor !== "string" || !uuid.test(actor)) return respond({ ok: false, error: "Invalid staff session" }, 401);
     const sessionId = context.jwtClaims?.session_id;
-    const credential = await context.supabaseAdmin.rpc("gr_employee_session_allowed", {
-      p_actor: actor, p_session: typeof sessionId === "string" && uuid.test(sessionId) ? sessionId : null,
-    });
-    if (credential.error) return problem(credential.error);
-    if (credential.data !== true) return respond({ ok: false, error: "Sign in again after changing your employee password." }, 403);
+    if (typeof sessionId !== "string" || !uuid.test(sessionId)) {
+      return respond({ ok: false, error: "Sign in again to use the register." }, 401);
+    }
 
     if (request.method === "GET") {
       const url = new URL(request.url);
@@ -44,8 +42,8 @@ const register = {
         search: (url.searchParams.get("search") ?? "").slice(0,100), locationId,
         offset, limit
       };
-      const { data, error } = await context.supabaseAdmin.rpc("gr_pos_register", {
-        p_actor_id: actor, p_action: isReceipt ? "receipt" : "catalog", p_payload: payload,
+      const { data, error } = await context.supabaseAdmin.rpc("gr_pos_session_request", {
+        p_actor_id: actor, p_session_id: sessionId, p_action: isReceipt ? "receipt" : "catalog", p_payload: payload,
       });
       if (error) return problem(error);
       return respond(data);
@@ -67,8 +65,8 @@ const register = {
       || typeof body.idempotencyKey !== "string" || !uuid.test(body.idempotencyKey)) {
       return respond({ ok: false, error: "Invalid checkout request" }, 400);
     }
-    const { data, error } = await context.supabaseAdmin.rpc("gr_pos_checked_checkout", {
-      p_actor_id: actor, p_payload: body,
+    const { data, error } = await context.supabaseAdmin.rpc("gr_pos_session_request", {
+      p_actor_id: actor, p_session_id: sessionId, p_action: "checkout", p_payload: body,
     });
     if (error) return problem(error);
     return respond(data);

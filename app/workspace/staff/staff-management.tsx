@@ -57,6 +57,8 @@ const accountSetupMessage: Record<EmployeeAccountSetupIssue, string> = {
   'server-key': 'The staff admin key is missing from the web server environment.',
   migration: 'The employee account migration has not been released to the connected database.',
   connection: 'The web server could not verify staff administration access. Check its Supabase connection and reload this page.',
+  'email-confirmation': 'The connected Auth project must require work email confirmation.',
+  'auth-settings': 'The web server could not verify email confirmation settings.',
 };
 
 const pillColors: Record<string, string> = {
@@ -212,7 +214,8 @@ export function StaffManagement({
 }) {
   const inviteDialog = useRef<HTMLDialogElement>(null);
   const [onboarding, setOnboarding] = useState<'invite' | 'create_account'>('invite');
-  const directSetupPending = onboarding === 'create_account' && accountStates === null;
+  const accountsReady = accountStates !== null && accountSetupIssues.length === 0;
+  const directSetupPending = onboarding === 'create_account' && !accountsReady;
 
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -754,7 +757,7 @@ export function StaffManagement({
                               </div>
                             </fieldset>
                           </form>
-                          {accountStates?.[employee.id] && (employee.status === 'active' || accountStates[employee.id] !== 'ready') && (
+                          {accountsReady && accountStates?.[employee.id] && (employee.status === 'active' || accountStates[employee.id] !== 'ready') && (
                             <details className="mt-4 border-t border-[#f0e6e1] pt-3">
                               <summary className="w-fit cursor-pointer text-sm font-semibold text-[#54213a]">Replace temporary password</summary>
                               <form action={action} className="mt-3" aria-busy={pending}>
@@ -767,7 +770,7 @@ export function StaffManagement({
                               </form>
                             </details>
                           )}
-                          {accountStates?.[employee.id] === 'awaiting_verification' && <form action={action} className="mt-3">
+                          {accountsReady && accountStates?.[employee.id] === 'awaiting_verification' && <form action={action} className="mt-3">
                             <input type="hidden" name="id" value={employee.id} />
                             <button name="operation" value="resend_confirmation" type="submit" disabled={pending} className={workspaceSecondary}>Resend email confirmation</button>
                           </form>}

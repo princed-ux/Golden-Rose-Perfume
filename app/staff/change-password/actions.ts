@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/src/lib/supabase/server';
 import { getStaffPasswordState } from '@/src/lib/golden-rose/staff';
 import { employeePasswordHint, strongEmployeePassword } from '@/src/lib/golden-rose/employee-passwords';
-import { employeeAdminClient, employeePublicAuthClient } from '@/src/lib/golden-rose/employee-admin';
+import { employeeAdminClient, employeeEmailConfirmation, employeePublicAuthClient } from '@/src/lib/golden-rose/employee-admin';
 import { UUID, type OperationResult } from '@/src/lib/golden-rose/contracts';
 
 export async function changeEmployeePassword(_: OperationResult, form: FormData): Promise<OperationResult> {
@@ -23,6 +23,9 @@ export async function changeEmployeePassword(_: OperationResult, form: FormData)
     }
     const admin = employeeAdminClient();
     if (!admin) return errorResult('Staff password changes are unavailable. Ask the owner to check the staff configuration.');
+    if (await employeeEmailConfirmation() !== 'required') {
+      return errorResult('Staff password changes require work email confirmation. Ask the owner to check Supabase Auth settings.');
+    }
     // Verify the current password even when the project's optional Auth setting is disabled.
     const freshClient = employeePublicAuthClient();
     const reauth = await freshClient.auth.signInWithPassword({ email: user.email, password: current });

@@ -5,7 +5,7 @@ import { WorkspaceNotice, WorkspacePageHeader, WorkspacePanel } from '@/src/comp
 import type { EmployeeAccountSetupIssue, EmployeeAccountState, StaffDirectory } from '@/src/lib/golden-rose/employees';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { createClient } from '@/src/lib/supabase/server';
-import { employeeAdminClient } from '@/src/lib/golden-rose/employee-admin';
+import { employeeAdminClient, employeeEmailConfirmation } from '@/src/lib/golden-rose/employee-admin';
 import { OwnerAccessPanel } from '../owner-access/panel';
 import { StaffManagement, StaffSectionLinks } from './staff-management';
 
@@ -20,8 +20,11 @@ async function EmployeeDirectory({ userId }: { userId: string }) {
   const directory = !error && data && Array.isArray(data.employees) && Array.isArray(data.locations) &&
     Array.isArray(data.invitations) && Array.isArray(data.audit) ? data as StaffDirectory : null;
   const admin = directory ? employeeAdminClient() : null;
-  const credentials = admin && await admin.rpc('gr_owner_employee_account', { p_owner: userId, p_action: 'list' });
-  const migrationProbe = directory && !admin ? await client.rpc('gr_employee_password_state') : null;
+  const [credentials, migrationProbe, emailConfirmation] = await Promise.all([
+    admin ? admin.rpc('gr_owner_employee_account', { p_owner: userId, p_action: 'list' }) : null,
+    directory && !admin ? client.rpc('gr_employee_password_state') : null,
+    directory ? employeeEmailConfirmation() : null,
+  ]);
   const accountStates = credentials && !credentials.error && credentials.data && typeof credentials.data === 'object'
     ? credentials.data as Record<string, EmployeeAccountState> : null;
   const accountSetupIssues: EmployeeAccountSetupIssue[] = [];
@@ -31,6 +34,8 @@ async function EmployeeDirectory({ userId }: { userId: string }) {
   } else if (admin && !accountStates) {
     accountSetupIssues.push('connection');
   }
+  if (emailConfirmation === 'disabled') accountSetupIssues.push('email-confirmation');
+  if (emailConfirmation === 'unavailable') accountSetupIssues.push('auth-settings');
   return <StaffManagement directory={directory} accountStates={accountStates} accountSetupIssues={accountSetupIssues}
     unavailable={error?.code === 'PGRST202' ? 'pending' : 'error'} />;
 }

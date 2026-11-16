@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { resolveAuthOrigin, validEmail } from '@/src/lib/customer/auth-policy';
 import { UUID, type OperationResult } from '@/src/lib/golden-rose/contracts';
-import { employeeAdminClient, employeePublicAuthClient } from '@/src/lib/golden-rose/employee-admin';
+import { employeeAdminClient, employeeEmailConfirmation, employeePublicAuthClient } from '@/src/lib/golden-rose/employee-admin';
 import { employeePasswordHint, strongEmployeePassword } from '@/src/lib/golden-rose/employee-passwords';
 import { isEmployeeRole } from '@/src/lib/golden-rose/employees';
 import { getStaffAccess } from '@/src/lib/golden-rose/staff';
@@ -32,6 +32,10 @@ export async function manageEmployeeAccount(_: OperationResult, form: FormData):
   }
   const admin = employeeAdminClient();
   if (!admin) return failed('Direct account creation and password replacement require the server staff admin key.');
+  const confirmation = await employeeEmailConfirmation();
+  if (confirmation !== 'required') return failed(confirmation === 'disabled'
+    ? 'Supabase Auth must require work email confirmation before managing direct employee credentials.'
+    : 'The web server could not verify Auth email confirmation settings. Try again later.');
 
   const field = (name: string) => String(form.get(name) ?? '').trim();
   const operation = field('operation');
