@@ -10,7 +10,7 @@ import { OwnerAccessPanel } from '../owner-access/panel';
 import '@/src/components/workspace/business-print.css';
 
 const businessModules: readonly BusinessModule[] = [
-  'orders', 'customers', 'invoices', 'purchases',
+  'invoices', 'purchases',
   'suppliers', 'reports', 'expenses', 'settings',
 ];
 
@@ -19,7 +19,7 @@ function isBusinessModule(id: string): id is BusinessModule {
 }
 
 export function generateStaticParams() {
-  return WORKSPACE_MODULES.filter(module => module.id !== 'products' && module.id !== 'inventory')
+  return WORKSPACE_MODULES.filter(module => !['products', 'inventory', 'orders', 'customers', 'pos', 'staff'].includes(module.id))
     .map(module => ({ module: module.id }));
 }
 
