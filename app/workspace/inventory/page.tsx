@@ -1,5 +1,5 @@
 
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
@@ -87,7 +87,15 @@ function Metric({
   );
 }
 
-export default async function InventoryPage({
+export default function InventoryPage({ searchParams }: { searchParams: Promise<{ offset?: string }> }) {
+  return (
+    <Suspense fallback={<p className="p-5 text-sm text-[#6f5162]" role="status">Loading inventory…</p>}>
+      <InventoryWorkspace searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function InventoryWorkspace({
   searchParams,
 }: {
   searchParams: Promise<{ offset?: string }>;

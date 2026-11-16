@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { WorkspaceNotice, WorkspacePageHeader } from '@/src/components/workspace/page-layout';
 import { notFound } from 'next/navigation';
 import {
-  ArrowUpRight,
   Barcode,
   Box,
   ChevronLeft,
@@ -13,6 +13,7 @@ import {
   Filter,
   Layers3,
   Package2,
+  Plus,
   Search,
   Sparkles,
   Tag,
@@ -20,6 +21,10 @@ import {
 import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { adminProductPages } from '@/src/lib/golden-rose/edge';
+import { canManageStockSetup, formatPrice, UUID, type AdminProduct } from '@/src/lib/golden-rose/contracts';
+import type { CataloguePublication, ManagedProduct } from '@/src/lib/golden-rose/catalogue-management';
+import { readCataloguePage, readProductDetails } from './data';
+import { AddProductForm, ProductEditor, PublicationForm } from './product-editor';
 import './products.css';
 import './catalogue-layout.css';
 
@@ -29,7 +34,7 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE = 24;
 
-type PublicationFilter = 'all' | 'published' | 'draft';
+type PublicationFilter = CataloguePublication;
 
 type ProductVariant = {
   id: string;
@@ -38,6 +43,7 @@ type ProductVariant = {
   size_ml: number | null;
   price_minor: number;
   currency: string;
+  active: boolean;
 };
 
 type ProductRow = {
@@ -46,6 +52,8 @@ type ProductRow = {
   slug: string | null;
   description: string | null;
   is_published: boolean;
+  active: boolean;
+  revision?: string;
   created_at: string | null;
   brand: { name: string | null } | null;
   category: { name: string | null } | null;
@@ -78,15 +86,26 @@ function parsePublication(value?: string): PublicationFilter {
 
 function parsePage(value?: string): number {
   const page = Number(value);
-  return Number.isSafeInteger(page) && page >= 1 ? page : 1;
+  return Number.isSafeInteger(page) && page >= 1 && page <= 999_999 ? page : 1;
 }
 
-function formatMoney(minor: number, currency = 'NGN') {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 0,
-  }).format(minor / 100);
+function productRow(product: AdminProduct | ManagedProduct): ProductRow {
+  return {
+    id: product.productId,
+    name: product.name,
+    slug: product.slug,
+    description: product.description,
+    is_published: product.published,
+    active: product.active,
+    revision: 'revision' in product ? product.revision : undefined,
+    created_at: product.createdAt ?? null,
+    brand: product.brand ? { name: product.brand } : null,
+    category: product.category ? { name: product.category } : null,
+    variants: product.variants.map(variant => ({
+      id: variant.variantId, sku: variant.sku, barcode: variant.barcode, size_ml: variant.sizeMl,
+      price_minor: variant.priceMinor, currency: variant.currency, active: variant.active,
+    })),
+  };
 }
 
 function compactNumber(value: number) {
@@ -126,20 +145,7 @@ async function loadCatalogue(token: string, search: string, publication: Publica
 
       const position = total++;
       if (position < from || items.length >= PAGE_SIZE) continue;
-      items.push({
-        id: product.productId,
-        name: product.name,
-        slug: product.slug,
-        description: product.description,
-        is_published: product.published,
-        created_at: product.createdAt ?? null,
-        brand: product.brand ? { name: product.brand } : null,
-        category: product.category ? { name: product.category } : null,
-        variants: product.variants.map(variant => ({
-          id: variant.variantId, sku: variant.sku, barcode: variant.barcode, size_ml: variant.sizeMl,
-          price_minor: variant.priceMinor, currency: variant.currency,
-        })),
-      });
+      items.push(productRow(product));
     }
   }
 
@@ -156,13 +162,11 @@ function productLead(product: ProductRow) {
     };
   }
 
-  let lowestPrice = variants[0]?.price_minor ?? null;
+  const priced = variants.filter(variant => variant.active && variant.currency === 'NGN');
+  const lowestPrice = priced.length ? Math.min(...priced.map(variant => variant.price_minor)) : null;
   let barcodeCount = 0;
 
   for (const variant of variants) {
-    if (typeof variant.price_minor === 'number') {
-      lowestPrice = lowestPrice === null ? variant.price_minor : Math.min(lowestPrice, variant.price_minor);
-    }
     if (variant.barcode) barcodeCount += 1;
   }
 
@@ -281,37 +285,64 @@ function Pagination({
   );
 }
 
-export default async function ProductsCataloguePage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    q?: string;
-    publication?: string;
-    page?: string;
-  }>;
-}) {
+type CatalogueParams = Promise<{ q?: string; publication?: string; page?: string; add?: string; manage?: string }>;
+
+export default function ProductsCataloguePage({ searchParams }: { searchParams: CatalogueParams }) {
+  return <Suspense fallback={<p className="p-5 text-sm text-[#6f5162]" role="status">Loading catalogue…</p>}>
+    <CatalogueWorkspace searchParams={searchParams} />
+  </Suspense>;
+}
+
+async function CatalogueWorkspace({ searchParams }: { searchParams: CatalogueParams }) {
   const { role, token } = await requireStaff();
   if (!canViewModule(role, 'products')) notFound();
 
   const resolved = await searchParams;
-  const q = typeof resolved.q === 'string' ? resolved.q : '';
+  const q = typeof resolved.q === 'string' ? resolved.q.trim().slice(0,80) : '';
   const publication = parsePublication(typeof resolved.publication === 'string' ? resolved.publication : undefined);
   const page = parsePage(typeof resolved.page === 'string' ? resolved.page : undefined);
-
-  let payload: CataloguePayload | null = null;
-  let loadError: string | null = null;
-
+  const editable = canManageStockSetup(role);
+  const adding = editable && resolved.add === '1';
+  const productId = editable && typeof resolved.manage === 'string' && UUID.test(resolved.manage) ? resolved.manage : null;
+  let enhanced = false;
+  let payload: CataloguePayload | undefined;
+  let loadError: string | undefined;
+  let detail: Awaited<ReturnType<typeof readProductDetails>> | null = null;
   try {
-    payload = await loadCatalogue(token, q, publication, page);
+    const [result, selected] = await Promise.all([
+      readCataloguePage(q, publication, page),
+      productId ? readProductDetails(productId) : null,
+    ]);
+    detail = selected;
+    enhanced = !!result.data;
+    if (result.data) {
+      payload = { ...result.data, items: result.data.items.map(productRow), filters: { q, publication } };
+    } else if (result.unavailable) {
+      payload = await loadCatalogue(token,q,publication,page);
+    } else {
+      loadError = result.error;
+    }
   } catch (error) {
     loadError = error instanceof Error ? error.message : 'Unable to open the product catalogue.';
   }
 
+  const header = (
+    <WorkspacePageHeader title="Products & Catalogue" description="Manage fragrance listings, variants, and storefront publication."
+      actions={editable && !adding ? <Link href="/workspace/products?add=1" className="catalogue-btn catalogue-btn--primary">
+        <Plus size={16} aria-hidden="true" /> Add product
+      </Link> : undefined} />
+  );
+  const editor = adding ? <AddProductForm extended={enhanced} /> :
+    detail?.data ? <ProductEditor key={detail.data.productId} initial={detail.data} /> :
+    detail?.error ? <WorkspaceNotice title="Product details unavailable" tone={detail.unavailable ? 'pending' : 'error'}>
+      {detail.error}
+    </WorkspaceNotice> : null;
+
   if (!payload) {
     return (
       <section className="catalogue-shell">
-        <WorkspacePageHeader title="Products & Catalogue" kicker="Catalogue workspace"
-          description="Review imported fragrances, confirm variant data, and prepare Golden Rose products for publishing." />
+        {header}
+        {editor}
         <WorkspaceNotice title="Catalogue unavailable" tone="error">
           {loadError ?? 'Something went wrong while loading products.'}
         </WorkspaceNotice>
@@ -323,8 +354,8 @@ export default async function ProductsCataloguePage({
 
   return (
     <section className="catalogue-shell">
-      <WorkspacePageHeader title="Products & Catalogue" kicker="Catalogue workspace"
-        description="Review fragrances, confirm barcode coverage, and prepare products for publishing." />
+      {header}
+      {editor}
       <div className="catalogue-hero__cards" aria-label="Catalogue summary">
           <article className="catalogue-stat">
             <span className="catalogue-stat__icon">
@@ -394,13 +425,6 @@ export default async function ProductsCataloguePage({
 
       <ProductToolbar currentQ={payload.filters.q} currentPublication={payload.filters.publication} />
 
-      {loadError && (
-        <div className="catalogue-warning">
-          <strong>Heads up</strong>
-          <p>{loadError}</p>
-        </div>
-      )}
-
       {!payload.items.length ? (
         <section className="catalogue-empty">
           <div className="catalogue-empty__icon">
@@ -456,7 +480,7 @@ export default async function ProductsCataloguePage({
                       </div>
                       <div>
                         <span>From</span>
-                        <strong>{lead.lowestPrice !== null ? formatMoney(lead.lowestPrice) : '—'}</strong>
+                        <strong>{lead.lowestPrice !== null ? formatPrice(lead.lowestPrice) : '—'}</strong>
                       </div>
                     </div>
                   </div>
@@ -474,13 +498,14 @@ export default async function ProductsCataloguePage({
                         <div key={variant.id} className="catalogue-variant">
                           <div className="catalogue-variant__line">
                             <strong>{variant.sku ?? 'No SKU'}</strong>
-                            <span>{formatMoney(variant.price_minor, variant.currency || 'NGN')}</span>
+                            <span>{formatPrice(variant.price_minor, variant.currency || 'NGN')}</span>
                           </div>
 
                           <div className="catalogue-variant__meta">
                             <span>{variant.size_ml ? `${variant.size_ml} ml` : 'Size not set'}</span>
                             <span className="catalogue-dot" aria-hidden="true" />
                             <span>{variant.barcode ?? 'No barcode'}</span>
+                            {!variant.active && <span>Inactive</span>}
                           </div>
                         </div>
                       ))
@@ -506,21 +531,12 @@ export default async function ProductsCataloguePage({
                     </span>
                   </div>
 
-                  <div className="catalogue-card__actions">
-                    <button type="button" className="catalogue-btn catalogue-btn--ghost" disabled>
+                  {editable && <div className="catalogue-card__actions">
+                    <Link href={'/workspace/products?manage=' + product.id} className="catalogue-btn catalogue-btn--ghost">
                       Manage details
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`catalogue-btn ${product.is_published ? 'catalogue-btn--soft' : 'catalogue-btn--primary'}`}
-                      disabled
-                      title="Keep this UI-only for now. Later, wire this button to your existing publish/unpublish server action."
-                    >
-                      {product.is_published ? 'Published' : 'Publish'}
-                      {!product.is_published && <ArrowUpRight size={16} aria-hidden="true" />}
-                    </button>
-                  </div>
+                    </Link>
+                    {product.active && <PublicationForm productId={product.id} revision={product.revision} published={product.is_published} />}
+                  </div>}
                 </div>
               </article>
             );

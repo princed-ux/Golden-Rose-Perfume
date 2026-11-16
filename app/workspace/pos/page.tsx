@@ -1,5 +1,6 @@
 
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
@@ -18,7 +19,15 @@ export const metadata: Metadata = {
  * Dedicated authenticated route.
  * Next.js chooses it before /workspace/[module].
  */
-export default async function PointOfSalePage() {
+export default function PointOfSalePage() {
+  return (
+    <Suspense fallback={<p className="p-5 text-sm text-[#6f5162]" role="status">Loading register…</p>}>
+      <AuthorizedRegister />
+    </Suspense>
+  );
+}
+
+async function AuthorizedRegister() {
   const { role } = await requireStaff();
 
   if (!canViewModule(role, 'pos')) {

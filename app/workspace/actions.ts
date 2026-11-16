@@ -4,9 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { getStaffAccess } from '@/src/lib/golden-rose/staff';
 import { callEdge, EdgeError } from '@/src/lib/golden-rose/edge';
 import {
-  canManageStockSetup, canReceiveStock, isStockReceipt, LOCATION_TYPES, nairaToKobo,
-  toProductSlug, UUID, type LocationType, type OperationResult, type StockReceipt,
+  canManageStockSetup, canReceiveStock, isStockReceipt, LOCATION_TYPES,
+  UUID, type LocationType, type OperationResult, type StockReceipt,
 } from '@/src/lib/golden-rose/contracts';
+import { productFields, variantFields, type CatalogueOperation } from '@/src/lib/golden-rose/catalogue-management';
 
 function field(form: FormData, key: string) {
   const value = form.get(key);
@@ -17,57 +18,36 @@ function failed(message: string, retry = false): OperationResult {
   return { status: 'error', message, retry };
 }
 
-async function updateInventory(body: object, path: string, message: string, publication = false): Promise<OperationResult> {
+async function updateInventory(body: object, path: string, message: string, publication = false): Promise<CatalogueOperation> {
   const staff = await getStaffAccess();
   if ('reason' in staff) return failed('Sign in with an active staff account to continue.');
   if (!canManageStockSetup(staff.role)) return failed('Only an owner or manager can make this change.');
 
   try {
-    await callEdge('inventory-admin', { token: staff.token, body });
+    const { data } = await callEdge<{ data?: { productId?: string } }>('inventory-admin', { token: staff.token, body });
     revalidatePath(path);
     if (publication) {
       revalidatePath('/shop');
       revalidatePath('/shop/[slug]', 'page');
     }
-    return { status: 'success', message };
+    return { status: 'success', message, productId: data?.productId };
   } catch (error) {
     return failed(error instanceof EdgeError ? error.message : 'Could not save the change. Refresh the list before retrying.');
   }
 }
 
-export async function createProduct(form: FormData): Promise<OperationResult> {
-  const name = field(form, 'name');
-  const brandName = field(form, 'brandName');
-  const categoryName = field(form, 'categoryName');
-  const sku = field(form, 'sku');
-  const barcode = field(form, 'barcode');
-  const description = field(form, 'description');
-  const slug = field(form, 'slug') || toProductSlug(name);
-  const size = field(form, 'sizeMl');
-  const priceMinor = nairaToKobo(field(form, 'price'));
-
-  if (name.length < 2 || name.length > 200 || sku.length < 2 || sku.length > 80) {
-    return failed('Enter a product name and SKU of at least two characters.');
+export async function createProduct(form: FormData): Promise<CatalogueOperation> {
+  const product = productFields(form, true);
+  const variant = variantFields(form, false);
+  if (!product.data) return failed(product.error);
+  if (!variant.data) return failed(variant.error);
+  if (variant.data.variantName || variant.data.concentration) {
+    return failed('Variant names and concentrations require the catalogue management migration.');
   }
-  if (!brandName || !categoryName || brandName.length > 150 || categoryName.length > 150
-      || !/[a-z0-9]/i.test(brandName) || !/[a-z0-9]/i.test(categoryName)) {
-    return failed('Enter a brand and category that each contain a Latin letter or digit.');
-  }
-  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length > 240) {
-    return failed('Enter a URL slug with lowercase letters, numbers, and single hyphens.');
-  }
-  if (!/^\d{1,8}(?:\.\d{1,2})?$/.test(size) || Number(size) <= 0) {
-    return failed('Enter a bottle size greater than zero, with at most two decimal places.');
-  }
-  if (priceMinor === null) return failed('Enter a valid naira price with at most two decimal places.');
-  if ((barcode && (barcode.length < 3 || barcode.length > 128)) || description.length > 5000) {
-    return failed('Check the barcode and description lengths.');
-  }
-
+  const { barcode, sizeMl, sku, priceMinor } = variant.data;
   return updateInventory({
-    action: 'product.create', name, brandName, categoryName, slug, sku,
-    barcode: barcode || null, description: description || null,
-    sizeMl: Number(size), priceMinor, currency: 'NGN',
+    action: 'product.create', ...product.data, sku, barcode: barcode || null,
+    sizeMl: Number(sizeMl), priceMinor, currency: 'NGN',
   }, '/workspace/products', 'Product created as a draft.');
 }
 
