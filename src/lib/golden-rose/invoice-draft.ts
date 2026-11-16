@@ -1,6 +1,7 @@
 export type InvoiceDocumentKind = 'quotation' | 'invoice';
 
 export interface InvoiceDraftLine {
+  variantId?: string;
   id: number;
   description: string;
   sku: string;
@@ -9,6 +10,7 @@ export interface InvoiceDraftLine {
 }
 
 export interface InvoiceDraft {
+  customerId?: string;
   kind: InvoiceDocumentKind;
   recipient: string;
   company: string;

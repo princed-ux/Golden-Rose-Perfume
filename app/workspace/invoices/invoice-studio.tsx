@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   blankInvoiceDraft as blankDraft,
@@ -11,6 +11,13 @@ import {
   type InvoiceDraft as Draft,
   type InvoiceDraftLine as Line,
 } from '@/src/lib/golden-rose/invoice-draft';
+import {
+  billingDraftPayload, billingFilters, savedDocumentAmounts, savedDocumentDraft,
+  type BillingAction, type BillingDocument, type BillingFilters, type BillingPayload, type BillingRegisterData, type BillingResult,
+} from '@/src/lib/golden-rose/billing';
+import { findBillingCustomers, getBillingDocument, loadBilling, updateBilling } from './billing-actions';
+import { BillingDocumentControls, BillingRegister } from './billing-panel';
+import { DocumentPreview } from './document-preview';
 import { findInvoiceCustomers, findInvoiceProducts, type InvoiceCustomerChoice, type InvoiceProductChoice } from './lookup-actions';
 import { InvoiceLookup } from './lookup';
 
@@ -169,224 +176,22 @@ function EmptyRegister({
   );
 }
 
-function DraftPreview({
-  draft,
-  calc,
-}: {
-  draft: Draft;
-  calc: ReturnType<typeof calculate>;
+export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalogue }: {
+  initialBilling: BillingResult<BillingRegisterData>; canBrowseCustomers: boolean; staffCatalogue: boolean;
 }) {
-  return (
-    <article
-      id="gr-invoice-print"
-      className="relative min-w-0 overflow-hidden rounded-xl border border-[#e9dcd4] bg-white p-5 text-[#402737] shadow-[0_9px_32px_rgba(59,28,43,.06)] sm:p-7"
-    >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-14px] top-28 rotate-[-17deg] border-4 border-[#a96e7b]/12 px-5 py-2 text-4xl font-black tracking-[.2em] text-[#a96e7b]/12 sm:text-5xl"
-      >
-        DRAFT
-      </div>
-
-      <header className="relative flex flex-wrap items-start justify-between gap-5 border-b-2 border-[#5b263f] pb-5">
-        <div>
-          <p className="font-serif text-[1.75rem] tracking-wide text-[#4b1934]">
-            GOLDEN ROSE
-          </p>
-
-          <p className="mt-1 text-[9px] font-semibold uppercase tracking-[.22em] text-[#ac8047]">
-            BEAUTY OF FRAGRANCE
-          </p>
-        </div>
-
-        <div className="text-right">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#a54b56]">
-            UNISSUED DRAFT
-          </p>
-
-          <h2 className="mt-2 font-serif text-2xl text-[#4b1f38]">
-            {draft.kind === 'quotation' ? 'Quotation' : 'Invoice'}
-          </h2>
-
-          <p className="mt-1 text-[10px] font-semibold text-[#9b7886]">
-            No official document number
-          </p>
-        </div>
-      </header>
-
-      <div className="relative mt-5 rounded-lg border border-[#f1ded5] bg-[#fff5f1] px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-[#a24d55]">
-        Preview only · Not issued · Not proof of payment
-      </div>
-
-      <div className="relative mt-6 grid gap-5 text-xs sm:grid-cols-2">
-        <div className="grid content-start gap-1">
-          <span className="text-[10px] font-bold uppercase tracking-[.12em] text-[#987986]">
-            Prepared for
-          </span>
-
-          <strong className="break-words text-sm text-[#4c2639]">
-            {draft.recipient.trim() || 'Customer name'}
-          </strong>
-
-          {draft.company && (
-            <span className="break-words">{draft.company}</span>
-          )}
-
-          {draft.email && (
-            <span className="break-all">{draft.email}</span>
-          )}
-
-          {draft.phone && <span>{draft.phone}</span>}
-
-          {draft.address && (
-            <span className="whitespace-pre-wrap break-words">
-              {draft.address}
-            </span>
-          )}
-        </div>
-
-        <div className="grid content-start gap-2 sm:text-right">
-          <div>
-            <span className="text-[#957f88]">Document date</span>
-            <p className="font-semibold">
-              {draft.issueDate || 'Not selected'}
-            </p>
-          </div>
-
-          <div>
-            <span className="text-[#957f88]">
-              {draft.kind === 'quotation'
-                ? 'Valid until'
-                : 'Payment due'}
-            </span>
-
-            <p className="font-semibold">
-              {draft.dueDate || 'Not selected'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative mt-7 overflow-x-auto">
-        <table className="w-full min-w-[330px] border-collapse text-left text-[11px]">
-          <thead>
-            <tr className="border-b border-[#c9ae9c] text-[10px] font-bold uppercase text-[#7f6974]">
-              <th scope="col" className="pb-3 pr-2">
-                Item / description
-              </th>
-              <th scope="col" className="pb-3 text-right">
-                Qty
-              </th>
-              <th scope="col" className="pb-3 text-right">
-                Unit
-              </th>
-              <th scope="col" className="pb-3 text-right">
-                Amount
-              </th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-[#f1e9e4]">
-            {calc.rows.map((line, index) => (
-              <tr key={line.id}>
-                <td className="py-3 pr-2 align-top">
-                  <strong className="block break-words text-[#503246]">
-                    {line.description.trim() || `Item ${index + 1}`}
-                  </strong>
-
-                  {line.sku && (
-                    <span className="text-[#97838c]">
-                      SKU: {line.sku}
-                    </span>
-                  )}
-                </td>
-
-                <td className="py-3 text-right align-top tabular-nums">
-                  {Number.isSafeInteger(line.qty)
-                    ? line.qty
-                    : '—'}
-                </td>
-
-                <td className="py-3 text-right align-top tabular-nums">
-                  {line.unit === null
-                    ? '—'
-                    : money(line.unit)}
-                </td>
-
-                <td className="py-3 text-right align-top font-semibold tabular-nums">
-                  {line.valid
-                    ? money(line.amount)
-                    : '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="relative ml-auto mt-6 grid max-w-[330px] gap-3 border-t border-[#e4d7d0] pt-5 text-xs">
-        <div className="flex justify-between gap-4">
-          <span className="text-[#856b79]">Subtotal</span>
-          <strong>{money(calc.subtotal)}</strong>
-        </div>
-
-        <div className="flex justify-between gap-4">
-          <span className="text-[#856b79]">Discount</span>
-          <strong>− {money(calc.discount)}</strong>
-        </div>
-
-        <div className="flex justify-between gap-4">
-          <span className="text-[#856b79]">Tax</span>
-          <strong>{calc.taxRate === null ? 'No rate set' : money(calc.tax)}</strong>
-        </div>
-
-        <div className="flex justify-between gap-4 border-t border-[#ddc9bc] pt-3 text-base font-bold text-[#4b1c35]">
-          <span>Draft amount</span>
-          <span>
-            {calc.valid ? money(calc.total) : 'Incomplete'}
-          </span>
-        </div>
-      </div>
-
-      {(draft.notes || draft.paymentTerms) && (
-        <div className="relative mt-7 grid gap-3 border-t border-[#eee3dc] pt-4 text-xs leading-5">
-          {draft.paymentTerms && (
-            <p>
-              <strong className="text-[#603c4e]">Terms:</strong>{' '}
-              <span className="whitespace-pre-wrap">
-                {draft.paymentTerms}
-              </span>
-            </p>
-          )}
-
-          {draft.notes && (
-            <p>
-              <strong className="text-[#603c4e]">Notes:</strong>{' '}
-              <span className="whitespace-pre-wrap">
-                {draft.notes}
-              </span>
-            </p>
-          )}
-        </div>
-      )}
-
-      <footer className="relative mt-10 border-t border-[#eee3dc] pt-4 text-center text-[10px] leading-5 text-[#86707c]">
-        Prepared using Golden Rose Perfume · Draft preview only
-
-        <p>
-          This document has no issued reference and does not confirm
-          a sale or payment.
-        </p>
-      </footer>
-    </article>
-  );
-}
-
-export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrowseCustomers: boolean; staffCatalogue: boolean }) {
   const [tab, setTab] = useState<RegisterTab>('all');
 
   const [view, setView] =
-    useState<'register' | 'composer'>('register');
+    useState<'register' | 'composer' | 'saved'>('register');
+
+  const [billing, setBilling] = useState(initialBilling.data ?? null);
+  const [filters, setFilters] = useState(billingFilters);
+  const [message, setMessage] = useState(initialBilling.error ?? '');
+  const [saved, setSaved] = useState<BillingDocument | null>(null);
+  const [storeId, setStoreId] = useState(initialBilling.data?.stores.find(store => store.active)?.id ?? '');
+  const [busy, setBusy] = useState(false);
+  const locked = useRef(false);
+  const requests = useRef(new Map<string, string>());
 
   const [draft, setDraft] = useState<Draft>(blankDraft);
   const [nextId, setNextId] = useState(2);
@@ -394,13 +199,98 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
   const [copied, setCopied] =
     useState<'idle' | 'success' | 'failed'>('idle');
 
-  const calc = useMemo(() => calculate(draft), [draft]);
+  const selectedStore = billing?.stores.find(store => store.id === storeId);
+  const formDraft = useMemo(() => billing ?
+    { ...draft, taxRate: selectedStore?.taxBps == null ? '' : draftUnitPrice(selectedStore.taxBps) } : draft,
+  [billing, draft, selectedStore]);
+  const calc = useMemo(() => calculate(formDraft), [formDraft]);
+
+  async function perform(work: () => Promise<void>) {
+    if (locked.current) return;
+    locked.current = true;
+    setBusy(true);
+    setMessage('');
+    try {
+      await work();
+    } catch {
+      setMessage('Could not complete the billing request. Retry before assuming it was saved.');
+    } finally {
+      locked.current = false;
+      setBusy(false);
+    }
+  }
+
+  async function readRegister(next: BillingFilters) {
+    const response = await loadBilling(next);
+    if (!response.data) { setMessage(response.error); return; }
+    setBilling(response.data);
+    setFilters(next);
+    setStoreId(current => current || response.data.stores.find(store => store.active)?.id || '');
+  }
+
+  function showRegister() {
+    setView('register');
+    if (billing) void perform(() => readRegister(filters));
+  }
+
+  function freshDraft() {
+    setSaved(null);
+    setDraft({ ...blankDraft(), issueDate: billing?.today ?? '' });
+    setNextId(2);
+    setCopied('idle');
+    setMessage('');
+    setStoreId(billing?.stores.find(store => store.active && store.id === filters.storeId)?.id ??
+      billing?.stores.find(store => store.active)?.id ?? '');
+    setView('composer');
+  }
+
+  function openSaved(id: string) {
+    void perform(async () => {
+      const response = await getBillingDocument(id);
+      if (!response.data) { setMessage(response.error); return; }
+      setSaved(response.data);
+      setView('saved');
+    });
+  }
+
+  function editSaved() {
+    if (!saved) return;
+    const fields = savedDocumentDraft(saved);
+    setStoreId(saved.location_id);
+    setDraft(fields);
+    setNextId(fields.lines.length + 1);
+    setView('composer');
+  }
+
+  function mutate(action: BillingAction, payload: BillingPayload) {
+    void perform(async () => {
+      const fingerprint = JSON.stringify([action, payload]);
+      const requestKey = requests.current.get(fingerprint) ?? crypto.randomUUID();
+      requests.current.set(fingerprint, requestKey);
+      const response = await updateBilling(action, { ...payload, requestKey });
+      if (!response.data) { setMessage(response.error); return; }
+      requests.current.delete(fingerprint);
+      if ('configured' in response.data) {
+        await readRegister(filters);
+      } else {
+        // A replay can return the original successful result. Reload the
+        // current snapshot so subsequent payment and status changes are visible.
+        const latest = await getBillingDocument(response.data.id);
+        setSaved(latest.data ?? response.data);
+        setView('saved');
+        if (latest.error) setMessage('Change saved. ' + latest.error);
+      }
+    });
+  }
 
   const patch = <K extends keyof Draft>(
     field: K,
     value: Draft[K],
   ) => {
-    setDraft(current => ({ ...current, [field]: value }));
+    setDraft(current => ({
+      ...current, [field]: value,
+      ...(['recipient', 'email', 'phone'].includes(field) ? { customerId: undefined } : {}),
+    }));
   };
 
   const updateLine = (
@@ -444,7 +334,8 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
 
   function chooseCustomer(customer: InvoiceCustomerChoice) {
     setDraft(current => ({
-      ...current, recipient: customer.label, email: customer.email ?? '', phone: customer.phone ?? '', company: '', address: '',
+      ...current, customerId: billing ? customer.id : undefined, recipient: customer.label,
+      email: customer.email ?? '', phone: customer.phone ?? '', company: '', address: '',
     }));
   }
 
@@ -453,7 +344,8 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
     const emptyFirst = draft.lines.length === 1 && !first.description && !first.unitPrice && !first.sku && first.quantity === '1';
     if (!emptyFirst && draft.lines.length >= 30) return;
     const id = emptyFirst ? first.id : nextId;
-    const line = { ...blankLine(id), description: product.label, sku: product.sku ?? '', unitPrice: draftUnitPrice(product.priceMinor) };
+    const line = { ...blankLine(id), variantId: billing ? product.id : undefined,
+      description: product.label, sku: product.sku ?? '', unitPrice: draftUnitPrice(product.priceMinor) };
     setDraft(current => ({ ...current, lines: emptyFirst ? [line] : [...current.lines, line] }));
     if (!emptyFirst) setNextId(value => value + 1);
   }
@@ -470,15 +362,13 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
   const startOver = () => {
     if (
       !window.confirm(
-        'Clear all unsaved draft fields? This draft has not been saved anywhere.',
+        'Clear unsaved draft fields and start a new document?',
       )
     ) {
       return;
     }
 
-    setDraft(blankDraft());
-    setNextId(2);
-    setCopied('idle');
+    freshDraft();
   };
 
   const copySummary = async () => {
@@ -540,18 +430,17 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
 
           <button
             type="button"
-            onClick={() =>
-              setView(view === 'composer' ? 'register' : 'composer')
-            }
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#e9c78c] px-4 py-2.5 text-sm font-bold text-[#401d30] hover:bg-[#f3dcae]"
+            onClick={view === 'register' ? freshDraft : showRegister}
+            disabled={busy}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#e9c78c] px-4 py-2.5 text-sm font-bold text-[#401d30] hover:bg-[#f3dcae] disabled:opacity-50"
           >
-            {view === 'composer' ? (
+            {view !== 'register' ? (
               <ArrowLeft size={17} />
             ) : (
               <FilePlus2 size={17} />
             )}
 
-            {view === 'composer'
+            {view !== 'register'
               ? 'Back to register'
               : 'Prepare new draft'}
           </button>
@@ -606,7 +495,25 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
         </p>
       </div>
 
-      {view === 'register' ? (
+      {message && <div role="alert" className="rounded-xl border border-[#ecc9bf] bg-[#fff4ec] p-4 text-sm text-[#773445]">{message}</div>}
+      {busy && <p role="status" className="text-sm text-[#6f5162]">Working on your billing request…</p>}
+
+      {view === 'saved' && saved && billing ? (
+        <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,.9fr)]">
+          <div className="grid min-w-0 gap-3">
+            <DocumentPreview saved={saved} draft={savedDocumentDraft(saved)} calc={savedDocumentAmounts(saved)} />
+            <button type="button" className={primary} onClick={() => window.print()} disabled={busy}>
+              <Printer size={17} /> {saved.invoice_number ? 'Print invoice / Save PDF' : 'Print document / Save PDF'}
+            </button>
+          </div>
+          <BillingDocumentControls key={saved.id + ':' + saved.revision} doc={saved} data={billing} busy={busy}
+            run={mutate} edit={editSaved} />
+        </div>
+      ) : view === 'register' ? billing ? (
+        <BillingRegister data={billing} filters={filters} busy={busy} open={openSaved}
+          apply={next => void perform(() => readRegister(next))}
+          configure={payload => mutate('configure',payload)} />
+      ) : (
         <section className={card + ' p-4 sm:p-6'}>
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#eee1d9] pb-5">
             <div>
@@ -627,7 +534,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
             <button
               className={secondary}
               type="button"
-              onClick={() => setView('composer')}
+              onClick={freshDraft}
             >
               <Plus size={16} />
               New document draft
@@ -669,15 +576,14 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
               Search issued references
             </span>
 
-            <span className="text-xs font-semibold text-[#a27949]">
-              Billing database not connected
-            </span>
+            <button type="button" disabled={busy} className={secondary}
+              onClick={() => void perform(() => readRegister(billingFilters))}>Retry connection</button>
           </div>
 
           <div className="mt-5">
             <EmptyRegister
               tab={tab}
-              onCompose={() => setView('composer')}
+              onCompose={freshDraft}
             />
           </div>
 
@@ -687,13 +593,13 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
               automatically.
             </span>
 
-            <Link
+            {staffCatalogue && <Link
               href="/workspace/orders"
               className="inline-flex items-center gap-1.5 font-semibold text-[#7e4d31] hover:underline"
             >
               Open POS sales
               <ArrowRight size={15} />
-            </Link>
+            </Link>}
           </div>
         </section>
       ) : (
@@ -705,7 +611,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
               </p>
 
               <h2 className="mt-1 font-serif text-2xl text-[#4b2039]">
-                Create a commercial document
+                {saved ? 'Edit saved draft' : 'Create a commercial document'}
               </h2>
 
               <p className="mt-1 text-sm text-[#8d7883]">
@@ -718,6 +624,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
               type="button"
               className={secondary}
               onClick={startOver}
+              disabled={busy}
             >
               <RotateCcw size={16} />
               Start over
@@ -725,13 +632,25 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
           </div>
 
           <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.1fr)_minmax(410px,.9fr)]">
-            <div className="grid min-w-0 content-start gap-4">
+            <fieldset disabled={busy} className="grid min-w-0 content-start gap-4" aria-label="Document fields">
               <section className={card + ' grid gap-5 p-4 sm:p-6'}>
                 <SectionHeading
                   number="01"
                   title="Document details"
                   subtitle="Decide which document you are preparing and its dates."
                 />
+
+                {billing && <label className={label}>Billing store
+                  <select className={control} value={storeId} disabled={!!saved} onChange={event => {
+                    setStoreId(event.target.value);
+                    setDraft(current => current.customerId
+                      ? { ...current, customerId: undefined, recipient: '', email: '', phone: '', company: '', address: '' }
+                      : current);
+                  }}>
+                    <option value="">Select a store</option>
+                    {billing.stores.filter(store => store.active).map(store => <option value={store.id} key={store.id}>{store.name}</option>)}
+                  </select>
+                </label>}
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {(['quotation', 'invoice'] as const).map(kind => (
@@ -740,6 +659,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                       key={kind}
                       aria-pressed={draft.kind === kind}
                       onClick={() => patch('kind', kind)}
+                      disabled={!!saved}
                       className={
                         'flex min-h-16 items-center justify-between gap-3 rounded-xl border px-4 text-left ' +
                         (draft.kind === kind
@@ -768,7 +688,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                   <label className={label}>
                     <span className="inline-flex items-center gap-2">
                       <CalendarDays size={15} />
-                      Document date
+                      {billing && draft.kind === 'invoice' ? 'Draft document date' : 'Document date'}
                     </span>
 
                     <input
@@ -779,6 +699,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                         patch('issueDate', event.target.value)
                       }
                     />
+                    {billing && draft.kind === 'invoice' && <span className="font-normal">The official date is set when the server issues the invoice.</span>}
                   </label>
 
                   <label className={label}>
@@ -806,8 +727,12 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                   subtitle="Add the customer's details. This will appear on the draft document."
                 />
 
-                {canBrowseCustomers && <InvoiceLookup title="Choose a customer from CRM" filterLabel="Search active customers"
-                  load={findInvoiceCustomers} select={chooseCustomer} />}
+                {billing ? storeId && <InvoiceLookup key={storeId} title="Choose a customer from this store"
+                  filterLabel="Search active customers (at least two characters)"
+                  load={(search) => findBillingCustomers(storeId, search)} select={chooseCustomer} /> :
+                  canBrowseCustomers && <InvoiceLookup title="Choose a customer from CRM" filterLabel="Search active customers"
+                    load={findInvoiceCustomers} select={chooseCustomer} />}
+                {draft.customerId && <p className="text-xs text-[#6f5162]">Linked to CRM. Editing the name, email or phone removes the link.</p>}
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className={label}>
@@ -943,6 +868,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                             className={control}
                             maxLength={180}
                             value={line.description}
+                            readOnly={!!line.variantId}
                             onChange={event =>
                               updateLine(
                                 line.id,
@@ -961,6 +887,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                             className={control}
                             maxLength={60}
                             value={line.sku}
+                            readOnly={!!line.variantId}
                             onChange={event =>
                               updateLine(
                                 line.id,
@@ -1001,6 +928,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                             className={control}
                             inputMode="decimal"
                             value={line.unitPrice}
+                            readOnly={!!line.variantId}
                             onChange={event =>
                               updateLine(
                                 line.id,
@@ -1053,10 +981,12 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                   </label>
 
                   <label className={label}>
-                    Tax rate (%) (optional)
-                    <input className={control} inputMode="decimal" value={draft.taxRate}
+                    {billing ? 'Verified store tax rate (%)' : 'Tax rate (%) (optional)'}
+                    <input className={control} inputMode="decimal" value={formDraft.taxRate} readOnly={!!billing}
                       onChange={event => patch('taxRate', event.target.value)} placeholder="No rate set" />
-                    <span className="text-xs font-normal leading-5 text-[#6f5162]">Applied after the discount. Use your approved rate for this preview.</span>
+                    <span className="text-xs font-normal leading-5 text-[#6f5162]">{billing ?
+                      'Applied after the discount. An owner verifies the rate before issuance.' :
+                      'Applied after the discount. Use your approved rate for this preview.'}</span>
                   </label>
                 </div>
 
@@ -1155,7 +1085,7 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                   )}
                 </div>
               </section>
-            </div>
+            </fieldset>
 
             <div className="min-w-0 2xl:sticky 2xl:top-6 2xl:self-start">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -1174,9 +1104,14 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
                 </span>
               </div>
 
-              <DraftPreview draft={draft} calc={calc} />
+              <DocumentPreview draft={formDraft} calc={calc} />
 
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                {billing && <button type="button" className={primary + ' sm:col-span-2'}
+                  disabled={!storeId || !calc.valid || busy}
+                  onClick={() => mutate('save', billingDraftPayload(formDraft, storeId, saved))}>
+                  Save {draft.kind === 'quotation' ? 'quotation' : 'invoice'} draft
+                </button>}
                 <button
                   type="button"
                   className={primary}
@@ -1217,9 +1152,8 @@ export function InvoiceStudio({ canBrowseCustomers, staffCatalogue }: { canBrows
               )}
 
               <p className="mt-3 text-xs leading-5 text-[#8c7782]">
-                No server record is created. Closing or refreshing
-                this page discards the draft; printing does not
-                issue it or record payment.
+                {billing ? 'Save to recover this draft after refresh. Printing a draft does not issue it or record payment.' :
+                  'No server record is created. Closing or refreshing discards the draft; printing does not issue it or record payment.'}
               </p>
             </div>
           </div>
