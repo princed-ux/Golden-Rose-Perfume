@@ -242,7 +242,9 @@ async function ownerStaffCounts() {
     ).length;
 
     return {
-      employees: result.employees.length,
+      employees: result.employees.filter((value: unknown) =>
+        value !== null && typeof value === 'object' && 'status' in value && value.status === 'active',
+      ).length,
       pending,
     };
   } catch {
@@ -356,12 +358,12 @@ export default async function WorkspaceOverview() {
           : 'attention',
     },
     {
-      title: 'Employee accounts',
+      title: 'Active employees',
       value: staff
         ? staff.employees.toLocaleString('en-NG')
         : '—',
       detail: staff
-        ? `${staff.pending} pending invitation${staff.pending === 1 ? '' : 's'}`
+        ? `${staff.pending} pending in recent invitations`
         : role === 'owner'
           ? 'Employee directory not available'
           : 'Owner-only information',
@@ -373,13 +375,13 @@ export default async function WorkspaceOverview() {
         : 'unavailable',
     },
     {
-      title: 'Inventory snapshot',
+      title: 'Inventory variant rows',
       value: stockRows === null
         ? '—'
         : stockRows.toLocaleString('en-NG'),
       detail: stockRows === null
         ? 'Stock service unavailable'
-        : 'Stock balance rows on the first page',
+        : 'First page, including variants with zero stock',
       icon: Barcode,
       status: stockRows === null
         ? 'unavailable'

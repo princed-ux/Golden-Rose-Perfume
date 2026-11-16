@@ -137,10 +137,10 @@ function ProductPhoto({
  */
 function CalculatorDialog({
   close,
-  useValue,
+  onUseValue,
 }: {
   close: () => void;
-  useValue: (value: string) => void;
+  onUseValue: (value: string) => void;
 }) {
   const [display, setDisplay] = useState('0');
   const [stored, setStored] = useState<number | null>(null);
@@ -308,7 +308,7 @@ function CalculatorDialog({
           className="pos-primary pos-wide"
           disabled={parseNaira(display) === null}
           onClick={() => {
-            useValue(display);
+            onUseValue(display);
             close();
           }}
         >
@@ -563,12 +563,13 @@ export function PosRegister({
 
   const [pending, setPending] =
     useState<CashSaleRequest | null>(null);
+  const [pendingLoaded, setPendingLoaded] = useState(false);
 
   const searchSeq = useRef(0);
   const checkoutLock = useRef(false);
 
   const locked =
-    busy || pending !== null;
+    !pendingLoaded || busy || pending !== null;
 
   const subtotal = cart.reduce(
     (sum, row) =>
@@ -623,37 +624,28 @@ export function PosRegister({
    * interrupted network request or page refresh.
    */
   useEffect(() => {
-    try {
-      const raw =
-        sessionStorage.getItem(PENDING_KEY);
-
-      if (!raw) return;
-
-      const saved: unknown =
-        JSON.parse(raw);
-
-      if (
-        !saved ||
-        typeof saved !== 'object' ||
-        !('idempotencyKey' in saved) ||
-        typeof saved.idempotencyKey !==
-          'string' ||
-        !('items' in saved) ||
-        !Array.isArray(saved.items)
-      ) {
-        return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      try {
+        const raw = sessionStorage.getItem(PENDING_KEY);
+        if (!raw) return;
+        const saved: unknown = JSON.parse(raw);
+        if (!saved || typeof saved !== 'object' ||
+            !('idempotencyKey' in saved) || typeof saved.idempotencyKey !== 'string' ||
+            !('items' in saved) || !Array.isArray(saved.items)) return;
+        setPending(saved as CashSaleRequest);
+        setNotice({
+          kind: 'info',
+          message: 'A previous sale has an unconfirmed response. Retry the same reference before starting another.',
+        });
+      } catch {
+        // Private browsing can block session storage.
+      } finally {
+        setPendingLoaded(true);
       }
-
-      setPending(saved as CashSaleRequest);
-
-      setNotice({
-        kind: 'info',
-        message:
-          'A previous sale has an unconfirmed response. Retry the same reference before starting another.',
-      });
-    } catch {
-      // Private browsing can block session storage.
-    }
+    });
+    return () => { cancelled = true; };
   }, []);
 
   /**
@@ -706,7 +698,7 @@ export function PosRegister({
 
     return () => {
       clearTimeout(timer);
-      searchSeq.current++;
+      searchSeq.current = id + 1;
     };
   }, [search, locationId]);
 
@@ -1854,7 +1846,7 @@ export function PosRegister({
           close={() =>
             setCalculatorOpen(false)
           }
-          useValue={setCash}
+          onUseValue={setCash}
         />
       )}
 

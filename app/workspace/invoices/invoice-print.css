@@ -1,0 +1,56 @@
+
+@page golden-rose-invoice {
+  size: A4;
+  margin: 16mm;
+}
+
+@media print {
+  html,
+  body {
+    background: white !important;
+  }
+
+  /* Keep the preview in document flow so longer drafts can span pages. */
+  body:has(#gr-invoice-print) :not(#gr-invoice-print, #gr-invoice-print *, :has(#gr-invoice-print)) {
+    display: none !important;
+  }
+
+  body:has(#gr-invoice-print) :has(#gr-invoice-print) {
+    display: block !important;
+    position: static !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  body:has(#gr-invoice-print) #gr-invoice-print {
+    page: golden-rose-invoice;
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
+    color: #402737 !important;
+    overflow: visible !important;
+  }
+
+  #gr-invoice-print thead {
+    display: table-header-group;
+  }
+
+  #gr-invoice-print .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  #gr-invoice-print tr,
+  #gr-invoice-print td {
+    break-inside: avoid;
+  }
+}
