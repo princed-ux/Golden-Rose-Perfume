@@ -1,0 +1,24 @@
+/* Only a server-confirmed POS receipt is printable here. */
+@media print {
+  body:has(#gr-sales-receipt) * {
+    visibility: hidden !important;
+  }
+  body:has(#gr-sales-receipt) #gr-sales-receipt,
+  body:has(#gr-sales-receipt) #gr-sales-receipt * {
+    visibility: visible !important;
+  }
+  body:has(#gr-sales-receipt) #gr-sales-receipt {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #20151b !important;
+    background: white !important;
+    font: 12px/1.5 Arial, sans-serif !important;
+  }
+  @page { size: A4; margin: 15mm; }
+}
