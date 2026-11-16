@@ -30,7 +30,7 @@ const money = (minor: number) => currency.format(minor / 100);
 const when = (value: string) => new Intl.DateTimeFormat('en-NG', {
   dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Lagos',
 }).format(new Date(value));
-const card = 'min-w-0 rounded-2xl border border-[#e9dcd8] bg-[#fffdf9] p-5 shadow-[0_4px_18px_rgba(55,19,35,0.035)]';
+const card = 'min-w-0 rounded-2xl border border-[#e4d4cb] bg-[#fffdfa] p-6 shadow-[0_8px_28px_rgba(55,19,35,0.06)]';
 
 function Summary({
   label, value, detail, icon: Icon,
@@ -38,14 +38,16 @@ function Summary({
   label: string; value: string; detail: string; icon: LucideIcon;
 }) {
   return <article className={card}>
-    <div className="flex items-center justify-between gap-3 text-[#8a6a41]">
-      <span className="text-xs font-semibold text-[#77626d]">{label}</span>
-      <Icon size={19} aria-hidden="true" />
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-sm font-semibold leading-5 text-[#5b394b]">{label}</span>
+      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f4e6ce] text-[#8d6334]">
+        <Icon size={21} strokeWidth={2} aria-hidden="true" />
+      </span>
     </div>
-    <strong className="mt-3 block font-serif text-[clamp(1.5rem,3vw,2rem)] font-normal tabular-nums text-[#46172f]">
+    <strong className="mt-4 block break-words font-serif text-[clamp(1.8rem,3vw,2.5rem)] font-semibold leading-tight tabular-nums text-[#3d152b]">
       {value}
     </strong>
-    <p className="mt-2 text-xs leading-5 text-[#887581]">{detail}</p>
+    <p className="mt-2 text-sm leading-6 text-[#705761]">{detail}</p>
   </article>;
 }
 
@@ -230,8 +232,13 @@ export default async function SalesOrdersPage({
           <RefreshCw size={16} aria-hidden="true" /> Refresh
         </Link>
         {canViewModule(role, 'pos') && (
-          <Link className={workspacePrimary} href="/workspace/pos">
-            <Banknote size={16} aria-hidden="true" /> Open POS <ArrowRight size={16} />
+          <Link
+            className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-xl border border-[#bd904b] bg-[#e3bd78] px-5 py-3 text-base font-bold !text-[#321a29] shadow-[0_6px_18px_rgba(60,30,30,.12)] transition hover:border-[#ab7834] hover:bg-[#f1d29a] hover:!text-[#321a29] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b622d]"
+            href="/workspace/pos"
+          >
+            <Banknote size={19} aria-hidden="true" />
+            Open POS
+            <ArrowRight size={18} aria-hidden="true" />
           </Link>
         )}
       </div>}
@@ -261,7 +268,7 @@ export default async function SalesOrdersPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="gr-sales-filters" className="font-serif text-2xl text-[#471c32]">Find a transaction</h2>
-          <p className="mt-1 text-xs text-[#85727c]">Search by receipt number, fragrance or SKU. Dates use Lagos local time.</p>
+          <p className="mt-1 text-sm leading-6 text-[#705d68]">Search by receipt number, fragrance or SKU. Dates use Lagos local time.</p>
         </div>
         <ShieldCheck size={20} className="text-[#9b733e]" aria-hidden="true" />
       </div>
@@ -293,7 +300,7 @@ export default async function SalesOrdersPage({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 id="gr-sales-register" className="font-serif text-2xl text-[#471c32]">Recorded sales</h2>
-          <p className="mt-1 text-xs text-[#85727c]">
+          <p className="mt-1 text-sm leading-6 text-[#705d68]">
             {page ? 'Real completed transactions · Most recent first' : 'Retrieving the protected sales ledger'}
           </p>
         </div>
@@ -324,8 +331,8 @@ export default async function SalesOrdersPage({
       ) : (
         <div className="overflow-x-auto rounded-xl border border-[#eee2dc]" role="region"
           aria-label="Sales history table" tabIndex={0}>
-          <table className="w-full min-w-[850px] border-collapse text-left text-sm">
-            <thead className="bg-[#faf3ee] text-[11px] font-bold uppercase tracking-wide text-[#7e6472]">
+          <table className="w-full min-w-[900px] border-collapse text-left text-base">
+            <thead className="bg-[#f9f0e6] text-xs font-bold uppercase tracking-wide text-[#624957]">
               <tr>
                 <th scope="col" className="px-4 py-3">Receipt</th>
                 <th scope="col" className="px-4 py-3">Date / time</th>
@@ -346,7 +353,7 @@ export default async function SalesOrdersPage({
                   <td className="px-4 py-4 text-[#67525d]">{sale.locationName}</td>
                   <td className="px-4 py-4 text-[#67525d]">
                     {sale.units} unit{sale.units === 1 ? '' : 's'}
-                    <span className="block text-xs text-[#927f87]">{sale.lineCount} line{sale.lineCount === 1 ? '' : 's'}</span>
+                    <span className="block text-sm text-[#77616c]">{sale.lineCount} line{sale.lineCount === 1 ? '' : 's'}</span>
                   </td>
                   <td className="px-4 py-4">
                     <span className="rounded-full bg-[#e9f4eb] px-2.5 py-1 text-xs font-semibold text-[#347148]">
