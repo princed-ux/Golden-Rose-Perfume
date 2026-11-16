@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
@@ -152,7 +153,15 @@ type Params = Record<string, string | string[] | undefined>;
 const single = (params: Params, name: string) =>
   typeof params[name] === 'string' ? params[name] as string : '';
 
-export default async function SalesOrdersPage({
+export default function SalesOrdersPage({ searchParams }: { searchParams: Promise<Params> }) {
+  return (
+    <Suspense fallback={<p className="p-5 text-sm text-[#6f5162]" role="status">Loading sales history…</p>}>
+      <SalesOrdersWorkspace searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function SalesOrdersWorkspace({
   searchParams,
 }: {
   searchParams: Promise<Params>;
