@@ -24,7 +24,7 @@ async function Invitation({ searchParams }: { searchParams: InvitationParams }) 
     return (
       <div className="gr-invite-empty" role="status">
         <LockKeyhole size={25} aria-hidden="true" />
-        <h2>You'll need a private invitation</h2>
+        <h2>A private invitation is required</h2>
         <p>Ask your employer for a new invitation link, then open it to set up your work account.</p>
         <Link href="/staff/login">Go to staff sign-in <ArrowUpRight size={16} aria-hidden="true" /></Link>
       </div>
