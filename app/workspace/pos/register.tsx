@@ -17,6 +17,13 @@ import {
   Banknote,
   Calculator,
   CheckCircle2,
+  History,
+  LayoutGrid,
+  List,
+  Maximize2,
+  Minimize2,
+  PauseCircle,
+  RotateCcw,
   ChevronDown,
   Minus,
   Package,
@@ -54,6 +61,8 @@ const money = (minor: number) =>
   formatMoney.format(minor / 100);
 
 const PENDING_KEY = 'golden-rose-pos-pending-sale';
+const HELD_KEY = 'golden-rose-pos-held-sale';
+const VIEW_KEY = 'golden-rose-pos-catalogue-view';
 const MAX_CART_LINES = 40;
 const MAX_PER_LINE = 100;
 
@@ -66,6 +75,45 @@ type Alert = {
   kind: 'error' | 'success' | 'info';
   message: string;
 };
+
+type CatalogueView = 'grid' | 'table';
+
+type HeldSale = {
+  cart: CartItem[];
+  locationId: string;
+  discount: string;
+  cash: string;
+  createdAt: number;
+};
+
+function isHeldSale(value: unknown): value is HeldSale {
+  if (!value || typeof value !== 'object') return false;
+  const sale = value as Partial<HeldSale>;
+  return (
+    typeof sale.locationId === 'string' &&
+    typeof sale.discount === 'string' &&
+    typeof sale.cash === 'string' &&
+    typeof sale.createdAt === 'number' &&
+    Array.isArray(sale.cart) &&
+    sale.cart.length > 0 &&
+    sale.cart.length <= MAX_CART_LINES &&
+    sale.cart.every((entry: unknown) => {
+      if (!entry || typeof entry !== 'object') return false;
+      const row = entry as Partial<CartItem>;
+      return (
+        Number.isInteger(row.quantity) &&
+        (row.quantity ?? 0) >= 1 &&
+        (row.quantity ?? 0) <= MAX_PER_LINE &&
+        !!row.product &&
+        typeof row.product.id === 'string' &&
+        typeof row.product.name === 'string' &&
+        Number.isSafeInteger(row.product.priceMinor) &&
+        Number.isSafeInteger(row.product.available) &&
+        row.product.currency === 'NGN'
+      );
+    })
+  );
+}
 
 /**
  * Convert entered naira to integer kobo.
@@ -521,6 +569,9 @@ export function PosRegister({
     useState(initial.selectedLocationId || '');
 
   const [search, setSearch] = useState('');
+  const [catalogueView, setCatalogueView] = useState<CatalogueView>('grid');
+  const [focusMode, setFocusMode] = useState(false);
+  const [heldSale, setHeldSale] = useState<HeldSale | null>(null);
   const [inStockOnly, setInStockOnly] =
     useState(false);
 
@@ -567,6 +618,23 @@ export function PosRegister({
 
   const searchSeq = useRef(0);
   const checkoutLock = useRef(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Preferences and unsold held baskets are local to this browser, not server reservations.
+  useEffect(() => {
+    try {
+      const view = localStorage.getItem(VIEW_KEY);
+      if (view === 'grid' || view === 'table') setCatalogueView(view);
+      const raw = sessionStorage.getItem(HELD_KEY);
+      if (raw) {
+        const saved: unknown = JSON.parse(raw);
+        if (isHeldSale(saved)) setHeldSale(saved);
+        else sessionStorage.removeItem(HELD_KEY);
+      }
+    } catch {
+      // Storage may be blocked in private browsing.
+    }
+  }, []);
 
   const locked =
     !pendingLoaded || busy || pending !== null;
@@ -1017,6 +1085,83 @@ export function PosRegister({
     }
   }
 
+  function chooseView(next: CatalogueView) {
+    setCatalogueView(next);
+    try { localStorage.setItem(VIEW_KEY, next); } catch { /* Optional preference. */ }
+  }
+
+  function clearSale() {
+    if (locked || !cart.length) return;
+    if (!window.confirm('Clear all items from this unsaved sale?')) return;
+    setCart([]);
+    setDiscount('0');
+    setCash('');
+    setNotice({ kind: 'info', message: 'Unsaved basket cleared. No transaction was recorded.' });
+  }
+
+  function holdSale() {
+    if (locked || !cart.length) return;
+    if (heldSale && !window.confirm('Replace the previously held sale on this browser?')) return;
+    const held: HeldSale = {
+      cart: cart.map(row => ({ ...row, product: { ...row.product } })),
+      locationId,
+      discount,
+      cash,
+      createdAt: Date.now(),
+    };
+    setHeldSale(held);
+    try { sessionStorage.setItem(HELD_KEY, JSON.stringify(held)); } catch { /* This tab still keeps it. */ }
+    setCart([]);
+    setDiscount('0');
+    setCash('');
+    setNotice({ kind: 'info', message: 'Sale held in this browser only. No stock is reserved or sold.' });
+    searchInputRef.current?.focus();
+  }
+
+  function recallSale() {
+    if (locked || !heldSale) return;
+    if (cart.length && !window.confirm('Replace the current unsaved basket with the held sale?')) return;
+    if (!catalogue.locations.some(store => store.id === heldSale.locationId)) {
+      setNotice({ kind: 'error', message: 'The held sale belongs to a location no longer available.' });
+      return;
+    }
+    setLocationId(heldSale.locationId);
+    setCart(heldSale.cart);
+    setDiscount(heldSale.discount);
+    setCash(heldSale.cash);
+    setHeldSale(null);
+    try { sessionStorage.removeItem(HELD_KEY); } catch { /* Optional storage. */ }
+    setNotice({ kind: 'info', message: 'Sale recalled. Stock and prices are verified by the server at checkout.' });
+  }
+
+  function enterCashKey(key: string) {
+    if (locked || !cart.length) return;
+    setCash(current => {
+      if (key === 'C') return '';
+      if (key === '⌫') return current.slice(0, -1);
+      if (key === '.') return current.includes('.') ? current : (current || '0') + '.';
+      const next = current === '0' && key !== '00' ? key : current + key;
+      return /^\d{0,10}(?:\.\d{0,2})?$/.test(next) ? next : current;
+    });
+  }
+
+  function onRegisterKey(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'F2') {
+      event.preventDefault();
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' &&
+        !receipt && !calculatorOpen) {
+      event.preventDefault();
+      if (canPay) void pay();
+    }
+    if (event.key === 'Escape' && showMobileCart) {
+      event.preventDefault();
+      setShowMobileCart(false);
+    }
+  }
+
   function releasePending() {
     const approved = confirm(
       'First check the sales record. ' +
@@ -1046,7 +1191,10 @@ export function PosRegister({
   }
 
   return (
-    <div className="pos-screen">
+    <div
+      className={'pos-screen' + (focusMode ? ' pos-focus-mode' : '')}
+      onKeyDown={onRegisterKey}
+    >
       {/* Professional top-right notifications */}
       {notice && (
         <div
@@ -1114,17 +1262,26 @@ export function PosRegister({
             Calculator
           </button>
 
+          <Link href="/workspace/orders" className="pos-secondary pos-history-link">
+            <History size={16} aria-hidden="true" />
+            Sales history
+          </Link>
+
+          <button
+            type="button"
+            className="pos-secondary pos-focus-toggle"
+            aria-pressed={focusMode}
+            onClick={() => setFocusMode(value => !value)}
+          >
+            {focusMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            {focusMode ? 'Exit register view' : 'Register view'}
+          </button>
+
           <button
             type="button"
             className="pos-secondary"
-            disabled={
-              locked || !cart.length
-            }
-            onClick={() => {
-              setCart([]);
-              setDiscount('0');
-              setCash('');
-            }}
+            disabled={locked || !cart.length}
+            onClick={clearSale}
           >
             <RefreshCw size={16} />
             Clear sale
@@ -1274,6 +1431,7 @@ export function PosRegister({
 
               <input
                 type="search"
+                ref={searchInputRef}
                 value={search}
                 onChange={event =>
                   setSearch(event.target.value)
@@ -1350,14 +1508,21 @@ export function PosRegister({
               </button>
             </div>
 
-            <small>
-              Press Enter to add an exact
-              SKU or barcode
-            </small>
+            <div className="pos-view-choices" role="group" aria-label="Catalogue display format">
+              <button type="button" onClick={() => chooseView('grid')}
+                aria-pressed={catalogueView === 'grid'} title="Product grid">
+                <LayoutGrid size={16} aria-hidden="true" /> Grid
+              </button>
+              <button type="button" onClick={() => chooseView('table')}
+                aria-pressed={catalogueView === 'table'} title="Product table">
+                <List size={16} aria-hidden="true" /> Table
+              </button>
+            </div>
           </div>
 
           {/* Live product grid */}
           {filtered.length ? (
+            catalogueView === 'grid' ? (
             <div className="pos-products">
               {filtered.map(product => {
                 const qty =
@@ -1436,6 +1601,48 @@ export function PosRegister({
                 );
               })}
             </div>
+            ) : (
+              <div className="pos-product-table-wrap">
+                <table className="pos-product-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Product / SKU</th>
+                      <th scope="col">Barcode</th>
+                      <th scope="col">Size</th>
+                      <th scope="col">Available</th>
+                      <th scope="col">Price</th>
+                      <th scope="col"><span className="pos-sr-only">Add item</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(product => {
+                      const qty = cart.find(row => row.product.id === product.id)?.quantity || 0;
+                      const cannotAdd = locked || product.available <= qty;
+                      return (
+                        <tr key={product.id}>
+                          <td>
+                            <div className="pos-table-product">
+                              <ProductPhoto product={product} />
+                              <span><strong>{product.name}</strong><small>{product.brand || 'Golden Rose'} · {product.sku || 'No SKU'}</small></span>
+                            </div>
+                          </td>
+                          <td className="pos-table-code">{product.barcode || '—'}</td>
+                          <td>{product.sizeMl ? product.sizeMl + ' ml' : '—'}</td>
+                          <td><span className={product.available > 0 ? 'pos-instock' : 'pos-outstock'}>
+                            {product.available > 0 ? product.available : '0 available'}
+                          </span></td>
+                          <td className="pos-table-price">{money(product.priceMinor)}</td>
+                          <td><button type="button" className="pos-table-add"
+                            disabled={cannotAdd} onClick={() => add(product)}
+                            aria-label={'Add ' + product.name + ' to sale'}>
+                            <Plus size={15} aria-hidden="true" /> Add
+                          </button></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
           ) : (
             <div className="pos-empty">
               <Package size={32} />
@@ -1478,9 +1685,8 @@ export function PosRegister({
           )}
 
           <p className="pos-catalogue-foot">
-            Only real products and inventory
-            from the Golden Rose database
-            appear here.
+            Stock is location-specific. Zero available may mean stock has not been counted.
+            Product availability is verified again when the sale is completed.
           </p>
         </section>
 
@@ -1515,6 +1721,20 @@ export function PosRegister({
             </span>
           </header>
 
+          <div className="pos-basket-tools" role="group" aria-label="Unsaved sale actions">
+            <button type="button" disabled={locked || !cart.length} onClick={holdSale}>
+              <PauseCircle size={15} aria-hidden="true" /> Hold
+            </button>
+            <button type="button" disabled={locked || !heldSale} onClick={recallSale}>
+              <RotateCcw size={15} aria-hidden="true" /> Recall{heldSale ? ' (1)' : ''}
+            </button>
+            <button type="button" disabled={locked || !cart.length} onClick={clearSale}>
+              <Trash2 size={15} aria-hidden="true" /> Clear
+            </button>
+          </div>
+          {heldSale && <p className="pos-held-note" role="status">
+            One local basket is on hold. It does not reserve stock.
+          </p>}
           {/* Basket products */}
           <div className="pos-cart-contents">
             {cart.length ? (
@@ -1745,6 +1965,14 @@ export function PosRegister({
               </span>
             </label>
 
+            <div className="pos-tender-pad" role="group" aria-label="Cash amount keypad">
+              {['7', '8', '9', '⌫', '4', '5', '6', 'C', '1', '2', '3', '.', '00', '0'].map(key => (
+                <button type="button" key={key} onClick={() => enterCashKey(key)}
+                  disabled={locked || !cart.length} aria-label={key === '⌫' ? 'Backspace' : key === 'C' ? 'Clear cash amount' : key}>
+                  {key}
+                </button>
+              ))}
+            </div>
             <div className="pos-shortcuts">
               <button
                 type="button"
@@ -1808,6 +2036,7 @@ export function PosRegister({
               <ArrowRight size={17} />
             </button>
 
+            <p className="pos-register-shortcuts">F2: scan/search · Ctrl+Enter: complete eligible cash sale</p>
             <p className="pos-safe">
               <CheckCircle2 size={14} />
               A confirmed sale creates
