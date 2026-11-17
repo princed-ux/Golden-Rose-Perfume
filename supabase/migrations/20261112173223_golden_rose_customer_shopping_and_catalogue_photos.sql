@@ -1,5 +1,4 @@
 begin;
-
 create table public.gr_customer_bag (
   user_id uuid not null references auth.users(id) on delete cascade,
   variant_id uuid not null,
@@ -7,39 +6,29 @@ create table public.gr_customer_bag (
   added_at timestamptz not null default now(),
   primary key (user_id, variant_id)
 );
-
 create table public.gr_customer_wishlist (
   user_id uuid not null references auth.users(id) on delete cascade,
   product_id uuid not null,
   saved_at timestamptz not null default now(),
   primary key (user_id, product_id)
 );
-
--- Keep references to discontinued selections so customers can review and remove them.
 alter table public.gr_customer_bag enable row level security;
 alter table public.gr_customer_wishlist enable row level security;
 revoke all on public.gr_customer_bag, public.gr_customer_wishlist from public, anon, authenticated;
 grant select, insert, update, delete on public.gr_customer_bag to authenticated;
 grant select, insert, delete on public.gr_customer_wishlist to authenticated;
-
-create policy "Customers manage their own bag"
-on public.gr_customer_bag for all to authenticated
+create policy "Customers manage their own bag" on public.gr_customer_bag
+for all to authenticated
 using (user_id = (select auth.uid()))
 with check (user_id = (select auth.uid()));
-
-create policy "Customers manage their own wishlist"
-on public.gr_customer_wishlist for all to authenticated
+create policy "Customers manage their own wishlist" on public.gr_customer_wishlist
+for all to authenticated
 using (user_id = (select auth.uid()))
 with check (user_id = (select auth.uid()));
-
 create function public.gr_merge_customer_bag(p_lines jsonb)
-returns void
-language plpgsql
-security invoker
-set search_path = ''
+returns void language plpgsql security invoker set search_path = ''
 as $$
-declare
-  customer_id uuid := auth.uid();
+declare customer_id uuid := auth.uid();
 begin
   if customer_id is null then
     raise exception 'Sign in to merge a shopping bag' using errcode = '42501';
@@ -47,8 +36,6 @@ begin
   if p_lines is null or jsonb_typeof(p_lines) <> 'array' or jsonb_array_length(p_lines) > 50 then
     raise exception 'Invalid shopping bag' using errcode = '22023';
   end if;
-
-  -- Retrying an import retains the higher quantity without duplicating the same selection.
   insert into public.gr_customer_bag as bag (user_id, variant_id, quantity)
   select customer_id, line."variantId", max(line.quantity)
   from jsonb_to_recordset(p_lines) as line("variantId" uuid, quantity smallint)
@@ -58,25 +45,16 @@ begin
     set quantity = greatest(bag.quantity, excluded.quantity);
 end;
 $$;
-
 revoke all on function public.gr_merge_customer_bag(jsonb) from public, anon, authenticated;
 grant execute on function public.gr_merge_customer_bag(jsonb) to authenticated;
-
--- Only trusted dashboard operators upload customer-facing photos to this public bucket.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('golden-rose-products', 'golden-rose-products', true, 10485760,
   array['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
 on conflict (id) do nothing;
-
--- Retain the deployed Edge Function's RPC signature and items field.
 create or replace function public.gr_public_catalog(
   p_limit integer default 30, p_offset integer default 0, p_search text default null
 )
-returns jsonb
-language sql
-stable
-security invoker
-set search_path = ''
+returns jsonb language sql stable security invoker set search_path = ''
 as $$
   with published as (
     select p.id, p.name, p.slug, p.description, p.created_at, b.name as brand, c.name as category
@@ -132,8 +110,6 @@ as $$
     ) else '[]'::jsonb end
   ) from assembled;
 $$;
-
 revoke all on function public.gr_public_catalog(integer, integer, text) from public, anon, authenticated;
 grant execute on function public.gr_public_catalog(integer, integer, text) to service_role;
-
 commit;
