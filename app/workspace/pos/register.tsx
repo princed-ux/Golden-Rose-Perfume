@@ -570,7 +570,8 @@ export function PosRegister({
 
   const [search, setSearch] = useState('');
   const [catalogueView, setCatalogueView] = useState<CatalogueView>('grid');
-  const [focusMode, setFocusMode] = useState(false);
+  // Open straight into the dedicated cashier workspace on desktop.
+  const [focusMode, setFocusMode] = useState(true);
   const [heldSale, setHeldSale] = useState<HeldSale | null>(null);
   const [inStockOnly, setInStockOnly] =
     useState(false);
@@ -622,18 +623,23 @@ export function PosRegister({
 
   // Preferences and unsold held baskets are local to this browser, not server reservations.
   useEffect(() => {
-    try {
-      const view = localStorage.getItem(VIEW_KEY);
-      if (view === 'grid' || view === 'table') setCatalogueView(view);
-      const raw = sessionStorage.getItem(HELD_KEY);
-      if (raw) {
-        const saved: unknown = JSON.parse(raw);
-        if (isHeldSale(saved)) setHeldSale(saved);
-        else sessionStorage.removeItem(HELD_KEY);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      try {
+        const view = localStorage.getItem(VIEW_KEY);
+        if (view === 'grid' || view === 'table') setCatalogueView(view);
+        const raw = sessionStorage.getItem(HELD_KEY);
+        if (raw) {
+          const saved: unknown = JSON.parse(raw);
+          if (isHeldSale(saved)) setHeldSale(saved);
+          else sessionStorage.removeItem(HELD_KEY);
+        }
+      } catch {
+        // Storage may be blocked in private browsing.
       }
-    } catch {
-      // Storage may be blocked in private browsing.
-    }
+    });
+    return () => { cancelled = true; };
   }, []);
 
   const locked =
