@@ -44,6 +44,7 @@ import { createLocation } from '../actions';
 import { OperationForm } from '../operation-form';
 import { ReceivingForm } from './receiving-form';
 import { InventoryTable } from './inventory-table';
+import { stockState } from '@/src/lib/golden-rose/stock-evidence';
 
 const card =
   'min-w-0 rounded-2xl border border-[#e9dcd5] bg-[#fffdfb] shadow-[0_4px_24px_rgba(61,18,37,0.035)]';
@@ -180,9 +181,10 @@ async function InventoryWorkspace({
     0,
   );
 
-  const displayedZeroStock = balances.filter(
-    balance => balance.available <= 0,
-  ).length;
+  const countsToVerify = balances.filter(balance => {
+    const state = stockState(balance);
+    return state === 'not-counted' || state === 'unverified-zero';
+  }).length;
 
   return (
     <div className="grid min-w-0 gap-6 pb-10">
@@ -267,13 +269,13 @@ async function InventoryWorkspace({
 
         <Metric
           icon={<PackageCheck size={20} />}
-          label="Zero-stock records"
+          label="Counts to verify"
           value={
             inventory
-              ? String(displayedZeroStock)
+              ? String(countsToVerify)
               : '—'
           }
-          description="Unavailable entries on this page only"
+          description="Entries without a confirmed quantity on this page"
         />
       </section>
 
@@ -624,6 +626,11 @@ async function InventoryWorkspace({
           </span>
         </div>
 
+        {inventory && balances.some(balance => balance.balanceRecorded === undefined && stockState(balance) === 'unverified-zero') && (
+          <WorkspaceNotice title="Opening quantities need verification" tone="pending">
+            This inventory service reports a missing balance as zero. Confirm the physical quantity before treating an unverified row as a confirmed zero.
+          </WorkspaceNotice>
+        )}
         {!inventory ? (
           <WorkspaceNotice
             title="Stock register unavailable"

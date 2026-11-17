@@ -3,6 +3,26 @@ import { nairaToKobo, toProductSlug, UUID, type AdminProduct, type OperationResu
 export type CataloguePublication = 'all' | 'published' | 'draft';
 export type CatalogueCommand = 'create' | 'details' | 'variant' | 'publication';
 
+export function catalogueFilters(search: string, publication: string | null | undefined) {
+  return {
+    q: search.trim().slice(0, 80),
+    publication: (publication === 'published' || publication === 'draft' ? publication : 'all') as CataloguePublication,
+  };
+}
+
+type CatalogueSearchItem = Pick<AdminProduct, 'name' | 'slug' | 'description' | 'brand' | 'category' | 'published'> & {
+  variants: Pick<AdminProduct['variants'][number], 'sku' | 'barcode'>[];
+};
+
+export function matchesCatalogue(product: CatalogueSearchItem, filters: ReturnType<typeof catalogueFilters>) {
+  if (filters.publication !== 'all' && product.published !== (filters.publication === 'published')) return false;
+  const needle = filters.q.toLowerCase();
+  if (!needle) return true;
+  const searchable = (values: (string | null)[]) => values.filter(value => value !== null).join(' ').toLowerCase();
+  return searchable([product.name, product.slug, product.description, product.brand, product.category]).includes(needle) ||
+    product.variants.some(variant => searchable([variant.sku, variant.barcode]).includes(needle));
+}
+
 export type ManagedVariant = AdminProduct['variants'][number] & {
   name: string | null;
   concentration: string | null;

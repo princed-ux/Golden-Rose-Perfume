@@ -1,112 +1,444 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+
+import {
+  ArrowDown,
+  ArrowUpRight,
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play,
+} from 'lucide-react';
+
+/*
+ * GOLDEN ROSE — MODERN HERO
+ *
+ * Real photographs already copied into your project.
+ * Replace image paths here whenever you want.
+ */
+
+const PHOTO_ROOT =
+  '/assets/products/telegram-selected';
 
 const slides = [
   {
-    image: '/assets/hero/hero-01.png',
-    eyebrow: 'THE GOLDEN ROSE EDIT',
-    lineOne: 'Leave a little',
-    lineTwo: 'magic behind.',
-    description: 'Fragrance is more than a finishing touch. It is the part of your story that stays.',
-    label: 'THE ROSE STORY',
+    image: `${PHOTO_ROOT}/gr-c8da9ece7f5b.jpg`,
+    eyebrow: 'DISCOVER GOLDEN ROSE',
+    heading: 'Your scent.',
+    accent: 'Your story.',
+    description:
+      'Find the fragrances that feel like you. Explore scents for every mood, moment and memory.',
+    position: 'center',
   },
   {
-    image: '/assets/hero/hero-02.png',
-    eyebrow: 'DISCOVER YOUR SIGNATURE',
-    lineOne: 'Rare moments.',
-    lineTwo: 'Golden memories.',
-    description: 'A world of warm, captivating scents selected for every expression of you.',
-    label: 'THE GOLDEN HOUR',
+    image: `${PHOTO_ROOT}/gr-e871df6a67b8.jpg`,
+    eyebrow: 'THE BEAUTY OF FRAGRANCE',
+    heading: 'Every day,',
+    accent: 'a new feeling.',
+    description:
+      'From familiar favourites to something new, discover fragrances that express your personal style.',
+    position: 'center',
   },
   {
-    image: '/assets/hero/hero-03.png',
-    eyebrow: 'BEAUTY OF FRAGRANCE',
-    lineOne: 'Wear the',
-    lineTwo: 'extraordinary.',
-    description: 'From delicate florals to unforgettable statements, find the feeling you want to keep.',
-    label: 'AFTER DARK',
+    image: `${PHOTO_ROOT}/gr-3958c14f5074.jpg`,
+    eyebrow: 'EXPLORE THE COLLECTION',
+    heading: 'Find your',
+    accent: 'next favourite.',
+    description:
+      'Explore the Golden Rose collection and discover a fragrance that makes an impression.',
+    position: 'center',
+  },
+  {
+    image: `${PHOTO_ROOT}/gr-3bed367cf5c0.jpg`,
+    eyebrow: 'YOUR FRAGRANCE DESTINATION',
+    heading: 'A fragrance',
+    accent: 'for every moment.',
+    description:
+      'Beautiful scents, memorable moments, and a collection waiting to be discovered.',
+    position: 'center',
   },
 ];
 
+const SLIDE_DURATION = 4400;
+const TRANSITION_DURATION = 720;
+
+type Direction = 'next' | 'previous';
+
+type SlideState = {
+  active: number;
+  leaving: number | null;
+  direction: Direction;
+  sequence: number;
+};
+
 export default function HeroSlideshow() {
-  const [active, setActive] = useState(0);
+  const [slideState, setSlideState] = useState<SlideState>({
+    active: 0,
+    leaving: null,
+    direction: 'next',
+    sequence: 0,
+  });
+
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [tabHidden, setTabHidden] = useState(false);
+
+  const current = slides[slideState.active];
+
+  const changeSlide = useCallback(
+    (target: number, direction: Direction) => {
+      setSlideState((previous) => {
+        const next =
+          (target + slides.length) % slides.length;
+
+        if (next === previous.active) {
+          return previous;
+        }
+
+        return {
+          active: next,
+          leaving: previous.active,
+          direction,
+          sequence: previous.sequence + 1,
+        };
+      });
+    },
+    [],
+  );
+
+  /*
+   * Respect device motion preferences and avoid
+   * running the slideshow in an inactive browser tab.
+   */
 
   useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReducedMotion(query.matches);
-    update();
-    query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
+    const media = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    );
+
+    const updateMotion = () => {
+      setReducedMotion(media.matches);
+    };
+
+    const updateVisibility = () => {
+      setTabHidden(document.hidden);
+    };
+
+    updateMotion();
+    updateVisibility();
+
+    media.addEventListener('change', updateMotion);
+    document.addEventListener(
+      'visibilitychange',
+      updateVisibility,
+    );
+
+    return () => {
+      media.removeEventListener('change', updateMotion);
+      document.removeEventListener(
+        'visibilitychange',
+        updateVisibility,
+      );
+    };
   }, []);
 
-  useEffect(() => {
-    if (paused || reducedMotion) return;
-    const interval = window.setInterval(() => {
-      setActive((index) => (index + 1) % slides.length);
-    }, 6500);
-    return () => window.clearInterval(interval);
-  }, [active, paused, reducedMotion]);
+  /*
+   * Faster automatic slide transitions.
+   */
 
-  const move = (direction: number) => {
-    setActive((index) => (index + direction + slides.length) % slides.length);
-  };
+  useEffect(() => {
+    if (
+      paused ||
+      reducedMotion ||
+      tabHidden ||
+      slides.length <= 1
+    ) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setSlideState((previous) => ({
+        active: (previous.active + 1) % slides.length,
+        leaving: previous.active,
+        direction: 'next',
+        sequence: previous.sequence + 1,
+      }));
+    }, SLIDE_DURATION);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    slideState.sequence,
+    paused,
+    reducedMotion,
+    tabHidden,
+  ]);
+
+  /*
+   * Remove the previous slide after its exit animation.
+   */
+
+  useEffect(() => {
+    if (slideState.leaving === null) {
+      return;
+    }
+
+    const sequence = slideState.sequence;
+
+    const timeout = window.setTimeout(() => {
+      setSlideState((previous) => {
+        if (previous.sequence !== sequence) {
+          return previous;
+        }
+
+        return {
+          ...previous,
+          leaving: null,
+        };
+      });
+    }, TRANSITION_DURATION);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    slideState.leaving,
+    slideState.sequence,
+  ]);
 
   return (
-    <section className="gr-hero" aria-roledescription="carousel" aria-label="Golden Rose perfume campaign">
-      <div className="gr-hero__images" aria-hidden="true">
-        {slides.map((slide, index) => (
-          <div key={slide.image} className={`gr-hero__image ${index === active ? 'is-active' : ''}`}>
-            <Image
-              src={slide.image}
-              alt=""
-              fill
-              preload={index === 0}
-              sizes="100vw"
-              className="gr-hero__photo"
-            />
-          </div>
-        ))}
-      </div>
-      <div className="gr-hero__veil" aria-hidden="true" />
-      <div className="gr-hero__outline" aria-hidden="true" />
+    <section
+      className="gr-hero"
+      aria-label="Golden Rose fragrance slideshow"
+      aria-roledescription="carousel"
+    >
+      <div className="gr-container gr-hero__layout">
 
-      <div className="gr-hero__body" aria-live="polite" aria-atomic="true">
-        <p className="gr-hero__eyebrow"><span /> {slides[active].eyebrow}</p>
-        <h1 key={`heading-${active}`} className="gr-hero__title">
-          {slides[active].lineOne}<br />
-          <em>{slides[active].lineTwo}</em>
-        </h1>
-        <p key={`copy-${active}`} className="gr-hero__description">{slides[active].description}</p>
-        <div className="gr-hero__actions">
-          <Link href="/shop" className="gr-btn gr-btn--gold">Explore the collection <ArrowUpRight size={18} /></Link>
-          <a href="#gr-story" className="gr-btn gr-btn--text">Our story <span aria-hidden="true">↗</span></a>
-        </div>
-      </div>
+        {/* Animated campaign text */}
 
-      <div className="gr-hero__bottom">
-        <div className="gr-hero__slide-status">
-          <span className="gr-hero__number">{String(active + 1).padStart(2, '0')}</span>
-          <div className="gr-hero__progress" key={`progress-${active}`}>
-            <span className={!paused && !reducedMotion ? 'is-playing' : ''} />
+        <div className="gr-hero__copy">
+          <div
+            key={slideState.sequence}
+            className="gr-hero__copy-inner"
+            aria-live={paused ? 'polite' : 'off'}
+          >
+            <p className="gr-hero__eyebrow">
+              <span className="gr-hero__eyebrow-line" />
+              {current.eyebrow}
+            </p>
+
+            <h1 className="gr-hero__title">
+              {current.heading}
+              <br />
+              <em>{current.accent}</em>
+            </h1>
+
+            <p className="gr-hero__description">
+              {current.description}
+            </p>
           </div>
-          <span className="gr-hero__total">0{slides.length}</span>
-          <span className="gr-hero__label">{slides[active].label}</span>
+
+          <div className="gr-hero__actions">
+            <Link
+              href="/shop"
+              className="gr-button gr-button--dark"
+            >
+              Explore fragrances
+              <ArrowUpRight
+                size={18}
+                aria-hidden="true"
+              />
+            </Link>
+
+            <Link
+              href="/#our-story"
+              className="gr-text-link"
+            >
+              Our story
+              <ArrowUpRight
+                size={16}
+                aria-hidden="true"
+              />
+            </Link>
+          </div>
+
+          <div
+            className="gr-hero__scroll-prompt"
+            aria-hidden="true"
+          >
+            <ArrowDown size={15} />
+            <span>SCROLL TO EXPLORE</span>
+          </div>
         </div>
-        <div className="gr-hero__controls">
-          <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? 'Play slideshow' : 'Pause slideshow'} title={paused ? 'Play' : 'Pause'}>
-            {paused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
-          </button>
-          <button type="button" onClick={() => move(-1)} aria-label="Previous slide"><ChevronLeft size={20} /></button>
-          <button type="button" onClick={() => move(1)} aria-label="Next slide"><ChevronRight size={20} /></button>
+
+        {/* Directional image slideshow */}
+
+        <div
+          className="gr-hero__visual"
+          data-direction={slideState.direction}
+        >
+          <div className="gr-hero__image-frame">
+            {slides.map((slide, index) => {
+              const isActive =
+                index === slideState.active;
+
+              const isLeaving =
+                index === slideState.leaving &&
+                !isActive;
+
+              const className = [
+                'gr-hero__slide',
+                isActive ? 'is-active' : '',
+                isLeaving ? 'is-leaving' : '',
+              ]
+                .filter(Boolean)
+                .join(' ');
+
+              return (
+                <div
+                  key={slide.image}
+                  className={className}
+                  aria-hidden="true"
+                >
+                  <Image
+                    src={slide.image}
+                    alt=""
+                    fill
+                    sizes="(max-width: 850px) 100vw, 50vw"
+                    className="gr-hero__image"
+                    style={{
+                      objectPosition: slide.position,
+                    }}
+                    preload={index === 0}
+                    loading={
+                      index === 0 ? undefined : 'eager'
+                    }
+                  />
+                </div>
+              );
+            })}
+
+            <div className="gr-hero__photo-caption">
+              <span>GOLDEN ROSE PERFUME</span>
+              <span>THE BEAUTY OF FRAGRANCE</span>
+            </div>
+          </div>
+
+          {/* Minimal slider controls */}
+
+          <div className="gr-hero__navigation">
+            <div className="gr-hero__progress-area">
+              <span className="gr-hero__current">
+                {String(
+                  slideState.active + 1,
+                ).padStart(2, '0')}
+              </span>
+
+              <span
+                className="gr-hero__progress-track"
+                aria-hidden="true"
+              >
+                <span
+                  key={`${slideState.sequence}-${paused}-${tabHidden}`}
+                  className={
+                    !paused &&
+                    !reducedMotion &&
+                    !tabHidden
+                      ? 'is-playing'
+                      : ''
+                  }
+                />
+              </span>
+
+              <span className="gr-hero__total">
+                {String(slides.length).padStart(2, '0')}
+              </span>
+            </div>
+
+            <div className="gr-hero__controls">
+              <button
+                type="button"
+                aria-label={
+                  paused
+                    ? 'Resume slideshow'
+                    : 'Pause slideshow'
+                }
+                aria-pressed={paused}
+                onClick={() =>
+                  setPaused((value) => !value)
+                }
+              >
+                {paused ? (
+                  <Play size={16} />
+                ) : (
+                  <Pause size={16} />
+                )}
+              </button>
+
+              <button
+                type="button"
+                aria-label="Previous slide"
+                onClick={() =>
+                  changeSlide(
+                    slideState.active - 1,
+                    'previous',
+                  )
+                }
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              <button
+                type="button"
+                aria-label="Next slide"
+                onClick={() =>
+                  changeSlide(
+                    slideState.active + 1,
+                    'next',
+                  )
+                }
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+
+          <div
+            className="gr-hero__pagination"
+            aria-label="Select slideshow image"
+          >
+            {slides.map((slide, index) => (
+              <button
+                key={slide.image}
+                type="button"
+                className={
+                  index === slideState.active
+                    ? 'is-active'
+                    : ''
+                }
+                aria-label={`Show slide ${index + 1}`}
+                aria-pressed={
+                  index === slideState.active
+                }
+                onClick={() =>
+                  changeSlide(
+                    index,
+                    index < slideState.active
+                      ? 'previous'
+                      : 'next',
+                  )
+                }
+              />
+            ))}
+          </div>
         </div>
       </div>
-      <div className="gr-hero__side-label" aria-hidden="true">GOLDEN ROSE / BEAUTY OF FRAGRANCE</div>
     </section>
   );
 }

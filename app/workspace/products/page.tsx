@@ -22,8 +22,9 @@ import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
 import { adminProductPages } from '@/src/lib/golden-rose/edge';
 import { canManageStockSetup, formatPrice, UUID, type AdminProduct } from '@/src/lib/golden-rose/contracts';
-import type { CataloguePublication, ManagedProduct } from '@/src/lib/golden-rose/catalogue-management';
+import { catalogueFilters, matchesCatalogue, type CataloguePublication, type ManagedProduct } from '@/src/lib/golden-rose/catalogue-management';
 import { readCataloguePage, readProductDetails } from './data';
+import { ExportCatalogue } from './export-catalogue';
 import { AddProductForm, ProductEditor, PublicationForm } from './product-editor';
 import './products.css';
 import './catalogue-layout.css';
@@ -79,11 +80,6 @@ type CataloguePayload = {
   overview: CatalogueOverview;
 };
 
-function parsePublication(value?: string): PublicationFilter {
-  if (value === 'published' || value === 'draft') return value;
-  return 'all';
-}
-
 function parsePage(value?: string): number {
   const page = Number(value);
   return Number.isSafeInteger(page) && page >= 1 && page <= 999_999 ? page : 1;
@@ -123,8 +119,7 @@ function buildHref(q: string, publication: PublicationFilter, page: number) {
 
 
 async function loadCatalogue(token: string, search: string, publication: PublicationFilter, page: number): Promise<CataloguePayload> {
-  const q = search.trim().slice(0, 80);
-  const needle = q.toLowerCase();
+  const filters = catalogueFilters(search, publication);
   const from = (page - 1) * PAGE_SIZE;
   const items: ProductRow[] = [];
   const overview = { totalProducts: 0, publishedProducts: 0, draftProducts: 0, barcodedVariants: 0 };
@@ -137,11 +132,7 @@ async function loadCatalogue(token: string, search: string, publication: Publica
       else overview.draftProducts++;
       overview.barcodedVariants += product.variants.filter(variant => variant.barcode).length;
 
-      if ((publication === 'published' && !product.published) || (publication === 'draft' && product.published)) continue;
-      if (needle && ![product.name, product.description, product.slug, product.brand, product.category]
-        .some(value => value?.toLowerCase().includes(needle)) &&
-        !product.variants.some(variant =>
-          variant.sku?.toLowerCase().includes(needle) || variant.barcode?.toLowerCase().includes(needle))) continue;
+      if (!matchesCatalogue(product, filters)) continue;
 
       const position = total++;
       if (position < from || items.length >= PAGE_SIZE) continue;
@@ -149,7 +140,7 @@ async function loadCatalogue(token: string, search: string, publication: Publica
     }
   }
 
-  return { items, total, page, pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)), filters: { q, publication }, overview };
+  return { items, total, page, pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)), filters, overview };
 }
 
 function productLead(product: ProductRow) {
@@ -298,8 +289,8 @@ async function CatalogueWorkspace({ searchParams }: { searchParams: CataloguePar
   if (!canViewModule(role, 'products')) notFound();
 
   const resolved = await searchParams;
-  const q = typeof resolved.q === 'string' ? resolved.q.trim().slice(0,80) : '';
-  const publication = parsePublication(typeof resolved.publication === 'string' ? resolved.publication : undefined);
+  const { q, publication } = catalogueFilters(typeof resolved.q === 'string' ? resolved.q : '',
+    typeof resolved.publication === 'string' ? resolved.publication : undefined);
   const page = parsePage(typeof resolved.page === 'string' ? resolved.page : undefined);
   const editable = canManageStockSetup(role);
   const adding = editable && resolved.add === '1';
@@ -328,9 +319,12 @@ async function CatalogueWorkspace({ searchParams }: { searchParams: CataloguePar
 
   const header = (
     <WorkspacePageHeader title="Products & Catalogue" description="Manage fragrance listings, variants, and storefront publication."
-      actions={editable && !adding ? <Link href="/workspace/products?add=1" className="catalogue-btn catalogue-btn--primary">
-        <Plus size={16} aria-hidden="true" /> Add product
-      </Link> : undefined} />
+      actions={<>
+        {editable && !adding && <Link href="/workspace/products?add=1" className="catalogue-btn catalogue-btn--primary">
+          <Plus size={16} aria-hidden="true" /> Add product
+        </Link>}
+        <ExportCatalogue q={q} publication={publication} />
+      </>} />
   );
   const editor = adding ? <AddProductForm extended={enhanced} /> :
     detail?.data ? <ProductEditor key={detail.data.productId} initial={detail.data} /> :

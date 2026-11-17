@@ -14,25 +14,19 @@ import {
 import type {
   StockBalance,
 } from '@/src/lib/golden-rose/contracts';
+import { showStockQuantity, stockLabels, stockState, type StockState } from '@/src/lib/golden-rose/stock-evidence';
 
 import {
   workspaceInput,
   workspaceSecondary,
 } from '@/src/components/workspace/page-layout';
 
-type StockFilter = 'all' | 'available' | 'low' | 'out';
-
-function stockState(item: StockBalance): StockFilter {
-  if (item.available <= 0) return 'out';
-  if (item.available <= 5) return 'low';
-  return 'available';
-}
+type StockFilter = 'all' | 'low' | StockState;
 
 const stateLabels: Record<StockFilter, string> = {
   all: 'All stock',
-  available: 'Available',
+  ...stockLabels,
   low: 'Low stock',
-  out: 'Out of stock',
 };
 
 export function InventoryTable({
@@ -75,7 +69,7 @@ export function InventoryTable({
 
       if (
         filter !== 'all' &&
-        stockState(item) !== filter
+        (filter === 'low' ? item.available <= 0 || item.available > 5 : stockState(item) !== filter)
       ) {
         return false;
       }
@@ -192,7 +186,7 @@ export function InventoryTable({
 
           <p className="max-w-md text-sm leading-6 text-[#806d77]">
             {items.length === 0
-              ? 'No stock balances are available on this page. Record a stock receipt to begin tracking quantities.'
+              ? 'No inventory rows are available on this page.'
               : 'Try another filter or search term. Only the currently loaded page is being searched.'}
           </p>
 
@@ -245,6 +239,8 @@ export function InventoryTable({
             <tbody className="divide-y divide-[#f0e6e1]">
               {filtered.map(item => {
                 const status = stockState(item);
+                const low = status === 'available' && item.available <= 5;
+                const quantity = (value: number) => showStockQuantity(item) ? value.toLocaleString('en-NG') : '—';
 
                 return (
                   <tr
@@ -279,39 +275,29 @@ export function InventoryTable({
                     </td>
 
                     <td className="px-4 py-4 text-right text-sm tabular-nums text-[#614c57]">
-                      {item.onHand.toLocaleString(
-                        'en-NG',
-                      )}
+                      {quantity(item.onHand)}
                     </td>
 
                     <td className="px-4 py-4 text-right text-sm tabular-nums text-[#614c57]">
-                      {item.reserved.toLocaleString(
-                        'en-NG',
-                      )}
+                      {quantity(item.reserved)}
                     </td>
 
                     <td className="px-4 py-4 text-right text-sm font-bold tabular-nums text-[#471a31]">
-                      {item.available.toLocaleString(
-                        'en-NG',
-                      )}
+                      {quantity(item.available)}
                     </td>
 
                     <td className="px-5 py-4">
                       <span
                         className={
                           'inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ' +
-                          (status === 'available'
+                          (status === 'available' && !low
                             ? 'bg-[#e8f3e9] text-[#28613d]'
-                            : status === 'low'
+                            : low || status === 'unverified-zero' || status === 'not-counted'
                               ? 'bg-[#fff0d8] text-[#96621f]'
-                              : 'bg-[#fae9ec] text-[#8e354e]')
+                              : 'bg-[#f4ecef] text-[#6f4255]')
                         }
                       >
-                        {status === 'available'
-                          ? 'In stock'
-                          : status === 'low'
-                            ? 'Low stock'
-                            : 'Out of stock'}
+                        {low ? 'Available · low stock' : stockLabels[status]}
                       </span>
                     </td>
                   </tr>

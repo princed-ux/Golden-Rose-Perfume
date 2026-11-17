@@ -54,6 +54,8 @@ export interface StockBalance {
   onHand: number;
   reserved: number;
   available: number;
+  balanceRecorded?: boolean;
+  countEvidence?: 'verified-zero' | 'observed' | null;
 }
 
 export interface StockReceipt {
