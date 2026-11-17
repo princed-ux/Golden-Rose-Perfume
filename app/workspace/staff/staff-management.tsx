@@ -484,6 +484,13 @@ export function StaffManagement({
                     >
                       {copyStatus}
                     </span>
+                    {/^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//i.test(result.inviteUrl) && (
+                      <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900 sm:col-span-2">
+                        Local testing link only: it will not open on another employee's device.
+                        After your website is publicly deployed, set NEXT_PUBLIC_SITE_URL to its
+                        HTTPS address and reissue the invitation before sharing it.
+                      </p>
+                    )}
                   </div>
                 )}
               </WorkspaceNotice>
