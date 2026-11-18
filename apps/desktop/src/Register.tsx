@@ -43,6 +43,7 @@ import {
 import { reconcileStock, registerStorage } from "./storage";
 import { Modal, Receipt } from "./dialogs";
 import { CheckoutDialog } from "./CheckoutDialog";
+import { useStockAutoRefresh } from "./pos/useStockAutoRefresh";
 import {
   customerSale,
   displayChannelId,
@@ -98,6 +99,7 @@ export function Register({
     [answer, setAnswer] = useState("");
   const searchInput = useRef<HTMLInputElement>(null);
   const requestSeq = useRef(0);
+  const catalogueLoadedOnce = useRef(false);
   const paymentLock = useRef(false);
   const scanQueue = useRef(Promise.resolve());
   const scanCount = useRef(0);
@@ -106,6 +108,18 @@ export function Register({
   const display = useRef<ReturnType<typeof displayPublisher> | null>(null);
   const draft = state.draft;
   const pending = Boolean(draft.pending);
+
+  // Keep current stock fresh while the cashier is working.
+  // The same authenticated catalogue loader remains in use.
+  useStockAutoRefresh(
+    () => {
+      if (!paymentLock.current && scanCount.current === 0) {
+        setRefresh((value) => value + 1);
+      }
+    },
+    !busy && !pending && !scanning && overlay === null && !receipt,
+    15_000,
+  );
   const store = catalogue?.locations.find(
     (location) => location.id === draft.locationId,
   );
@@ -190,11 +204,14 @@ export function Register({
     const sequence = ++requestSeq.current;
     let cancelled = false;
     const timer = window.setTimeout(async () => {
-      setLoading(true);
+      if (!catalogueLoadedOnce.current) {
+        setLoading(true);
+      }
       try {
         const result = await api.catalogue(search, draft.locationId);
         if (cancelled || sequence !== requestSeq.current) return;
         setCatalogue(result);
+        catalogueLoadedOnce.current = true;
         const current = stateRef.current;
         if (!current.draft.pending) {
           commit({
@@ -629,7 +646,7 @@ export function Register({
           <p className="notice success">{notice}</p>
         ) : (
           <p>
-            Live stock · Cash payments ·{" "}
+            Live stock · Automatic updates every 15 seconds · Cash payments ·{" "}
             {store?.name ?? "Select your selling store"}
           </p>
         )}

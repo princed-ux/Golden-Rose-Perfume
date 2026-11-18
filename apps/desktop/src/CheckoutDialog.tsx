@@ -1,6 +1,42 @@
-import { ArrowLeft, ArrowRight, Banknote, Check } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Banknote,
+  Building2,
+  Check,
+  Copy,
+} from "lucide-react";
 import { Modal } from "./dialogs";
 import { money } from "./domain";
+
+export type ReceivingBankAccount = {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+};
+
+type Props = {
+  step: "confirm" | "payment";
+  count: number;
+  subtotal: number;
+  total: number;
+  discount: string;
+  setDiscount: (value: string) => void;
+  cash: string;
+  setCash: (value: string) => void;
+  tendered: number | null;
+  change: number | null;
+  pendingReference?: string;
+  busy: boolean;
+  error: string;
+  totalsError: string;
+  close: () => void;
+  back: () => void;
+  next: () => void;
+  pay: () => void;
+  bankAccount?: ReceivingBankAccount | null;
+};
 
 export function CheckoutDialog({
   step,
@@ -21,37 +57,78 @@ export function CheckoutDialog({
   back,
   next,
   pay,
-}: {
-  step: "confirm" | "payment";
-  count: number;
-  subtotal: number;
-  total: number;
-  discount: string;
-  setDiscount: (value: string) => void;
-  cash: string;
-  setCash: (value: string) => void;
-  tendered: number | null;
-  change: number | null;
-  pendingReference?: string;
-  busy: boolean;
-  error: string;
-  totalsError: string;
-  close: () => void;
-  back: () => void;
-  next: () => void;
-  pay: () => void;
-}) {
-  const canConfirm =
+  bankAccount,
+}: Props) {
+  const [method, setMethod] =
+    useState<"cash" | "transfer">("cash");
+
+  const [copied, setCopied] = useState(false);
+
+  const recovering = Boolean(pendingReference);
+  const cashSelected = recovering || method === "cash";
+
+  const canConfirmCash =
     !busy &&
-    (Boolean(pendingReference) ||
-      (!totalsError && change !== null && tendered !== null && tendered > 0));
+    (recovering ||
+      (!totalsError &&
+        tendered !== null &&
+        tendered >= total &&
+        tendered > 0 &&
+        change !== null));
+
+  function chooseCash() {
+    setMethod("cash");
+    next();
+  }
+
+  function chooseTransfer() {
+    setMethod("transfer");
+    next();
+  }
+
+  async function copyAccount() {
+    if (!bankAccount?.accountNumber) return;
+
+    try {
+      await navigator.clipboard.writeText(
+        bankAccount.accountNumber,
+      );
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  const nextCashAmount =
+    Math.ceil((total + 1) / 50_000) * 500;
+
+  const quickAmounts = Array.from(
+    new Set([
+      1000,
+      2000,
+      5000,
+      10000,
+      20000,
+      50000,
+      nextCashAmount,
+    ]),
+  )
+    .filter((amount) => amount > 0)
+    .sort((a, b) => a - b);
+
   return (
     <Modal
-      title={step === "confirm" ? "Confirm sale" : "Payment details"}
+      title={
+        step === "confirm"
+          ? "Confirm sale"
+          : cashSelected
+            ? "Cash payment"
+            : "Bank transfer"
+      }
       kicker={
         step === "confirm"
           ? "Step 1 of 2"
-          : pendingReference
+          : recovering
             ? "Transaction recovery"
             : "Step 2 of 2"
       }
@@ -63,130 +140,186 @@ export function CheckoutDialog({
         <>
           <dl className="sale-review">
             <div>
-              <dt>Sell to</dt>
+              <dt>Customer</dt>
               <dd>Cash Customer</dd>
             </div>
+
             <div>
               <dt>
-                Total sales ({count} {count === 1 ? "unit" : "units"})
+                Products ({count}{" "}
+                {count === 1 ? "unit" : "units"})
               </dt>
               <dd>{money(subtotal)}</dd>
             </div>
+
             <div>
               <dt>
-                <label htmlFor="sale-discount">Total discount (₦)</label>
+                <label htmlFor="sale-discount">
+                  Discount (₦)
+                </label>
               </dt>
               <dd>
                 <input
                   id="sale-discount"
-                  inputMode="decimal"
                   value={discount}
+                  onChange={(event) =>
+                    setDiscount(event.target.value)
+                  }
+                  inputMode="decimal"
                   placeholder="0.00"
                   disabled={busy}
-                  onChange={(event) => setDiscount(event.target.value)}
                 />
               </dd>
             </div>
+
             <div>
               <dt>Sales tax</dt>
-              <dd className="review-note">Applied by the register</dd>
+              <dd className="review-note">
+                Determined by the register
+              </dd>
             </div>
+
             <div className="review-payable">
               <dt>Amount payable</dt>
-              <dd>{totalsError ? "—" : money(total)}</dd>
+              <dd>
+                {totalsError ? "—" : money(total)}
+              </dd>
             </div>
           </dl>
+
           {totalsError && (
             <p className="notice error" role="alert">
               {totalsError}
             </p>
           )}
-          <h3 className="eyebrow payment-label">Payment method</h3>
+
+          <h3 className="eyebrow payment-label">
+            Choose payment method
+          </h3>
+
           <div
             className="payment-methods"
             role="group"
             aria-label="Payment methods"
           >
             <button
+              type="button"
               className="cash-method"
-              onClick={next}
+              onClick={chooseCash}
               disabled={busy || Boolean(totalsError)}
             >
-              <Banknote size={16} />
+              <Banknote size={17} />
               Cash payment
+              <ArrowRight size={15} />
             </button>
+
+            <button
+              type="button"
+              onClick={chooseTransfer}
+              disabled={busy || Boolean(totalsError)}
+            >
+              <Building2 size={17} />
+              Bank transfer
+              <ArrowRight size={15} />
+            </button>
+
             {[
-              "Bank transfer",
               "POS terminal",
               "Credit payment",
               "Cheque",
               "Web payment",
-            ].map((method) => (
+            ].map((name) => (
               <button
-                key={method}
+                key={name}
+                type="button"
                 disabled
-                title="Payment confirmation is not connected"
+                title="Not yet integrated"
               >
-                {method}
+                {name}
               </button>
             ))}
           </div>
-          <p className="notice pending">
-            Cash payment is available. Other methods require verified payment
-            integrations.
-          </p>
+
           <footer className="modal-actions">
-            <button onClick={close} disabled={busy}>
+            <button
+              type="button"
+              onClick={close}
+              disabled={busy}
+            >
               Cancel
             </button>
           </footer>
         </>
-      ) : (
+      ) : cashSelected ? (
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            if (canConfirm) pay();
+            if (canConfirmCash) pay();
           }}
           onKeyDown={(event) => {
-            if (event.ctrlKey && event.key === "Enter") {
+            if (
+              event.ctrlKey &&
+              event.key === "Enter"
+            ) {
               event.preventDefault();
-              if (canConfirm) pay();
+
+              if (canConfirmCash) pay();
             }
           }}
         >
           <fieldset disabled={busy}>
             <div className="payment-due">
-              <span>Cash payment · Amount payable</span>
+              <span>Amount payable</span>
               <strong>{money(total)}</strong>
             </div>
-            {!pendingReference && (
+
+            {!recovering && (
               <>
-                <h3 className="eyebrow payment-label">Quick cash amounts</h3>
+                <h3 className="eyebrow payment-label">
+                  Quick cash amounts
+                </h3>
+
                 <div
                   className="cash-denominations"
                   role="group"
                   aria-label="Quick cash amounts"
                 >
-                  {[1000, 2000, 5000, 10000, 20000, 50000].map((value) => (
+                  {quickAmounts.map((amount) => (
                     <button
-                      className={tendered === value * 100 ? "selected" : ""}
+                      key={amount}
                       type="button"
-                      key={value}
-                      onClick={() => setCash(String(value))}
+                      className={
+                        tendered === amount * 100
+                          ? "selected"
+                          : ""
+                      }
+                      onClick={() =>
+                        setCash(String(amount))
+                      }
                     >
-                      {money(value * 100)}
+                      {money(amount * 100)}
                     </button>
                   ))}
+
                   <button
                     type="button"
-                    onClick={() => setCash((total / 100).toFixed(2))}
+                    onClick={() =>
+                      setCash(
+                        (total / 100).toFixed(2),
+                      )
+                    }
                   >
                     Exact cash
                   </button>
-                  <button type="button" onClick={() => setCash("")}>
-                    Clear amount
+
+                  <button
+                    type="button"
+                    onClick={() => setCash("")}
+                  >
+                    Clear
                   </button>
                 </div>
+
                 <label>
                   Cash received (₦)
                   <input
@@ -194,52 +327,95 @@ export function CheckoutDialog({
                     className="cash-amount-input"
                     name="cash"
                     inputMode="decimal"
+                    autoComplete="off"
                     value={cash}
-                    onChange={(event) => setCash(event.target.value)}
+                    onChange={(event) =>
+                      setCash(event.target.value)
+                    }
+                    placeholder="Enter amount given"
                     required
                   />
                 </label>
               </>
             )}
+
             <div className="payment-totals">
               <div>
-                <span>Amount due</span>
+                <span>Total due</span>
                 <strong>{money(total)}</strong>
               </div>
+
               <div>
-                <span>Change to return</span>
-                <strong>{change === null ? "—" : money(change)}</strong>
+                <span>Cash received</span>
+                <strong>
+                  {tendered === null
+                    ? "—"
+                    : money(tendered)}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Change to give customer
+                </span>
+                <strong>
+                  {change === null
+                    ? "—"
+                    : money(change)}
+                </strong>
               </div>
             </div>
-            {!pendingReference && tendered !== null && tendered < total && (
-              <p className="field-error" role="alert">
-                Cash received is below the amount due.
-              </p>
-            )}
-            {pendingReference && (
+
+            {!recovering &&
+              tendered !== null &&
+              tendered < total && (
+                <p
+                  className="field-error"
+                  role="alert"
+                >
+                  Cash received is below the amount
+                  due. Enter enough cash to continue.
+                </p>
+              )}
+
+            {recovering && (
               <p className="notice pending">
-                Confirmation was interrupted. Retry this transaction without
-                collecting cash again.
-                <small className="code">{pendingReference}</small>
+                A previous payment confirmation
+                was interrupted. Retry with the
+                same transaction reference.
+                <small className="code">
+                  {pendingReference}
+                </small>
               </p>
             )}
+
             {error && (
               <p className="notice error" role="alert">
                 {error}
               </p>
             )}
+
             <footer className="modal-actions">
-              <button type="button" onClick={pendingReference ? close : back}>
+              <button
+                type="button"
+                onClick={recovering ? close : back}
+              >
                 <ArrowLeft size={15} />
-                {pendingReference ? "Close" : "Back"}
+                {recovering ? "Close" : "Back"}
               </button>
-              <button className="primary" type="submit" disabled={!canConfirm}>
+
+              <button
+                className="primary"
+                type="submit"
+                disabled={!canConfirmCash}
+              >
                 {busy
-                  ? "Confirming payment…"
-                  : pendingReference
+                  ? "Confirming…"
+                  : recovering
                     ? "Retry same transaction"
                     : "Confirm cash payment"}
-                {pendingReference ? (
+
+                {recovering ? (
                   <Check size={16} />
                 ) : (
                   <ArrowRight size={16} />
@@ -248,6 +424,86 @@ export function CheckoutDialog({
             </footer>
           </fieldset>
         </form>
+      ) : (
+        <div>
+          <div className="payment-due">
+            <span>Amount to transfer</span>
+            <strong>{money(total)}</strong>
+          </div>
+
+          {bankAccount?.bankName &&
+          bankAccount.accountName &&
+          bankAccount.accountNumber ? (
+            <>
+              <p className="notice pending">
+                Ask the customer to transfer the
+                exact amount to the store's
+                verified receiving account.
+              </p>
+
+              <dl className="sale-review">
+                <div>
+                  <dt>Bank</dt>
+                  <dd>{bankAccount.bankName}</dd>
+                </div>
+
+                <div>
+                  <dt>Account name</dt>
+                  <dd>{bankAccount.accountName}</dd>
+                </div>
+
+                <div>
+                  <dt>Account number</dt>
+                  <dd>{bankAccount.accountNumber}</dd>
+                </div>
+              </dl>
+
+              <button
+                type="button"
+                onClick={() => void copyAccount()}
+              >
+                <Copy size={15} />
+                {copied
+                  ? "Account number copied"
+                  : "Copy account number"}
+              </button>
+            </>
+          ) : (
+            <p
+              className="notice pending"
+              role="status"
+            >
+              The store's receiving bank account
+              has not been connected to the
+              desktop application yet.
+            </p>
+          )}
+
+          <p className="notice pending">
+            Transfer verification is not yet
+            integrated. Do not mark this sale
+            paid or release goods based only on
+            a transfer screenshot.
+          </p>
+
+          <footer className="modal-actions">
+            <button
+              type="button"
+              onClick={back}
+            >
+              <ArrowLeft size={15} />
+              Back
+            </button>
+
+            <button
+              className="primary"
+              type="button"
+              disabled
+            >
+              Awaiting payment integration
+            </button>
+          </footer>
+        </div>
       )}
     </Modal>
   );

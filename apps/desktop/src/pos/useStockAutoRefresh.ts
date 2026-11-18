@@ -1,119 +1,55 @@
+import { useEffect, useRef } from "react";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-
-type Status =
-  | 'idle'
-  | 'refreshing'
-  | 'up-to-date'
-  | 'error';
-
+/**
+ * Refreshes the real POS catalogue without reloading the
+ * desktop application or disrupting the cashier's basket.
+ *
+ * The callback triggers the register's existing authenticated
+ * catalogue loader. It never creates or changes stock.
+ */
 export function useStockAutoRefresh(
-  fetchLatestCatalogue: () => Promise<void>,
+  triggerRefresh: () => void,
   enabled = true,
-  intervalMs = 15_000
+  intervalMs = 15_000,
 ) {
-  const latestFetcher = useRef(fetchLatestCatalogue);
-  const inFlight = useRef(false);
-  const alive = useRef(false);
-
-  const [status, setStatus] =
-    useState<Status>('idle');
-
-  const [lastUpdated, setLastUpdated] =
-    useState<Date | null>(null);
+  const latest = useRef(triggerRefresh);
 
   useEffect(() => {
-    latestFetcher.current = fetchLatestCatalogue;
-  }, [fetchLatestCatalogue]);
-
-  const refreshNow = useCallback(async () => {
-    if (inFlight.current || !navigator.onLine) {
-      return;
-    }
-
-    inFlight.current = true;
-
-    if (alive.current) {
-      setStatus('refreshing');
-    }
-
-    try {
-      await latestFetcher.current();
-
-      if (alive.current) {
-        setStatus('up-to-date');
-        setLastUpdated(new Date());
-      }
-    } catch {
-      if (alive.current) {
-        setStatus('error');
-      }
-    } finally {
-      inFlight.current = false;
-    }
-  }, []);
+    latest.current = triggerRefresh;
+  }, [triggerRefresh]);
 
   useEffect(() => {
-    alive.current = true;
+    if (!enabled) return;
 
-    if (!enabled) {
-      return () => {
-        alive.current = false;
-      };
-    }
-
-    const onResume = () => {
-      if (!document.hidden) {
-        void refreshNow();
+    const refresh = () => {
+      if (
+        !document.hidden &&
+        navigator.onLine
+      ) {
+        latest.current();
       }
     };
 
-    const timer = window.setInterval(() => {
-      if (!document.hidden && navigator.onLine) {
-        void refreshNow();
-      }
-    }, Math.max(intervalMs, 5_000));
-
-    window.addEventListener('focus', onResume);
-    window.addEventListener('online', onResume);
-    document.addEventListener(
-      'visibilitychange',
-      onResume
+    const timer = window.setInterval(
+      refresh,
+      Math.max(5_000, intervalMs),
     );
 
-    void refreshNow();
+    window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
+    document.addEventListener(
+      "visibilitychange",
+      refresh,
+    );
 
     return () => {
       window.clearInterval(timer);
-
-      window.removeEventListener(
-        'focus',
-        onResume
-      );
-
-      window.removeEventListener(
-        'online',
-        onResume
-      );
-
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("online", refresh);
       document.removeEventListener(
-        'visibilitychange',
-        onResume
+        "visibilitychange",
+        refresh,
       );
-
-      alive.current = false;
     };
-  }, [enabled, intervalMs, refreshNow]);
-
-  return {
-    refreshNow,
-    status,
-    lastUpdated,
-    refreshing: status === 'refreshing',
-  };
+  }, [enabled, intervalMs]);
 }
