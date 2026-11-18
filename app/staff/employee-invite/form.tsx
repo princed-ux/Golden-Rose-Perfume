@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
+import { MIN_NEW_PASSWORD_LENGTH, NEW_PASSWORD_HINT } from '@/src/lib/customer/auth-policy';
 import { INITIAL_RESULT } from '@/src/lib/golden-rose/contracts';
 import { acceptEmployeeInvitation } from './actions';
 
@@ -78,10 +79,10 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
               id="gr-invite-password"
               name="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder={creating ? 'At least 8 characters' : 'Enter your password'}
+              placeholder={creating ? `At least ${MIN_NEW_PASSWORD_LENGTH} characters` : 'Enter your password'}
               autoComplete={creating ? 'new-password' : 'current-password'}
-              minLength={creating ? 8 : undefined}
-              maxLength={creating ? 128 : 256}
+              minLength={creating ? MIN_NEW_PASSWORD_LENGTH : undefined}
+              maxLength={creating ? undefined : 256}
               required
               disabled={pending}
             />
@@ -96,7 +97,7 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
               {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
             </button>
           </div>
-          {creating && <small>Use a unique password with at least 8 characters.</small>}
+          {creating && <small>{NEW_PASSWORD_HINT}</small>}
         </div>
 
         {creating && (
@@ -110,8 +111,7 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password again"
                 autoComplete="new-password"
-                minLength={8}
-                maxLength={128}
+                minLength={MIN_NEW_PASSWORD_LENGTH}
                 required
                 disabled={pending}
               />

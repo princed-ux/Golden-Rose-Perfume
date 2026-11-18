@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { validateAuthValues, type AuthValues } from './auth-form';
 
-const valid: AuthValues = { email: 'customer@example.com', password: 'A long passphrase', confirmPassword: 'A long passphrase', inviteCode: 'owner-issued-code' };
+const valid: AuthValues = { email: 'customer@example.com', password: 'R0se!123', confirmPassword: 'R0se!123', inviteCode: 'owner-issued-code' };
 
 describe('Authentication UI validation', () => {
   it('rejects malformed email addresses on every screen', () => {
@@ -12,6 +12,7 @@ describe('Authentication UI validation', () => {
     for (const mode of ['register', 'accept-invite'] as const) {
       assert.ok(validateAuthValues(mode, { ...valid, password: '1234567', confirmPassword: '1234567' }).password);
       assert.deepEqual(validateAuthValues(mode, { ...valid, password: '12345678', confirmPassword: '12345678' }), {});
+      assert.deepEqual(validateAuthValues(mode, { ...valid, password: 'longer passphrase', confirmPassword: 'longer passphrase' }), {});
     }
   });
   it('rejects mismatched confirmation without changing the password', () => {
@@ -22,7 +23,7 @@ describe('Authentication UI validation', () => {
   });
   it('does not apply new-password rules to existing login passwords', () => {
     assert.deepEqual(validateAuthValues('login', { ...valid, password: '1234567' }), {});
-    assert.deepEqual(validateAuthValues('staff-login', { ...valid, password: '1234567' }), {});
+    assert.deepEqual(validateAuthValues('staff-login', { ...valid, password: 'A long passphrase' }), {});
   });
   it('requires an invitation code for staff acceptance', () => {
     assert.ok(validateAuthValues('accept-invite', { ...valid, inviteCode: '   ' }).inviteCode);

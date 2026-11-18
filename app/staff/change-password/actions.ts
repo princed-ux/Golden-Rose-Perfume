@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/src/lib/supabase/server';
 import { getStaffPasswordState } from '@/src/lib/golden-rose/staff';
-import { employeePasswordHint, strongEmployeePassword } from '@/src/lib/golden-rose/employee-passwords';
+import { NEW_PASSWORD_HINT, newPasswordError } from '@/src/lib/customer/auth-policy';
 import { employeeAdminClient, employeeEmailConfirmation, employeePublicAuthClient } from '@/src/lib/golden-rose/employee-admin';
 import { UUID, type OperationResult } from '@/src/lib/golden-rose/contracts';
 
@@ -12,8 +12,9 @@ export async function changeEmployeePassword(_: OperationResult, form: FormData)
   const next = form.get('password');
   const errorResult = (message: string): OperationResult => ({ status: 'error', message });
   if (typeof current !== 'string' || !current || current.length > 256) return errorResult('Enter your temporary password.');
-  if (!strongEmployeePassword(next)) return errorResult(employeePasswordHint);
-  if (next !== form.get('passwordConfirmation')) return errorResult('The new passwords do not match.');
+  if (typeof next !== 'string') return errorResult(NEW_PASSWORD_HINT);
+  const passwordError = newPasswordError(next, form.get('passwordConfirmation'));
+  if (passwordError) return errorResult(passwordError);
   if (current === next) return errorResult('Choose a different password.');
   try {
     const client = await createClient();

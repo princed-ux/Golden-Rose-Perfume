@@ -5,7 +5,7 @@ import { createClient as createAuthClient } from '@supabase/supabase-js';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getRoleHome } from '@/src/domain/permissions';
-import { resolveAuthOrigin, validEmail, validNewPassword } from '@/src/lib/customer/auth-policy';
+import { newPasswordError, resolveAuthOrigin, validEmail } from '@/src/lib/customer/auth-policy';
 import type { OperationResult } from '@/src/lib/golden-rose/contracts';
 import { employeeInviteCode, isEmployeeRole } from '@/src/lib/golden-rose/employees';
 import { getSupabaseConfig } from '@/src/lib/supabase/config';
@@ -27,7 +27,8 @@ export async function acceptEmployeeInvitation(_: OperationResult, form: FormDat
   try {
     const supabase = await createClient();
     if (mode === 'register') {
-      if (!validNewPassword(password, value('confirmation'))) return failed('Use at least 8 characters and enter the same password twice.');
+      const passwordError = newPasswordError(password, value('confirmation'));
+      if (passwordError) return failed(passwordError);
       const { data: valid, error: validationError } = await supabase.rpc('gr_staff_invite_valid', { p_hash: hash, p_email: email });
       if (validationError?.code === 'PGRST202') return failed('Employee invitations are awaiting the reviewed database migration.');
       if (validationError || valid !== true) return failed('This invitation is invalid, expired, or for another email.');

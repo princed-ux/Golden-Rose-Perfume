@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { INITIAL_RESULT } from '@/src/lib/golden-rose/contracts';
-import { employeePasswordHint } from '@/src/lib/golden-rose/employee-passwords';
+import { MIN_NEW_PASSWORD_LENGTH, NEW_PASSWORD_HINT } from '@/src/lib/customer/auth-policy';
 import { changeEmployeePassword } from './actions';
 
 export function ChangeEmployeePasswordForm() {
@@ -13,13 +13,13 @@ export function ChangeEmployeePasswordForm() {
       <input className={input} name="currentPassword" type="password" autoComplete="current-password" required />
     </label>
     <label className="grid gap-1.5 text-sm font-medium">New password
-      <input className={input} name="password" type="password" autoComplete="new-password" minLength={12} maxLength={72}
+      <input className={input} name="password" type="password" autoComplete="new-password" minLength={MIN_NEW_PASSWORD_LENGTH}
         aria-describedby="employee-password-rules" required />
     </label>
     <label className="grid gap-1.5 text-sm font-medium">Confirm new password
-      <input className={input} name="passwordConfirmation" type="password" autoComplete="new-password" minLength={12} maxLength={72} required />
+      <input className={input} name="passwordConfirmation" type="password" autoComplete="new-password" minLength={MIN_NEW_PASSWORD_LENGTH} required />
     </label>
-    <p id="employee-password-rules" className="text-sm text-[#e3c99c]">{employeePasswordHint}</p>
+    <p id="employee-password-rules" className="text-sm text-[#e3c99c]">{NEW_PASSWORD_HINT}</p>
     {result.message && <p role="alert" className="text-sm text-[#ffd5d5]">{result.message}</p>}
     <button disabled={pending} className="min-h-11 rounded-lg bg-[#e0bf7c] px-4 py-2 font-bold text-[#261519] disabled:opacity-60">
       {pending ? 'Changing password…' : 'Change password'}

@@ -1792,3 +1792,423 @@
     background: white !important;
   }
 }
+
+/* ==========================================================
+   GOLDEN ROSE POS — FOCUSED CASHIER LAYOUT v3
+   Bounded desktop panes with a fixed checkout footer.
+   Touch layouts retain their existing mobile drawer.
+   ========================================================== */
+
+.pos-screen {
+  box-sizing: border-box;
+  padding: 8px 0 36px;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+.pos-screen .pos-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin: 0 0 12px;
+  padding: 0 2px 9px;
+  border-bottom: 1px solid #ebdfe3;
+}
+.pos-screen .pos-heading-identity { display: flex; align-items: baseline; gap: 13px; flex-wrap: wrap; }
+.pos-screen .pos-heading h1 {
+  margin: 0 !important;
+  font: 400 clamp(22px, 2vw, 28px)/1.1 Georgia, serif;
+  letter-spacing: -.04em;
+  color: #44182b;
+}
+.pos-screen .pos-heading-subtitle {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 0 !important;
+  color: #876f7a; font-size: 11px !important;
+}
+.pos-screen .pos-cash-dot { width: 7px; height: 7px; border-radius: 50%; background: #37a66d; }
+.pos-screen .pos-heading-demo { color: #a46817; font-size: 10px; letter-spacing: .04em; }
+.pos-screen .pos-heading-actions {
+  display: flex; align-items: center; justify-content: flex-end;
+  flex-wrap: wrap; gap: 5px;
+}
+.pos-screen .pos-heading-actions .pos-secondary {
+  min-height: 34px; padding: 7px 10px;
+  font-size: 11px !important; border-radius: 7px; gap: 6px;
+  white-space: nowrap;
+}
+.pos-screen .pos-heading-actions .pos-secondary svg { width: 15px; height: 15px; }
+.pos-screen .pos-demo-toggle.is-active {
+  background: #fff0d6; border-color: #dfbc87; color: #704611;
+}
+.pos-screen .pos-location-compact { display: inline-flex; align-items: center; position: relative; }
+.pos-screen .pos-location-compact select {
+  appearance: none; min-height: 34px; max-width: 185px;
+  padding: 6px 24px 6px 10px; border: 1px solid #e4d9dd;
+  border-radius: 7px; background: white; color: #65404f;
+  font-size: 11px; font-weight: 700;
+}
+.pos-screen .pos-location-compact svg { position: absolute; right: 7px; pointer-events: none; }
+.pos-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  clip: rect(0,0,0,0); overflow: hidden; white-space: nowrap; border: 0; }
+
+/* Location is selected on the server; no redundant full-width location strip. */
+.pos-screen .pos-store-bar { display: none !important; }
+
+/* Table-first cashier layout with a fixed basket footer. */
+.pos-screen .pos-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(340px, .85fr);
+  align-items: stretch;
+  gap: 12px;
+  min-height: 0;
+  height: min(80dvh, 920px);
+  overflow: hidden;
+}
+.pos-screen .pos-catalogue {
+  min-width: 0; min-height: 0;
+  display: flex; flex-direction: column;
+  height: 100% !important;
+  padding: 14px;
+  overflow: hidden !important;
+  border-radius: 12px;
+}
+.pos-screen .pos-section-title { margin: 0 0 11px; }
+.pos-screen .pos-section-title h2 { margin: 0; font: 400 21px Georgia,serif; }
+.pos-screen .pos-search-row { gap: 7px; }
+.pos-screen .pos-search { height: 42px; }
+.pos-screen .pos-refresh { width: 42px; }
+.pos-screen .pos-filter-row { padding: 8px 0 10px; flex-wrap: wrap; gap: 7px; }
+.pos-screen .pos-filter-row > small { display: none; }
+.pos-screen .pos-segments button { min-height: 32px; padding: 5px 11px; }
+.pos-view-choices {
+  display: inline-flex; align-items: center; gap: 3px; margin-left: auto;
+  padding: 3px; border: 1px solid #e6d9e0;
+  border-radius: 8px; background: #f8f4f4;
+}
+.pos-view-choices button { display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 11px; min-height: 31px; border: 0; border-radius: 6px;
+  background: transparent; color: #6e5261; font-size: 11px; font-weight: 750; }
+.pos-view-choices button[aria-pressed='true'] { background: #562039; color: #fff; }
+.pos-view-choices button:hover:not([aria-pressed='true']) { background: #eee6e8; }
+
+/* The catalogue owns one scroll area; the table heading stays visible. */
+.pos-screen .pos-product-table-wrap {
+  flex: 1; min-height: 0; width: 100%; max-height: none !important;
+  border: 1px solid #e9dfe2; border-radius: 9px;
+  overflow: auto; scrollbar-width: thin;
+}
+.pos-screen .pos-product-table { width: 100%; min-width: 0; table-layout: fixed; border-collapse: collapse; text-align: left; }
+.pos-screen .pos-product-table thead { position: sticky; top: 0; z-index: 2; }
+.pos-screen .pos-product-table th:first-child { width: 34%; }
+.pos-screen .pos-product-table th:nth-child(2) { width: 21%; }
+.pos-screen .pos-product-table th:nth-child(3) { width: 8%; }
+.pos-screen .pos-product-table th:nth-child(4) { width: 11%; }
+.pos-screen .pos-product-table th:nth-child(5) { width: 16%; }
+.pos-screen .pos-product-table th:last-child { width: 10%; }
+.pos-screen .pos-product-table th { padding: 9px 10px; background: #f9f4f4;
+  color: #684758; font-size: 10px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .07em; border-bottom: 1px solid #ebe0e3; }
+.pos-screen .pos-product-table td { padding: 7px 10px; border-bottom: 1px solid #eee5e7;
+  color: #60414e; font-size: 12px; vertical-align: middle; }
+.pos-screen .pos-product-table tr:nth-child(even) { background: #fcfafb; }
+.pos-screen .pos-product-table tr:hover { background: #fff7ed; }
+.pos-screen .pos-product-table tbody tr:last-child td { border-bottom: 0; }
+.pos-screen .pos-product-table td { overflow-wrap: anywhere; }
+.pos-screen .pos-product-table td:first-child { min-width: 0; }
+.pos-screen .pos-product-table th:last-child,
+.pos-screen .pos-product-table td:last-child { text-align: right; }
+.pos-table-product { display: flex; align-items: center; gap: 9px; }
+.pos-table-product .pos-photo { flex: 0 0 38px; width: 38px; height: 40px;
+  border-radius: 7px; }
+.pos-table-product .pos-photo-mark { width: 27px; height: 30px; font-size: 11px; border-radius: 5px; }
+.pos-table-product span { display: grid; gap: 2px; min-width: 0; }
+.pos-table-product strong { font-size: 12px; color: #482339; line-height: 1.25; overflow-wrap: anywhere; }
+.pos-table-product small { color: #927e87; font-size: 10px; }
+.pos-table-code { overflow-wrap: anywhere; }
+.pos-table-price { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pos-table-price { font-weight: 800; }
+.pos-screen .pos-table-add { display: inline-flex; align-items: center; justify-content: center;
+  gap: 5px; min-height: 33px; padding: 6px 11px;
+  border: 1px solid #e1c59a; border-radius: 7px;
+  background: #fff2dc; color: #704b2b; font-weight: 750; font-size: 11px; }
+.pos-screen .pos-table-add:hover:not(:disabled) { background: #f7e0bc; }
+.pos-screen .pos-table-add:disabled { border-color: #e6e2e2; background: #f6f3f3; color: #a29ca0; }
+.pos-screen .pos-product .pos-photo { height: 110px; }
+.pos-screen .pos-products { flex: 1; min-height: 0; overflow-y: auto; align-content: start; gap: 10px; }
+.pos-screen .pos-product-info { padding: 10px; }
+.pos-screen .pos-product-info h3 { min-height: auto; }
+.pos-screen .pos-product-price { padding-top: 7px; }
+.pos-screen .pos-product-info > button { margin-top: 8px; }
+.pos-screen .pos-more { margin-top: 13px; }
+.pos-screen .pos-catalogue-foot { margin-top: 11px !important; line-height: 1.5; }
+
+/* Sticky payment card. Basket is always compact before totals. */
+.pos-screen .pos-cart {
+  display: flex; flex-direction: column;
+  align-self: stretch; position: static;
+  width: 100%; height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0; overflow: hidden !important;
+  border-radius: 12px;
+}
+.pos-screen .pos-cart-heading {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 15px; background: #fffcfb;
+  border-bottom: 1px solid #e9dfe2;
+}
+.pos-screen .pos-cart-heading h2 { margin: 0; font: 400 19px Georgia,serif; }
+.pos-screen .pos-cart-contents {
+  flex: 1; min-height: 0 !important; max-height: none;
+  overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+}
+.pos-screen .pos-cart-empty { display: flex; flex-direction: row; gap: 9px;
+  justify-content: flex-start; align-items: center;
+  padding: 12px 15px; color: #987f8d; text-align: left; font-size: 11px; }
+.pos-screen .pos-cart-empty > svg { width: 18px; height: 18px; flex-shrink: 0; }
+.pos-screen .pos-cart-item { padding: 9px 13px; }
+.pos-screen .pos-cart-item .pos-photo { width: 39px; height: 43px; flex-basis: 39px; }
+.pos-screen .pos-cart-item-bottom { margin-top: 6px; }
+.pos-screen .pos-quantity button { height: 24px; width: 26px; }
+.pos-screen .pos-held-note { margin: 0 !important; padding: 6px 12px;
+  border-bottom: 1px solid #f0e2c7; background: #fff8e8;
+  color: #8b6039; font-size: 10px; }
+.pos-screen .pos-checkout {
+  flex: none; min-height: 0; max-height: none !important;
+  padding: 11px 15px 13px; overflow: visible !important;
+}
+.pos-screen .pos-summary-row, .pos-screen .pos-discount { margin: 0 0 8px; }
+.pos-screen .pos-tax { padding-bottom: 6px; margin-bottom: 8px; }
+.pos-screen .pos-money-input { height: 34px; padding: 5px 9px; }
+.pos-screen .pos-amount-due { padding: 11px 13px; margin: 0 0 11px; border-radius: 9px; }
+.pos-screen .pos-amount-due > span { font-size: 9px; }
+.pos-screen .pos-amount-due strong { margin: 2px 0; font-size: 23px; }
+.pos-screen .pos-amount-due small { font-size: 9px; }
+.pos-screen .pos-payment { margin: 0 0 9px; }
+.pos-screen .pos-payment-options { margin-top: 5px; }
+.pos-screen .pos-payment-options span { padding: 7px 8px; font-size: 10px; }
+.pos-screen .pos-cash-label { gap: 5px; }
+.pos-screen .pos-cash-input { height: 38px; }
+.pos-screen .pos-shortcuts { margin: 6px 0 8px; }
+.pos-screen .pos-shortcuts--compact button { min-height: 30px; padding: 5px 10px; }
+.pos-screen .pos-tender-pad { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px; margin: 7px 0 8px; padding: 7px; border: 1px solid #eee1e5;
+  background: #fcf9fa; border-radius: 8px; }
+.pos-screen .pos-tender-pad button { min-height: 35px; border: 1px solid #e5d8dc;
+  background: #fff; border-radius: 5px; color: #5b2b41; font-weight: 750; }
+.pos-screen .pos-tender-pad button:hover:not(:disabled) { background: #f6e7e9; }
+.pos-screen .pos-change { margin: 0 0 7px; padding-bottom: 7px; }
+.pos-screen .pos-pay { min-height: 43px; margin: 5px 0 0; }
+.pos-screen .pos-register-shortcuts { margin: 7px 0 0 !important;
+  text-align: center; color: #8f8187; font-size: 10px; }
+.pos-screen .pos-safe { margin: 5px 0 0 !important; line-height: 1.45; font-size: 10px; }
+.pos-screen .pos-demo-banner {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin: 0 0 10px; padding: 8px 12px;
+  border: 1px solid #e4b978; border-radius: 8px;
+  background: #fff4dd; color: #77460e; font-size: 11px;
+}
+.pos-screen .pos-demo-banner strong { font-size: 10px; letter-spacing: .04em; }
+.pos-screen .pos-demo-receipt { padding: 16px; border: 2px dashed #cca371; background: #fff8e8; }
+.pos-screen .pos-demo-receipt-mark { padding: 9px; margin-bottom: 12px;
+  background: #eed0a0; color: #723d12; text-align: center;
+  font-size: 13px; font-weight: 900; }
+.pos-screen .pos-demo-receipt-meta { display: grid; gap: 5px; font-size: 11px; margin-bottom: 11px; }
+.pos-screen .pos-demo-receipt-line { display: flex; justify-content: space-between;
+  gap: 9px; padding: 7px 0; border-top: 1px solid #ead5b8; font-size: 11px; }
+.pos-screen .pos-demo-receipt-totals { display: grid; grid-template-columns: 1fr auto;
+  gap: 7px; padding-top: 10px; border-top: 2px solid #d9b789; font-size: 12px; }
+.pos-screen .pos-demo-receipt p { margin-top: 12px; font-size: 11px; }
+
+/* Distraction-free view hides dashboard chrome; desktop panes scroll independently. */
+body:has(.pos-screen.pos-focus-mode) .owner-sidebar,
+body:has(.pos-screen.pos-focus-mode) .owner-topbar,
+body:has(.pos-screen.pos-focus-mode) .owner-amara-launch { display: none !important; }
+.pos-screen .pos-heading-identity { display: grid; grid-template-columns: 36px auto; column-gap: 10px; row-gap: 2px; align-items: center; }
+.pos-register-logo { grid-row: 1 / span 2; object-fit: contain; border-radius: 6px; background: #24101b; }
+.pos-screen .pos-heading-identity h1 { grid-column: 2; font-size: 23px; line-height: 1.2; margin: 0 !important; }
+.pos-screen .pos-heading-subtitle { grid-column: 2; font-size: 10px; }
+@media (min-width: 781px) {
+  html:has(.pos-screen.pos-focus-mode), body:has(.pos-screen.pos-focus-mode) { height: 100% !important; overflow: hidden !important; }
+  body:has(.pos-screen.pos-focus-mode) .owner-suite { height: 100dvh !important; min-height: 0 !important; grid-template-columns: minmax(0,1fr) !important; overflow: hidden !important; }
+  body:has(.pos-screen.pos-focus-mode) .owner-main,
+  body:has(.pos-screen.pos-focus-mode) .owner-columns { height: 100% !important; min-height: 0 !important; width: 100% !important; max-width: none !important; overflow: hidden !important; margin: 0 !important; }
+  body:has(.pos-screen.pos-focus-mode) .owner-columns { padding: 0 !important; }
+  .pos-screen.pos-focus-mode { height: 100dvh; min-height: 0; display: flex; flex-direction: column; padding: 10px 14px 0; overflow: hidden; }
+  .pos-screen.pos-focus-mode .pos-heading { flex: none; padding: 0 0 9px; margin: 0; }
+  .pos-screen.pos-focus-mode .pos-columns { flex: 1; min-height: 0; height: auto; padding-bottom: 10px; }
+  .pos-screen .pos-product-table .pos-table-add { padding: 5px; font-size: 10px; }
+}
+/* Compact windows retain the two-pane register until the mobile drawer breakpoint. */
+@media (max-width: 1100px) {
+  .pos-screen .pos-columns { grid-template-columns: minmax(0, 1.1fr) minmax(305px, .9fr); }
+  .pos-screen .pos-heading-actions { justify-content: flex-start; }
+}
+@media (min-width: 781px) and (max-width: 1100px) {
+  .pos-screen .pos-product-table th:nth-child(3), .pos-screen .pos-product-table td:nth-child(3) { display: none; }
+  .pos-screen .pos-product-table td { font-size: 10px; padding-inline: 6px; }
+  .pos-screen .pos-table-product .pos-photo { display: none; }
+  .pos-screen .pos-product-table th:first-child { width: 32%; }
+  .pos-screen .pos-product-table th:nth-child(2) { width: 24%; }
+  .pos-screen .pos-product-table th:nth-child(4) { width: 13%; }
+  .pos-screen .pos-product-table th:nth-child(5) { width: 18%; }
+}
+/* Mobile uses one checkout drawer scrollbar only when the basket is opened. */
+@media (max-width: 780px) {
+  .pos-screen { padding-bottom: 90px; }
+  .pos-screen .pos-cart { display: none; }
+  .pos-screen .pos-cart.pos-cart-open {
+    display: flex; position: fixed; inset: 42px 0 68px;
+    z-index: 100; height: auto !important; overflow-y: auto !important;
+    overflow-x: hidden !important; border-radius: 15px 15px 0 0;
+    box-shadow: 0 -14px 35px #391e2933;
+  }
+  .pos-screen .pos-cart.pos-cart-open .pos-cart-contents { max-height: none; overflow: visible; }
+  .pos-screen .pos-cart.pos-cart-open .pos-checkout { overflow: visible; }
+  /* Table becomes a readable stacked list on phones: no sideways scrolling. */
+  .pos-screen .pos-product-table-wrap { overflow: visible; }
+  .pos-screen .pos-product-table { display: block; min-width: 0 !important; width: 100%; }
+  .pos-screen .pos-product-table thead { display: none; }
+  .pos-screen .pos-product-table tbody { display: block; }
+  .pos-screen .pos-product-table tbody tr {
+    display: grid; grid-template-columns: minmax(0,1fr) auto;
+    gap: 5px 12px; align-items: center;
+    padding: 12px; border-bottom: 1px solid #eee5e8;
+  }
+  .pos-screen .pos-product-table tbody td { display: block; padding: 0; border: 0; min-width: 0 !important; }
+  .pos-screen .pos-product-table tbody td:first-child { grid-column: 1 / -1; }
+  .pos-screen .pos-product-table tbody td:nth-child(2) { grid-column: 1; font-size: 10px; }
+  .pos-screen .pos-product-table tbody td:nth-child(3) { grid-column: 2; text-align: right; color: #89747b; }
+  .pos-screen .pos-product-table tbody td:nth-child(4) { grid-column: 1; font-size: 11px; }
+  .pos-screen .pos-product-table tbody td:nth-child(5) { grid-column: 2; font-size: 13px; }
+  .pos-screen .pos-product-table tbody td:last-child { grid-column: 1 / -1; text-align: right; }
+  .pos-screen .pos-product-table .pos-table-add { width: 100%; margin-top: 5px; }
+  .pos-screen .pos-view-choices { margin-left: 0; }
+  .pos-screen .pos-heading-actions { flex-wrap: wrap; width: 100%; }
+  .pos-screen .pos-focus-toggle { display: inline-flex; }
+}
+@media (max-width: 520px) {
+  .pos-screen .pos-heading { align-items: flex-start; }
+  .pos-screen .pos-heading h1 { font-size: 24px; }
+  .pos-screen .pos-heading-actions .pos-secondary { min-height: 33px; padding: 6px 8px; }
+  .pos-screen .pos-heading-store { display: none; }
+  .pos-screen .pos-catalogue { padding: 11px; }
+  .pos-screen .pos-cart-contents { max-height: none; }
+  .pos-screen .pos-product-table { min-width: 0 !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pos-screen *, .pos-screen *::before, .pos-screen *::after { transition: none !important; scroll-behavior: auto !important; }
+}
+@media print {
+  body:has(.pos-demo-layer) .pos-demo-layer { display: none !important; }
+}
+
+
+
+
+
+/* POS checkout modal v4 — compact basket, distinct tender screen. */
+.pos-screen .pos-columns { grid-template-columns: minmax(0, 1.55fr) minmax(330px, .93fr); grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+.pos-screen .pos-cart {
+  position: static; top: auto; max-height: 100%;
+  display: flex; flex-direction: column; overflow: hidden !important;
+  min-height: 0;
+}
+.pos-screen .pos-cart-contents { flex: 1 1 auto; min-height: 0; max-height: none !important;
+  overflow-y: auto; overscroll-behavior: contain; }
+.pos-screen .pos-cart-empty { min-height: 80px; }
+.pos-screen .pos-checkout.pos-checkout-summary {
+  flex: none; padding: 13px 17px 14px; max-height: none;
+  background: #fffcfa; border-top: 1px solid #eadfe3;
+}
+.pos-screen .pos-checkout-summary .pos-summary-row { margin: 0 0 9px; }
+.pos-screen .pos-checkout-summary .pos-checkout-total { margin-top: 10px; padding-top: 12px;
+  border-top: 1px solid #e8dcdf; }
+.pos-screen .pos-checkout-summary .pos-checkout-total span { color: #4e2e40; font-weight: 800; }
+.pos-screen .pos-checkout-summary .pos-checkout-total strong { font-size: 23px; color: #4c1832; }
+.pos-screen .pos-checkout-summary .pos-pay { display: flex; justify-content: center;
+  width: 100%; margin-top: 14px; min-height: 48px; font-size: 14px !important; }
+.pos-screen .pos-register-shortcuts { font-size: 9px; margin-top: 8px !important; }
+.pos-screen .pos-heading-actions { gap: 5px; }
+.pos-screen .pos-heading-actions .pos-secondary { padding: 8px 10px; min-height: 35px; }
+.pos-screen .pos-heading { margin-bottom: 9px; }
+
+.pos-payment-layer { z-index: 1300; align-items: center; padding: 18px; }
+.pos-payment-dialog {
+  display: flex; flex-direction: column; width: min(580px, 100%);
+  max-height: min(94dvh, 860px); overflow: hidden;
+  background: #fffdfb; border: 1px solid #e9dfe1; border-radius: 19px;
+  box-shadow: 0 30px 90px #21131e55;
+}
+.pos-payment-dialog-head { display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; padding: 23px 26px 16px; border-bottom: 1px solid #ede3e6; }
+.pos-payment-dialog-head h2 { margin: 7px 0; color: #3f1d2c; font: 400 31px/1.13 Georgia,serif; }
+.pos-payment-dialog-head p { font-size: 12px; color: #8b7c83; }
+.pos-payment-dialog-body { padding: 18px 26px 20px; overflow-y: auto; overscroll-behavior: contain; }
+.pos-payment-recap { padding: 12px 16px; border: 1px solid #eee3e6; border-radius: 11px; background: #fbf7f8; }
+.pos-payment-recap > div:not(.pos-payment-total), .pos-payment-discount { display: flex; justify-content: space-between;
+  align-items: center; gap: 14px; margin-bottom: 10px; color: #79656f; font-size: 12px; }
+.pos-payment-recap b { color: #4e2739; font-size: 14px; }
+.pos-payment-discount small { color: #9c8891; font-size: 10px; }
+.pos-payment-money-field { display: flex; align-items: center; gap: 8px; min-height: 42px;
+  border: 1px solid #d9cdd1; border-radius: 9px; background: #fff; padding: 0 13px; }
+.pos-payment-money-field > span { font-size: 14px; font-weight: 800; color: #926b75; }
+.pos-payment-money-field input { flex: 1; width: 100%; min-width: 0; height: 39px;
+  border: 0; outline: none; background: transparent; color: #3f1f2f;
+  font-size: 16px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.pos-payment-money-field:focus-within { outline: 2px solid #b57891; outline-offset: 1px; }
+.pos-payment-discount .pos-payment-money-field { width: 145px; min-height: 35px; }
+.pos-payment-discount .pos-payment-money-field input { height: 33px; font-size: 13px; }
+.pos-payment-total { display: flex; justify-content: space-between; align-items: baseline;
+  padding-top: 10px; margin-top: 2px; border-top: 1px solid #e7d9df; color: #5f4051; font-size: 12px; }
+.pos-payment-total strong { color: #491c33; font-size: 26px; font-variant-numeric: tabular-nums; }
+.pos-payment-methods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 17px 0 18px; }
+.pos-payment-methods button { min-height: 45px; display: inline-flex; justify-content: center; align-items: center;
+  gap: 7px; border: 1px solid #e1d2d8; border-radius: 9px; background: white; color: #5b3347;
+  font-size: 12px; font-weight: 750; }
+.pos-payment-methods button.is-selected { border-color: #673047; background: #fff3e3; color: #54263f; }
+.pos-payment-methods button:disabled { color: #a79aa0; background: #faf8f8; }
+.pos-payment-methods button small { font-size: 9px; font-weight: 400; }
+.pos-payment-cash-field { display: grid; gap: 8px; font-size: 12px; font-weight: 750; color: #5c4050; }
+.pos-cash-denominations { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 13px 0; }
+.pos-cash-denominations button { min-height: 40px; border: 1px solid #e2d4db; border-radius: 9px;
+  background: #fff; color: #543048; font-size: 12px; font-weight: 750; }
+.pos-cash-denominations button:hover:not(:disabled) { background: #f7e9ed; border-color: #b8899a; }
+.pos-cash-denominations .is-exact { grid-column: span 2; background: #f6e7cd; border-color: #dabd91; }
+.pos-payment-change { display: flex; justify-content: space-between; align-items: baseline;
+  padding: 13px 0; border-top: 1px solid #ede3e6; color: #67515c; font-size: 12px; }
+.pos-payment-change strong { color: #2e6f4b; font-size: 20px; font-variant-numeric: tabular-nums; }
+.pos-payment-transfer-note { color: #877d82; font-size: 10px; line-height: 1.55; }
+.pos-payment-dialog-actions { display: flex; justify-content: flex-end;
+  gap: 11px; padding: 15px 26px; background: #fcf8f7; border-top: 1px solid #ebdfe3; }
+.pos-payment-dialog-actions button { min-height: 47px; }
+.pos-payment-dialog-actions .pos-primary { font-size: 13px !important; }
+.pos-payment-demo-flag { margin: 0 0 12px; padding: 10px; border: 1px solid #dcb77d;
+  background: #fff4dc; color: #734b1b; border-radius: 9px; font-size: 11px; font-weight: 800; }
+@media (max-width: 1100px) { .pos-screen .pos-columns { grid-template-columns: minmax(0, 1fr) minmax(315px, .9fr); } }
+@media (max-width: 780px) { .pos-screen .pos-columns { grid-template-columns: minmax(0, 1fr); height: auto; }
+ .pos-screen .pos-catalogue { height: auto !important; }
+ .pos-screen .pos-cart { position: static; max-height: none; overflow: visible !important; }
+ .pos-screen .pos-cart-contents { overflow: visible; max-height: none !important; } }
+@media (max-width: 780px) { .pos-screen .pos-cart { display: none; }
+ .pos-screen .pos-cart.pos-cart-open { display: flex; flex-direction: column; position: fixed;
+   inset: 42px 0 68px; max-height: none; overflow: hidden !important; }
+ .pos-screen .pos-cart.pos-cart-open .pos-cart-contents { flex: 1; min-height: 0; overflow-y: auto; }
+ .pos-screen .pos-cart.pos-cart-open .pos-checkout-summary { flex: none; }
+ .pos-payment-dialog { max-height: 96dvh; border-radius: 14px; }
+ .pos-payment-dialog-head { padding: 18px; }
+ .pos-payment-dialog-body { padding: 14px 18px; }
+ .pos-payment-dialog-actions { padding: 13px 18px; }
+ }
+@media (max-width: 440px) { .pos-payment-layer { padding: 7px; }
+ .pos-payment-dialog-head h2 { font-size: 26px; }
+ .pos-cash-denominations { grid-template-columns: repeat(3, 1fr); }
+ .pos-cash-denominations .is-exact { grid-column: span 3; }
+ .pos-payment-methods button { font-size: 11px; }
+ .pos-payment-dialog-actions { grid-template-columns: 1fr 1fr; }
+ .pos-payment-dialog-actions button { min-width: 0; padding-inline: 8px; }
+ }
+@media (prefers-reduced-motion: reduce) { .pos-payment-dialog * { scroll-behavior: auto !important; transition: none !important; } }

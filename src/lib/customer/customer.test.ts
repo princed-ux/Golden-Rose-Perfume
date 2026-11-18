@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { resolveAuthOrigin, validNewPassword } from './auth-policy';
+import { newPasswordError, resolveAuthOrigin } from './auth-policy';
 import { createWhatsAppLink, mergeBagLines, normalizeWhatsAppNumber, parseBag, resolveBag, setBagQuantity } from './bag';
 import { productImageUrl, PRODUCT_IMAGE_PREFIX } from '../golden-rose/product-images';
 import { isAmaraPage } from './amara';
@@ -41,11 +41,13 @@ test('Auth redirects use configured origin or a valid loopback, never an arbitra
   assert.equal(resolveAuthOrigin('https://shop.example.test/path', 'localhost:3000'), null);
 });
 
-test('new passwords require at least eight characters and matching confirmation', () => {
-  assert.equal(validNewPassword('1234567', '1234567'), false);
-  assert.equal(validNewPassword('12345678', '12345678'), true);
-  assert.equal(validNewPassword('12345678', '12345679'), false);
-  assert.equal(validNewPassword('a'.repeat(129), 'a'.repeat(129)), false);
+test('new passwords accept eight or more characters without requiring a character mix', () => {
+  assert.match(newPasswordError('1234567') ?? '', /at least 8/);
+  assert.equal(newPasswordError('12345678', '12345678'), null);
+  assert.equal(newPasswordError('longer passphrase', 'longer passphrase'), null);
+  assert.match(newPasswordError('12345678', '12345679') ?? '', /do not match/);
+  assert.equal(newPasswordError('a'.repeat(72)), null);
+  assert.match(newPasswordError('é'.repeat(37)) ?? '', /72 bytes/);
 });
 
 test('persisted bag strips cached prices and rejects legacy demo IDs', () => {

@@ -2,10 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
-import { resolveAuthOrigin, validEmail } from '@/src/lib/customer/auth-policy';
+import { NEW_PASSWORD_HINT, newPasswordError, resolveAuthOrigin, validEmail } from '@/src/lib/customer/auth-policy';
 import { UUID, type OperationResult } from '@/src/lib/golden-rose/contracts';
 import { employeeAdminClient, employeeEmailConfirmation, employeePublicAuthClient } from '@/src/lib/golden-rose/employee-admin';
-import { employeePasswordHint, strongEmployeePassword } from '@/src/lib/golden-rose/employee-passwords';
 import { isEmployeeRole } from '@/src/lib/golden-rose/employees';
 import { getStaffAccess } from '@/src/lib/golden-rose/staff';
 import { createClient } from '@/src/lib/supabase/server';
@@ -57,8 +56,9 @@ export async function manageEmployeeAccount(_: OperationResult, form: FormData):
       return { status: 'success', message: 'Confirmation email requested. The employee must open it before signing in.' };
     }
     const password = form.get('password');
-    if (!strongEmployeePassword(password)) return failed(employeePasswordHint);
-    if (password !== form.get('passwordConfirmation')) return failed('The passwords do not match.');
+    if (typeof password !== 'string') return failed(NEW_PASSWORD_HINT);
+    const passwordError = newPasswordError(password, form.get('passwordConfirmation'));
+    if (passwordError) return failed(passwordError);
 
     if (operation === 'create_account') {
       const email = field('email').toLowerCase();

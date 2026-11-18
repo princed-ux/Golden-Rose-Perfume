@@ -4,7 +4,7 @@ import { useActionState, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { AuthToast } from '@/src/components/auth-toast';
 import { signInWithGoogle, submitCustomerAuth, signOutCustomer } from '@/app/account/actions';
-import { INITIAL_AUTH_RESULT, MIN_NEW_PASSWORD_LENGTH, type CustomerAuthMode } from '@/src/lib/customer/auth-policy';
+import { INITIAL_AUTH_RESULT, MIN_NEW_PASSWORD_LENGTH, NEW_PASSWORD_HINT, type CustomerAuthMode } from '@/src/lib/customer/auth-policy';
 
 const labels: Record<CustomerAuthMode, string> = {
   login: 'Sign in with email',
@@ -59,14 +59,14 @@ export function CustomerAuthForm({ mode }: { mode: CustomerAuthMode }) {
           <label htmlFor="customer-password">{mode === 'reset-password' ? 'New password' : 'Password'}</label>
           <div className="gr-auth-input-wrap">
             <input id="customer-password" name="password" type={show ? 'text' : 'password'} required
-              minLength={newPassword ? MIN_NEW_PASSWORD_LENGTH : undefined} maxLength={newPassword ? 128 : 256}
+              minLength={newPassword ? MIN_NEW_PASSWORD_LENGTH : undefined} maxLength={newPassword ? undefined : 256}
               autoComplete={newPassword ? 'new-password' : 'current-password'} aria-invalid={credentialError} />
             <button type="button" className="gr-auth-reveal" onClick={() => setShow(value => !value)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</button>
           </div>
-          {newPassword && <small>Use at least {MIN_NEW_PASSWORD_LENGTH} characters.</small>}
+          {newPassword && <small>{NEW_PASSWORD_HINT}</small>}
         </div>}
         {newPassword && <label className="gr-auth-field">Confirm password
-          <span className="gr-auth-input-wrap"><input name="confirmPassword" type={show ? 'text' : 'password'} required minLength={MIN_NEW_PASSWORD_LENGTH} maxLength={128} autoComplete="new-password" /></span>
+          <span className="gr-auth-input-wrap"><input name="confirmPassword" type={show ? 'text' : 'password'} required minLength={MIN_NEW_PASSWORD_LENGTH} autoComplete="new-password" /></span>
         </label>}
         <button type="submit" className="gr-auth-submit" disabled={busy}>
           {pending ? 'Please wait…' : labels[mode]}<ArrowUpRight className="gr-auth-submit-arrow" size={17} aria-hidden="true" />

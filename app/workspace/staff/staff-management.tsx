@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useRef, useState } from 'react';
+import { startTransition, useActionState, useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   Building2,
@@ -37,7 +37,7 @@ import {
 
 import { manageEmployee, type EmployeeAction } from './actions';
 import { manageEmployeeAccount } from './account-actions';
-import { employeePasswordHint } from '@/src/lib/golden-rose/employee-passwords';
+import { MIN_NEW_PASSWORD_LENGTH, NEW_PASSWORD_HINT } from '@/src/lib/customer/auth-policy';
 
 const date = new Intl.DateTimeFormat('en-GB', {
   dateStyle: 'medium',
@@ -89,12 +89,12 @@ function TemporaryPasswordFields({ initial = false }: { initial?: boolean }) {
   const label = initial ? 'Initial password' : 'Temporary password';
   return <>
     <label className={workspaceLabel}>{label}
-      <input type="password" name="password" className={workspaceInput} minLength={12} maxLength={72} autoComplete="new-password" required />
+      <input type="password" name="password" className={workspaceInput} minLength={MIN_NEW_PASSWORD_LENGTH} autoComplete="new-password" required />
     </label>
     <label className={workspaceLabel}>Confirm {label.toLowerCase()}
-      <input type="password" name="passwordConfirmation" className={workspaceInput} minLength={12} maxLength={72} autoComplete="new-password" required />
+      <input type="password" name="passwordConfirmation" className={workspaceInput} minLength={MIN_NEW_PASSWORD_LENGTH} autoComplete="new-password" required />
     </label>
-    <p className={fieldHint + ' sm:col-span-2'}>{employeePasswordHint} Share it privately. An employee must replace it before using the workspace.</p>
+    <p className={fieldHint + ' sm:col-span-2'}>{NEW_PASSWORD_HINT} Share it privately. An employee must replace it before using the workspace.</p>
   </>;
 }
 
@@ -213,6 +213,9 @@ export function StaffManagement({
   accountSetupIssues: EmployeeAccountSetupIssue[];
 }) {
   const inviteDialog = useRef<HTMLDialogElement>(null);
+  const onboardingForm = useRef<HTMLFormElement>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  const [onboardingFeedback, setOnboardingFeedback] = useState<EmployeeAction | null>(null);
   const [onboarding, setOnboarding] = useState<'invite' | 'create_account'>('invite');
   const accountsReady = accountStates !== null && accountSetupIssues.length === 0;
   const directSetupPending = onboarding === 'create_account' && !accountsReady;
@@ -229,14 +232,22 @@ export function StaffManagement({
       setCopyStatus('');
 
       const operation = String(form.get('operation') ?? '');
-      const next: EmployeeAction = ['create_account', 'replace_password', 'resend_confirmation'].includes(operation)
-        ? await manageEmployeeAccount(previous, form) : await manageEmployee(previous, form);
+      let next: EmployeeAction;
+      try {
+        next = ['create_account', 'replace_password', 'resend_confirmation'].includes(operation)
+          ? await manageEmployeeAccount(previous, form)
+          : await manageEmployee(previous, form);
+      } catch {
+        next = {
+          status: 'error',
+          message: 'The result could not be confirmed. Refresh the employee directory and check the work email before retrying.',
+        };
+      }
 
-      if (
-        (operation === 'invite' || operation === 'create_account') &&
-        next.status === 'success'
-      ) {
+      if (operation === 'invite' && next.status === 'success') {
         inviteDialog.current?.close();
+      } else if (operation === 'invite' || operation === 'create_account') {
+        setOnboardingFeedback(next);
       }
 
       return { ...next, operation };
@@ -247,6 +258,12 @@ export function StaffManagement({
       operation: '',
     },
   );
+
+  useEffect(() => {
+    if (onboardingFeedback) feedbackRef.current?.focus();
+  }, [onboardingFeedback]);
+
+  const accountCreated = result.operation === 'create_account' && result.status === 'success';
 
   // Keep Add Employee visible at every setup stage.
   const backendReady = directory !== null;
@@ -298,6 +315,12 @@ export function StaffManagement({
           </button>
         }
       />
+
+      {accountCreated && (
+        <WorkspaceNotice title="Employee account created">
+          {result.message}
+        </WorkspaceNotice>
+      )}
 
       <StaffSectionLinks />
 
@@ -424,7 +447,7 @@ export function StaffManagement({
           </WorkspacePanel>
         ) : (
           <>
-            {result.message && !invitationError && (
+            {result.message && !invitationError && !accountCreated && (
               <WorkspaceNotice
                 title={
                   result.status === 'error'
@@ -954,6 +977,13 @@ export function StaffManagement({
         id="golden-rose-add-employee"
         ref={inviteDialog}
         aria-labelledby="invite-employee-title"
+        onCancel={event => {
+          if (pending) event.preventDefault();
+        }}
+        onClose={() => {
+          onboardingForm.current?.reset();
+          setOnboardingFeedback(null);
+        }}
         className="m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-xl overflow-auto rounded-2xl border border-[#e9d8cf] bg-[#fffdf9] p-5 text-[#38252f] shadow-2xl backdrop:bg-[#2b0b15]/65 sm:p-7"
       >
         <header className="mb-5 flex items-start justify-between gap-3">
@@ -978,6 +1008,7 @@ export function StaffManagement({
           <button
             type="button"
             aria-label="Close employee dialog"
+            disabled={pending}
             className="rounded-lg p-2 text-[#54213a] hover:bg-[#f7eee8]"
             onClick={() => inviteDialog.current?.close()}
           >
@@ -985,7 +1016,20 @@ export function StaffManagement({
           </button>
         </header>
 
-        {!backendReady ? (
+        {onboardingFeedback?.status === 'success' ? (
+          <div ref={feedbackRef} tabIndex={-1} className="grid gap-4">
+            <WorkspaceNotice title="Employee account created">
+              {onboardingFeedback.message}
+            </WorkspaceNotice>
+            <button
+              type="button"
+              className={workspacePrimary + ' justify-self-end'}
+              onClick={() => inviteDialog.current?.close()}
+            >
+              Done
+            </button>
+          </div>
+        ) : !backendReady ? (
           <div className="grid gap-4">
             <WorkspaceNotice
               tone={
@@ -1064,7 +1108,17 @@ export function StaffManagement({
             </Link>
           </div>
         ) : (
-          <form action={action} aria-busy={pending}>
+          <form
+            ref={onboardingForm}
+            aria-busy={pending}
+            onSubmit={event => {
+              event.preventDefault();
+              if (pending) return;
+              const form = new FormData(event.currentTarget);
+              setOnboardingFeedback(null);
+              startTransition(() => action(form));
+            }}
+          >
             <fieldset
               disabled={pending}
               className="grid gap-4 sm:grid-cols-2"
@@ -1072,11 +1126,17 @@ export function StaffManagement({
               <fieldset className="flex flex-wrap gap-3 text-sm sm:col-span-2">
                 <legend className="mb-2 font-semibold">Onboarding method</legend>
                 <label className="flex items-center gap-2">
-                  <input type="radio" name="onboardingMethod" checked={onboarding === 'invite'} onChange={() => setOnboarding('invite')} />
+                  <input type="radio" name="onboardingMethod" checked={onboarding === 'invite'} onChange={() => {
+                    setOnboarding('invite');
+                    setOnboardingFeedback(null);
+                  }} />
                   Send invitation
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="radio" name="onboardingMethod" checked={onboarding === 'create_account'} onChange={() => setOnboarding('create_account')} />
+                  <input type="radio" name="onboardingMethod" checked={onboarding === 'create_account'} onChange={() => {
+                    setOnboarding('create_account');
+                    setOnboardingFeedback(null);
+                  }} />
                   Create account with initial password
                 </label>
               </fieldset>
@@ -1147,13 +1207,12 @@ export function StaffManagement({
                 is provided to the owner.
               </p>}
 
-              {invitationError && result.operation === onboarding && (
-                <p
-                  role="alert"
-                  className="text-sm text-[#74263e] sm:col-span-2"
-                >
-                  {result.message}
-                </p>
+              {onboardingFeedback?.status === 'error' && (
+                <div ref={feedbackRef} tabIndex={-1} className="sm:col-span-2">
+                  <WorkspaceNotice title="Could not add employee" tone="error">
+                    {onboardingFeedback.message}
+                  </WorkspaceNotice>
+                </div>
               )}
 
               <div className="flex flex-wrap justify-end gap-2 border-t border-[#e9d8cf] pt-4 sm:col-span-2">
