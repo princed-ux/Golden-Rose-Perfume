@@ -1,5 +1,6 @@
 
 'use client';
+import { ActionButton, useActionNotice } from '@/src/components/action-feedback';
 
 import {
   useCallback,
@@ -193,6 +194,8 @@ export function ReceivingForm({
       setSearch(exact.barcode ?? exact.sku ?? code);
     }
   }
+
+  useActionNotice(result);
 
   async function submit(
     event: FormEvent<HTMLFormElement>,
@@ -459,7 +462,7 @@ export function ReceivingForm({
       )}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-[#eaded7] pt-4">
-        <button
+        <ActionButton pending={pending} pendingLabel="Saving…"
           type="submit"
           className={workspacePrimary}
           disabled={
@@ -476,16 +479,16 @@ export function ReceivingForm({
             : retry
               ? 'Retry same receipt'
               : 'Confirm stock receipt'}
-        </button>
+        </ActionButton>
 
         {retry && !pending && (
-          <button
+          <ActionButton
             type="button"
             className={workspaceSecondary}
             onClick={discard}
           >
             Discard pending receipt
-          </button>
+          </ActionButton>
         )}
 
         {!retry && (

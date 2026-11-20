@@ -1,5 +1,6 @@
 
 'use client';
+import { ActionButton } from '@/src/components/action-feedback';
 
 import {
   useCallback,
@@ -1417,12 +1418,12 @@ function WorkspaceFrame({
                 </Link>
 
                 <form action={signOutStaff}>
-                  <button
+                  <ActionButton pendingLabel="Signing out…"
                     type="submit"
                     className="owner-text-action"
                   >
                     Sign out
-                  </button>
+                  </ActionButton>
                 </form>
               </>
             ) : (

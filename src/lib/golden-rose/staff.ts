@@ -17,6 +17,20 @@ const passwordStates = new Set([
   'store_unavailable',
 ]);
 
+export class StaffAccessUnavailableError extends Error {
+  constructor() {
+    super('Staff verification is temporarily unavailable. Retry without signing out.');
+    this.name = 'StaffAccessUnavailableError';
+  }
+}
+
+function authFailure(error: { status?: number; name?: string; code?: string }) {
+  if (error.status === 401 || error.name === 'AuthSessionMissingError' ||
+      ['refresh_token_not_found', 'refresh_token_already_used', 'session_not_found', 'bad_jwt'].includes(error.code ?? '')) return 'session';
+  if (error.status === 403) return 'denied';
+  return 'unavailable';
+}
+
 /**
  * A missing, unavailable or unexpected security response
  * must never grant employee access.
@@ -70,14 +84,26 @@ export const getStaffAccess = cache(async () => {
       error,
     } = await supabase.auth.getSession();
 
-    if (error || !session) {
+    if (error) return { reason: authFailure(error) } as const;
+    if (!session) {
       return { reason: 'session' } as const;
     }
 
-    // The backend independently verifies the active staff role.
-    const role = await verifyStaffToken(
-      session.access_token,
-    );
+    // Verify identity and fresh role/enrollment state in parallel, once per render.
+    // getSession supplies a token only; it is never the authorization decision.
+    const [identity, role, passwordState] = await Promise.all([
+      supabase.auth.getUser(session.access_token),
+      verifyStaffToken(session.access_token),
+      getStaffPasswordState(supabase),
+    ]);
+
+    if (identity.error) return { reason: authFailure(identity.error) } as const;
+    const user = identity.data.user;
+    if (!user) return { reason: 'session' } as const;
+    if (!user.email_confirmed_at || user.is_anonymous) return { reason: 'denied' } as const;
+
+    if (passwordState === 'change_required') return { reason: 'password' } as const;
+    if (passwordState === 'unavailable') return { reason: 'unavailable' } as const;
 
     if (!role) {
       return { reason: 'denied' } as const;
@@ -86,34 +112,18 @@ export const getStaffAccess = cache(async () => {
     // Do not permit the workspace when the enrollment
     // function is missing, unavailable or returns an
     // unexpected state.
-    const passwordState = await getStaffPasswordState(
-      supabase,
-    );
-
     if (passwordState !== 'none') {
-      return {
-        reason:
-          passwordState === 'unavailable'
-            ? 'unavailable'
-            : 'denied',
-      } as const;
+      return { reason: 'denied' } as const;
     }
 
-    const {
-      data: verified,
-      error: claimsError,
-    } = await supabase.auth.getClaims(
-      session.access_token,
-    );
-
-    if (claimsError || !verified?.claims.sub) {
-      return { reason: 'session' } as const;
-    }
+    const names = ['full_name', 'name', 'display_name', 'first_name'].map(key => user.user_metadata?.[key]);
+    const displayName = names.find((name): name is string => typeof name === 'string' && Boolean(name.trim()))?.trim().slice(0, 100) ?? '';
 
     return {
       role,
       token: session.access_token,
-      userId: verified.claims.sub,
+      userId: user.id,
+      displayName,
     } as const;
   } catch (error) {
     if (error instanceof EdgeError && error.status === 401) {
@@ -132,6 +142,8 @@ export async function requireStaff() {
   const staff = await getStaffAccess();
 
   if ('reason' in staff) {
+    if (staff.reason === 'unavailable') throw new StaffAccessUnavailableError();
+    if (staff.reason === 'password') redirect('/staff/change-password');
     redirect('/staff/login?reason=' + staff.reason);
   }
 

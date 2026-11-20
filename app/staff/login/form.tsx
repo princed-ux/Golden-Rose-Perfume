@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, ActionStateForm } from '@/src/components/action-feedback';
 
 import { useActionState, useState } from 'react';
 import { INITIAL_RESULT } from '@/src/lib/golden-rose/contracts';
@@ -14,7 +15,7 @@ export function StaffLoginForm() {
   return (
     <>
     <AuthToast result={result} />
-    <form className="gr-auth-form" action={action} onChange={() => setEdited(true)} onSubmit={() => setEdited(false)}>
+    <ActionStateForm pending={pending} className="gr-auth-form" action={action} onChange={() => setEdited(true)} onSubmit={() => setEdited(false)}>
       <div className="gr-auth-field">
         <label htmlFor="staff-email">Work email</label>
         <div className="gr-auth-input-wrap">
@@ -25,13 +26,13 @@ export function StaffLoginForm() {
         <label htmlFor="staff-password">Password</label>
         <div className="gr-auth-input-wrap">
           <input id="staff-password" name="password" type={show ? 'text' : 'password'} required maxLength={256} autoComplete="current-password" aria-invalid={invalidCredentials} />
-          <button type="button" className="gr-auth-reveal" onClick={() => setShow(value => !value)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</button>
+          <ActionButton type="button" className="gr-auth-reveal" onClick={() => setShow(value => !value)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</ActionButton>
         </div>
       </div>
-      <button type="submit" className="gr-auth-submit" disabled={pending}>
+      <ActionButton type="submit" className="gr-auth-submit" disabled={pending}>
         {pending ? 'Signing in…' : 'Sign in to workspace'} <span aria-hidden="true">↗</span>
-      </button>
-    </form>
+      </ActionButton>
+    </ActionStateForm>
     </>
   );
 }

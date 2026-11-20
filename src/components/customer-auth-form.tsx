@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, ActionStateForm } from '@/src/components/action-feedback';
 
 import { useActionState, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
@@ -39,15 +40,15 @@ export function CustomerAuthForm({ mode }: { mode: CustomerAuthMode }) {
     <div className="gr-auth-form">
       <AuthToast result={notice} />
       {(mode === 'login' || mode === 'register') && <>
-        <form action={googleAction} className="gr-auth-form" onSubmit={() => setLastAction('google')}>
-          <button className="gr-auth-submit gr-auth-google" type="submit" disabled={busy}>
+        <ActionStateForm pending={googlePending} action={googleAction} className="gr-auth-form" onSubmit={() => setLastAction('google')}>
+          <ActionButton className="gr-auth-submit gr-auth-google" type="submit" disabled={busy}>
             <GoogleMark />
             {googlePending ? 'Opening Google…' : 'Continue with Google'}
-          </button>
-        </form>
+          </ActionButton>
+        </ActionStateForm>
         <p className="gr-auth-divider">or continue with email</p>
       </>}
-      <form action={action} className="gr-auth-form" aria-busy={pending}
+      <ActionStateForm pending={pending} action={action} className="gr-auth-form" aria-busy={pending}
         onSubmit={() => { setLastAction('email'); setEdited(false); }} onChange={() => setEdited(true)}>
         {mode === 'register' && <label className="gr-auth-field">Name (optional)
           <span className="gr-auth-input-wrap"><input name="name" autoComplete="name" maxLength={120} /></span>
@@ -61,17 +62,17 @@ export function CustomerAuthForm({ mode }: { mode: CustomerAuthMode }) {
             <input id="customer-password" name="password" type={show ? 'text' : 'password'} required
               minLength={newPassword ? MIN_NEW_PASSWORD_LENGTH : undefined} maxLength={newPassword ? undefined : 256}
               autoComplete={newPassword ? 'new-password' : 'current-password'} aria-invalid={credentialError} />
-            <button type="button" className="gr-auth-reveal" onClick={() => setShow(value => !value)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</button>
+            <ActionButton type="button" className="gr-auth-reveal" onClick={() => setShow(value => !value)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</ActionButton>
           </div>
           {newPassword && <small>{NEW_PASSWORD_HINT}</small>}
         </div>}
         {newPassword && <label className="gr-auth-field">Confirm password
           <span className="gr-auth-input-wrap"><input name="confirmPassword" type={show ? 'text' : 'password'} required minLength={MIN_NEW_PASSWORD_LENGTH} autoComplete="new-password" /></span>
         </label>}
-        <button type="submit" className="gr-auth-submit" disabled={busy}>
+        <ActionButton type="submit" className="gr-auth-submit" disabled={busy}>
           {pending ? 'Please wait…' : labels[mode]}<ArrowUpRight className="gr-auth-submit-arrow" size={17} aria-hidden="true" />
-        </button>
-      </form>
+        </ActionButton>
+      </ActionStateForm>
     </div>
   );
 }
@@ -79,9 +80,9 @@ export function CustomerAuthForm({ mode }: { mode: CustomerAuthMode }) {
 export function CustomerSignOut() {
   const [result, action, pending] = useActionState(signOutCustomer, INITIAL_AUTH_RESULT);
   return (
-    <form action={action}>
-      <button type="submit" className="button button--outline" disabled={pending}>{pending ? 'Signing out…' : 'Sign out'}</button>
+    <ActionStateForm pending={pending} action={action}>
+      <ActionButton type="submit" className="button button--outline" disabled={pending}>{pending ? 'Signing out…' : 'Sign out'}</ActionButton>
       {result.message && <p role="alert">{result.message}</p>}
-    </form>
+    </ActionStateForm>
   );
 }

@@ -896,7 +896,7 @@ function Footer() {
 
         <div className="gr-footer__bottom">
           <span>
-            © {new Date().getFullYear()}{' '}
+            © <HomepageCopyrightYear />{' '}
             Golden Rose Perfume.
             All rights reserved.
           </span>
@@ -1665,4 +1665,9 @@ export default function HomePage() {
       <Footer />
     </div>
   );
+}
+
+async function HomepageCopyrightYear() {
+  'use cache';
+  return new Date().getFullYear();
 }

@@ -1,3 +1,5 @@
+'use client';
+import { ActionButton } from '@/src/components/action-feedback';
 
 import { useEffect, useState } from 'react';
 import './PaymentDialog.css';
@@ -153,7 +155,7 @@ function PaymentDialogInner({
             </h2>
           </div>
 
-          <button
+          <ActionButton
             type="button"
             className="gr-pay-icon-button"
             onClick={onClose}
@@ -161,7 +163,7 @@ function PaymentDialogInner({
             aria-label="Close payment"
           >
             ×
-          </button>
+          </ActionButton>
         </header>
 
         <div className="gr-pay-total">
@@ -172,11 +174,11 @@ function PaymentDialogInner({
         {step === 'choose' && (
           <div className="gr-pay-body">
             <p className="gr-pay-help">
-              Select the customer's payment method.
+              Select the customer&apos;s payment method.
             </p>
 
             <div className="gr-pay-methods">
-              <button
+              <ActionButton
                 type="button"
                 className="gr-pay-method"
                 onClick={() => setStep('cash')}
@@ -188,9 +190,9 @@ function PaymentDialogInner({
                   </small>
                 </span>
                 <b>›</b>
-              </button>
+              </ActionButton>
 
-              <button
+              <ActionButton
                 type="button"
                 className="gr-pay-method"
                 onClick={() => setStep('transfer')}
@@ -198,11 +200,11 @@ function PaymentDialogInner({
                 <span>
                   <strong>Bank transfer</strong>
                   <small>
-                    Show the owner's receiving account
+                    Show the owner&apos;s receiving account
                   </small>
                 </span>
                 <b>›</b>
-              </button>
+              </ActionButton>
             </div>
           </div>
         )}
@@ -236,7 +238,7 @@ function PaymentDialogInner({
             </div>
 
             <div className="gr-pay-quick">
-              <button
+              <ActionButton
                 type="button"
                 disabled={busy}
                 onClick={() =>
@@ -244,10 +246,10 @@ function PaymentDialogInner({
                 }
               >
                 Exact
-              </button>
+              </ActionButton>
 
               {cashAmounts.map((amount) => (
-                <button
+                <ActionButton
                   type="button"
                   key={amount}
                   disabled={busy}
@@ -256,7 +258,7 @@ function PaymentDialogInner({
                   }
                 >
                   {money(amount * 100)}
-                </button>
+                </ActionButton>
               ))}
             </div>
 
@@ -286,25 +288,25 @@ function PaymentDialogInner({
             )}
 
             <div className="gr-pay-actions">
-              <button
+              <ActionButton
                 type="button"
                 className="gr-pay-back"
                 onClick={() => setStep('choose')}
                 disabled={busy}
               >
                 Back
-              </button>
+              </ActionButton>
 
-              <button
+              <ActionButton
                 type="button"
-                className="gr-pay-submit"
+                className="gr-pay-submit" pending={busy} pendingLabel="Confirming…"
                 disabled={!canConfirm || busy}
                 onClick={() => void confirmCash()}
               >
                 {busy
                   ? 'Confirming…'
                   : 'Confirm cash payment'}
-              </button>
+              </ActionButton>
             </div>
           </div>
         )}
@@ -337,7 +339,7 @@ function PaymentDialogInner({
                   </strong>
                 </div>
 
-                <button
+                <ActionButton
                   type="button"
                   className="gr-pay-copy"
                   onClick={() =>
@@ -345,7 +347,7 @@ function PaymentDialogInner({
                   }
                 >
                   Copy account number
-                </button>
+                </ActionButton>
 
                 {copyStatus && (
                   <p role="status" className="gr-pay-help">
@@ -356,7 +358,7 @@ function PaymentDialogInner({
                 <p className="gr-pay-warning">
                   Awaiting bank confirmation.
                   Do not release goods or mark this sale
-                  paid from a customer's screenshot.
+                  paid from a customer&apos;s screenshot.
                   Payment verification is not yet connected.
                 </p>
               </>
@@ -368,22 +370,22 @@ function PaymentDialogInner({
             )}
 
             <div className="gr-pay-actions">
-              <button
+              <ActionButton
                 type="button"
                 className="gr-pay-back"
                 onClick={() => setStep('choose')}
               >
                 Back
-              </button>
+              </ActionButton>
 
-              <button
+              <ActionButton
                 type="button"
                 className="gr-pay-submit"
                 disabled
                 title="Requires verified payment integration"
               >
                 Payment verification unavailable
-              </button>
+              </ActionButton>
             </div>
           </div>
         )}

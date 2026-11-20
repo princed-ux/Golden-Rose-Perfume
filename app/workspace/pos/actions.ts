@@ -199,6 +199,9 @@ export async function completeCashSale(
 
   revalidatePath('/workspace/pos');
   revalidatePath('/workspace/inventory');
+  revalidatePath('/workspace/orders');
+  revalidatePath('/workspace/customers');
+  revalidatePath('/workspace/invoices');
   revalidatePath('/workspace/products');
   revalidatePath('/shop');
 

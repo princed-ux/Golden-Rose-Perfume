@@ -15,6 +15,7 @@ import {
   workspaceInput, workspaceLabel, workspacePrimary, workspaceSecondary,
 } from '@/src/components/workspace/page-layout';
 import { loadRecordedReceipt, loadSalesPage, type RecordedReceipt, type SaleFilters } from './data';
+import { loadCrmDirectory } from '../customers/data';
 import { PrintSaleReceipt } from './print-button';
 import './orders-print.css';
 
@@ -203,6 +204,7 @@ async function SalesOrdersWorkspace({
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
   const filters: SaleFilters = {
     search,
+    locationId: single(params, 'locationId'),
     from: datePattern.test(from) ? from : '',
     to: datePattern.test(to) ? to : '',
     offset: /^\d{1,5}$/.test(single(params, 'offset')) &&
@@ -218,12 +220,16 @@ async function SalesOrdersWorkspace({
     failure = error instanceof Error ? error.message : 'Sales History could not be loaded.';
   }
 
+  let locations: {id:string;name:string}[] = [];
+  try { locations = (await loadCrmDirectory({search:'',status:'active',locationId:'',offset:0})).locations; } catch { /* Sales remain readable if CRM is unavailable. */ }
   const sales = page?.items ?? [];
+  for (const sale of sales) if (!locations.some(store=>store.id===sale.locationId)) locations.push({id:sale.locationId,name:sale.locationName});
   const totalOnPage = sales.reduce((sum, sale) => sum + sale.totalMinor, 0);
   const unitsOnPage = sales.reduce((sum, sale) => sum + sale.units, 0);
   const distinctStores = new Set(sales.map(sale => sale.locationId)).size;
   function pageLink(offset: number) {
     const query = new URLSearchParams();
+    if (filters.locationId) query.set('locationId', filters.locationId);
     if (filters.search) query.set('search', filters.search);
     if (filters.from) query.set('from', filters.from);
     if (filters.to) query.set('to', filters.to);
@@ -277,7 +283,7 @@ async function SalesOrdersWorkspace({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="gr-sales-filters" className="font-serif text-2xl text-[#471c32]">Find a transaction</h2>
-          <p className="mt-1 text-sm leading-6 text-[#705d68]">Search by receipt number, fragrance or SKU. Dates use Lagos local time.</p>
+          <p className="mt-1 text-sm leading-6 text-[#705d68]">Search by receipt number, fragrance or SKU. Dates use Lagos local time. Customer-linked receipts are available from CRM invoice history.</p>
         </div>
         <ShieldCheck size={20} className="text-[#9b733e]" aria-hidden="true" />
       </div>
@@ -289,6 +295,9 @@ async function SalesOrdersWorkspace({
             <input name="search" className={workspaceInput + ' pl-9'} defaultValue={filters.search}
               maxLength={100} placeholder="GR number, fragrance or SKU" />
           </span>
+        </label>
+        <label className={workspaceLabel}>Store
+          <select name="locationId" defaultValue={filters.locationId} className={workspaceInput}><option value="">All permitted stores</option>{locations.map(store=><option key={store.id} value={store.id}>{store.name}</option>)}</select>
         </label>
         <label className={workspaceLabel}>From
           <input type="date" name="from" defaultValue={filters.from} className={workspaceInput} />
@@ -329,7 +338,7 @@ async function SalesOrdersWorkspace({
             <ReceiptText size={25} aria-hidden="true" />
           </span>
           <h3 className="font-serif text-xl text-[#471c32]">
-            {filters.search || filters.from || filters.to ? 'No sales match these filters' : 'No completed POS sales yet'}
+            {filters.search || filters.from || filters.to || filters.locationId ? 'No sales match these filters' : 'No completed POS sales yet'}
           </h3>
           <p className="max-w-md text-sm leading-6 text-[#87747d]">
             {filters.search || filters.from || filters.to

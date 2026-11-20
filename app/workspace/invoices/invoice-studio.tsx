@@ -1,5 +1,6 @@
 
 'use client';
+import { ActionButton, ActionScope, useActionNotice } from '@/src/components/action-feedback';
 
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -75,7 +76,9 @@ function TinyStat({
   icon: Icon,
   label,
   detail,
+  value = '—',
 }: {
+  value?: string;
   icon: LucideIcon;
   label: string;
   detail: string;
@@ -89,7 +92,7 @@ function TinyStat({
           </p>
 
           <p className="mt-2 font-serif text-[2rem] leading-none text-[#4d1b35]">
-            —
+            {value}
           </p>
         </div>
 
@@ -154,45 +157,48 @@ function EmptyRegister({
       </span>
 
       <h3 className="font-serif text-[1.45rem] text-[#4e2038]">
-        Issued {kind} are unavailable
+        No {kind} match this view
       </h3>
 
       <p className="max-w-md text-sm leading-6 text-[#887480]">
-        Issued documents will appear here when the billing ledger,
-        document numbering, customer assignments and payment
-        reconciliation are connected. No demonstration records
-        are inserted.
+        Saved documents appear here after the server confirms them. Adjust the filters or prepare a new draft. No demonstration records are inserted.
       </p>
 
-      <button
+      <ActionButton
         type="button"
         className={secondary + ' mt-2'}
         onClick={onCompose}
       >
         <FilePlus2 size={17} aria-hidden="true" />
         Compose an unissued draft
-      </button>
+      </ActionButton>
     </div>
   );
 }
 
-export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalogue }: {
-  initialBilling: BillingResult<BillingRegisterData>; canBrowseCustomers: boolean; staffCatalogue: boolean;
+export function InvoiceStudio({ initialBilling, initialDocument = null, canBrowseCustomers, staffCatalogue }: {
+  initialBilling: BillingResult<BillingRegisterData>; initialDocument?: BillingDocument | null; canBrowseCustomers: boolean; staffCatalogue: boolean;
 }) {
   const [tab, setTab] = useState<RegisterTab>('all');
 
   const [view, setView] =
-    useState<'register' | 'composer' | 'saved'>('register');
+    useState<'register' | 'composer' | 'saved'>(initialDocument ? 'saved' : 'register');
 
   const [billing, setBilling] = useState(initialBilling.data ?? null);
   const [filters, setFilters] = useState(billingFilters);
   const [message, setMessage] = useState(initialBilling.error ?? '');
-  const [saved, setSaved] = useState<BillingDocument | null>(null);
-  const [storeId, setStoreId] = useState(initialBilling.data?.stores.find(store => store.active)?.id ?? '');
+  const [saved, setSaved] = useState<BillingDocument | null>(initialDocument);
+  const [storeId, setStoreId] = useState(initialDocument?.location_id ?? initialBilling.data?.stores.find(store => store.active)?.id ?? '');
   const [busy, setBusy] = useState(false);
+  const [actionResult, setActionResult] = useState<{status:'idle'|'success'|'error';message:string}>({status:'idle',message:''});
+  useActionNotice(actionResult);
+  useActionNotice(useMemo(() => ({status:'error' as const,message}), [message]));
   const locked = useRef(false);
   const requests = useRef(new Map<string, string>());
 
+  const issued = billing?.documents.filter(doc => doc.kind === 'invoice' && doc.state === 'issued') ?? [];
+  const outstanding = issued.reduce((sum,doc)=>sum+(doc.balance_minor ?? 0),0);
+  const settled = issued.reduce((sum,doc)=>sum+doc.paid_minor,0);
   const [draft, setDraft] = useState<Draft>(blankDraft);
   const [nextId, setNextId] = useState(2);
 
@@ -210,6 +216,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
     locked.current = true;
     setBusy(true);
     setMessage('');
+    setActionResult({status:'idle',message:''});
     try {
       await work();
     } catch {
@@ -270,6 +277,8 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
       const response = await updateBilling(action, { ...payload, requestKey });
       if (!response.data) { setMessage(response.error); return; }
       requests.current.delete(fingerprint);
+      const messages: Record<BillingAction,string> = {configure:'Billing settings saved.',save:'Document draft saved.',accept:'Quotation acceptance recorded.',convert:'Invoice draft created from the accepted quotation.',issue:'Official invoice issued.',void:'Document voided; its financial history is retained.',apply_pos:'Existing POS payment allocated. No additional sale was created.',propose_payment:'Payment submitted for approval; it is not settled yet.',review_payment:'Payment review saved.'};
+      setActionResult({status:'success',message:messages[action]});
       if ('configured' in response.data) {
         await readRegister(filters);
       } else {
@@ -399,7 +408,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
   };
 
   return (
-    <div className="grid min-w-0 gap-6 pb-12">
+    <ActionScope pending={busy}><div className="grid min-w-0 gap-6 pb-12">
       <header className="relative overflow-hidden rounded-[22px] border border-[#5c2745] bg-[linear-gradient(119deg,#331023_0%,#52233e_62%,#795449_100%)] px-5 py-6 text-white shadow-[0_12px_35px_rgba(68,25,48,.13)] sm:p-8">
         <div
           aria-hidden="true"
@@ -428,7 +437,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
             </p>
           </div>
 
-          <button
+          <ActionButton
             type="button"
             onClick={view === 'register' ? freshDraft : showRegister}
             disabled={busy}
@@ -443,7 +452,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
             {view !== 'register'
               ? 'Back to register'
               : 'Prepare new draft'}
-          </button>
+          </ActionButton>
         </div>
       </header>
 
@@ -454,25 +463,29 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
         <TinyStat
           icon={ReceiptText}
           label="Issued invoices"
-          detail="Verified only after billing activation"
+          value={billing ? String(issued.length) : '—'}
+          detail="Issued invoices on this register page"
         />
 
         <TinyStat
           icon={WalletCards}
           label="Outstanding balance"
-          detail="Not calculated until payment records are connected"
+          value={billing ? money(outstanding) : '—'}
+          detail="Unpaid balances on this page only"
         />
 
         <TinyStat
           icon={FileText}
           label="Open quotations"
-          detail="Official quotation register is pending"
+          value={billing ? String(billing.documents.filter(doc=>doc.kind==='quotation' && ['draft','accepted'].includes(doc.state)).length) : '—'}
+          detail="Draft / accepted quotes on this page"
         />
 
         <TinyStat
           icon={Landmark}
-          label="Payments received"
-          detail="Will use reconciled collections, not estimates"
+          label="Verified invoice settlements"
+          value={billing ? money(settled) : '—'}
+          detail="This page only. Includes POS allocations; do not add to POS revenue."
         />
       </div>
 
@@ -502,9 +515,9 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
         <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,.9fr)]">
           <div className="grid min-w-0 gap-3">
             <DocumentPreview saved={saved} draft={savedDocumentDraft(saved)} calc={savedDocumentAmounts(saved)} />
-            <button type="button" className={primary} onClick={() => window.print()} disabled={busy}>
+            <ActionButton type="button" className={primary} onClick={() => window.print()} disabled={busy}>
               <Printer size={17} /> {saved.invoice_number ? 'Print invoice / Save PDF' : 'Print document / Save PDF'}
-            </button>
+            </ActionButton>
           </div>
           <BillingDocumentControls key={saved.id + ':' + saved.revision} doc={saved} data={billing} busy={busy}
             run={mutate} edit={editSaved} />
@@ -531,14 +544,14 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
               </p>
             </div>
 
-            <button
+            <ActionButton
               className={secondary}
               type="button"
               onClick={freshDraft}
             >
               <Plus size={16} />
               New document draft
-            </button>
+            </ActionButton>
           </div>
 
           <div
@@ -553,7 +566,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                 ['invoices', 'Invoices'],
               ] as const
             ).map(([key, title]) => (
-              <button
+              <ActionButton
                 key={key}
                 type="button"
                 aria-pressed={tab === key}
@@ -566,7 +579,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                 }
               >
                 {title}
-              </button>
+              </ActionButton>
             ))}
           </div>
 
@@ -576,8 +589,8 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
               Search issued references
             </span>
 
-            <button type="button" disabled={busy} className={secondary}
-              onClick={() => void perform(() => readRegister(billingFilters))}>Retry connection</button>
+            <ActionButton type="button" disabled={busy} className={secondary}
+              onClick={() => void perform(() => readRegister(billingFilters))}>Retry connection</ActionButton>
           </div>
 
           <div className="mt-5">
@@ -620,7 +633,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
               </p>
             </div>
 
-            <button
+            <ActionButton
               type="button"
               className={secondary}
               onClick={startOver}
@@ -628,7 +641,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
             >
               <RotateCcw size={16} />
               Start over
-            </button>
+            </ActionButton>
           </div>
 
           <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.1fr)_minmax(410px,.9fr)]">
@@ -654,7 +667,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {(['quotation', 'invoice'] as const).map(kind => (
-                    <button
+                    <ActionButton
                       type="button"
                       key={kind}
                       aria-pressed={draft.kind === kind}
@@ -680,7 +693,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                           className="text-[#9d753d]"
                         />
                       )}
-                    </button>
+                    </ActionButton>
                   ))}
                 </div>
 
@@ -838,7 +851,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                         </strong>
 
                         <div className="flex items-center gap-1">
-                          <button
+                          <ActionButton
                             type="button"
                             onClick={() => copyLine(line)}
                             disabled={draft.lines.length >= 30}
@@ -846,9 +859,9 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                             className="rounded-lg border border-[#e6d8cd] bg-white p-2 text-[#775268] hover:bg-[#fff1de] disabled:opacity-40"
                           >
                             <Copy size={16} />
-                          </button>
+                          </ActionButton>
 
-                          <button
+                          <ActionButton
                             type="button"
                             onClick={() => removeLine(line.id)}
                             disabled={draft.lines.length === 1}
@@ -856,7 +869,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                             className="rounded-lg border border-[#e6d8cd] bg-white p-2 text-[#9f4955] hover:bg-[#fff1ef] disabled:opacity-40"
                           >
                             <Trash2 size={16} />
-                          </button>
+                          </ActionButton>
                         </div>
                       </div>
 
@@ -954,7 +967,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                   ))}
                 </div>
 
-                <button
+                <ActionButton
                   type="button"
                   className={secondary + ' justify-self-start'}
                   onClick={addLine}
@@ -963,7 +976,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                   <Plus size={17} />
                   Add another item
                   {draft.lines.length >= 30 && '(maximum 30)'}
-                </button>
+                </ActionButton>
 
                 <div className="grid gap-4 border-t border-[#eee3dd] pt-5 sm:grid-cols-2">
                   <label className={label}>
@@ -1107,12 +1120,12 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
               <DocumentPreview draft={formDraft} calc={calc} />
 
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                {billing && <button type="button" className={primary + ' sm:col-span-2'}
+                {billing && <ActionButton type="button" className={primary + ' sm:col-span-2'}
                   disabled={!storeId || !calc.valid || busy}
                   onClick={() => mutate('save', billingDraftPayload(formDraft, storeId, saved))}>
                   Save {draft.kind === 'quotation' ? 'quotation' : 'invoice'} draft
-                </button>}
-                <button
+                </ActionButton>}
+                <ActionButton
                   type="button"
                   className={primary}
                   disabled={!calc.valid}
@@ -1120,9 +1133,9 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                 >
                   <Printer size={17} />
                   Print / Save PDF
-                </button>
+                </ActionButton>
 
-                <button
+                <ActionButton
                   type="button"
                   className={secondary}
                   disabled={!calc.valid}
@@ -1130,7 +1143,7 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
                 >
                   <ClipboardCopy size={17} />
                   Copy summary
-                </button>
+                </ActionButton>
               </div>
 
               {copied === 'success' && (
@@ -1168,6 +1181,6 @@ export function InvoiceStudio({ initialBilling, canBrowseCustomers, staffCatalog
           Staff permissions checked by the workspace
         </span>
       </footer>
-    </div>
+    </div></ActionScope>
   );
 }

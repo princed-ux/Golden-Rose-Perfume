@@ -1,9 +1,15 @@
 
 import { Suspense } from 'react';
-import { requireStaff } from '@/src/lib/golden-rose/staff';
-import { createClient } from '@/src/lib/supabase/server';
+import { redirect } from 'next/navigation';
+
+import { getStaffAccess } from '@/src/lib/golden-rose/staff';
+
 import { WorkspaceShell } from '@/src/components/workspace/workspace-shell';
+
+import { StaffAccessUnavailable } from '@/src/components/workspace/access-unavailable';
+
 import { SignedInToast } from '@/src/components/auth-toast';
+
 import './page.css';
 
 export default function WorkspaceLayout({
@@ -14,12 +20,17 @@ export default function WorkspaceLayout({
   return (
     <Suspense
       fallback={
-        <p className="container page-spacing" role="status">
+        <p
+          className="container page-spacing"
+          role="status"
+        >
           Verifying staff access…
         </p>
       }
     >
-      <AuthenticatedWorkspace>{children}</AuthenticatedWorkspace>
+      <AuthenticatedWorkspace>
+        {children}
+      </AuthenticatedWorkspace>
     </Suspense>
   );
 }
@@ -29,40 +40,28 @@ async function AuthenticatedWorkspace({
 }: {
   children: React.ReactNode;
 }) {
-  const { role, userId } = await requireStaff();
+  const staff = await getStaffAccess();
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
+  if ('reason' in staff) {
+    if (staff.reason === 'unavailable') {
+      return <StaffAccessUnavailable />;
+    }
 
-  let displayName = '';
-
-  // Profile names are for display only.
-  // Actual authorization continues to use verified staff roles.
-  if (!error && data.user?.id === userId) {
-    const metadata = data.user.user_metadata as
-      | Record<string, unknown>
-      | undefined;
-
-    const possibleNames = [
-      metadata?.full_name,
-      metadata?.name,
-      metadata?.display_name,
-      metadata?.first_name,
-    ];
-
-    const storedName = possibleNames.find(
-      (value): value is string =>
-        typeof value === 'string' && value.trim().length > 0,
-    );
-
-    displayName = storedName?.trim().slice(0, 100) ?? '';
+    if (staff.reason === 'password') redirect('/staff/change-password');
+    redirect('/staff/login?reason=' + staff.reason);
   }
 
+  const { role, displayName } = staff;
+
   return (
-    <WorkspaceShell staffRole={role} displayName={displayName}>
+    <WorkspaceShell
+      staffRole={role}
+      displayName={displayName}
+    >
       <Suspense fallback={null}>
         <SignedInToast destination="workspace" />
       </Suspense>
+
       {children}
     </WorkspaceShell>
   );

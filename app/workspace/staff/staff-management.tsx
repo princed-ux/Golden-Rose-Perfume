@@ -1,5 +1,6 @@
 
 'use client';
+import { ActionButton, useActionNotice } from '@/src/components/action-feedback';
 
 import Link from 'next/link';
 import { startTransition, useActionState, useEffect, useRef, useState } from 'react';
@@ -231,6 +232,7 @@ export function StaffManagement({
     ) => {
       setCopyStatus('');
 
+
       const operation = String(form.get('operation') ?? '');
       let next: EmployeeAction;
       try {
@@ -262,6 +264,8 @@ export function StaffManagement({
   useEffect(() => {
     if (onboardingFeedback) feedbackRef.current?.focus();
   }, [onboardingFeedback]);
+
+  useActionNotice(result);
 
   const accountCreated = result.operation === 'create_account' && result.status === 'success';
 
@@ -303,7 +307,7 @@ export function StaffManagement({
         kicker="Team & access"
         description="Invite employees, assign store access, manage roles and review security activity."
         actions={
-          <button
+          <ActionButton
             type="button"
             className={workspacePrimary}
             aria-haspopup="dialog"
@@ -312,7 +316,7 @@ export function StaffManagement({
           >
             <Plus size={17} aria-hidden="true" />
             Add Employee
-          </button>
+          </ActionButton>
         }
       />
 
@@ -420,7 +424,7 @@ export function StaffManagement({
               }
               action={
                 <div className="flex flex-wrap gap-2">
-                  <button
+                  <ActionButton
                     type="button"
                     className={workspacePrimary}
                     onClick={() =>
@@ -429,7 +433,7 @@ export function StaffManagement({
                   >
                     <Plus size={16} aria-hidden="true" />
                     Add Employee
-                  </button>
+                  </ActionButton>
 
                   <Link
                     href="/workspace/staff"
@@ -475,7 +479,7 @@ export function StaffManagement({
                       }
                     />
 
-                    <button
+                    <ActionButton
                       type="button"
                       className={workspaceSecondary}
                       onClick={async () => {
@@ -499,7 +503,7 @@ export function StaffManagement({
                         aria-hidden="true"
                       />
                       Copy link
-                    </button>
+                    </ActionButton>
 
                     <span
                       role="status"
@@ -540,7 +544,7 @@ export function StaffManagement({
                   </p>
                 </div>
 
-                <button
+                <ActionButton
                   type="button"
                   className={workspaceSecondary}
                   onClick={() =>
@@ -549,7 +553,7 @@ export function StaffManagement({
                 >
                   <Plus size={16} aria-hidden="true" />
                   Add Employee
-                </button>
+                </ActionButton>
               </div>
 
               {!activeStore && (
@@ -750,16 +754,16 @@ export function StaffManagement({
                               />
 
                               <div className="flex flex-wrap gap-2 sm:col-span-2">
-                                <button
+                                <ActionButton
                                   className={workspacePrimary}
                                   name="operation"
                                   value="update"
                                   disabled={!activeStore}
                                 >
                                   Save role and store
-                                </button>
+                                </ActionButton>
 
-                                {(!accountStates?.[employee.id] || accountStates[employee.id] === 'ready') && <button
+                                {(!accountStates?.[employee.id] || accountStates[employee.id] === 'ready') && <ActionButton
                                   className={workspaceSecondary}
                                   name="operation"
                                   value={
@@ -774,16 +778,16 @@ export function StaffManagement({
                                   'active'
                                     ? 'Suspend'
                                     : 'Restore'}
-                                </button>}
+                                </ActionButton>}
 
-                                <button
+                                <ActionButton
                                   className={workspaceSecondary}
                                   name="operation"
                                   value="revoke"
                                   formNoValidate
                                 >
                                   Revoke access
-                                </button>
+                                </ActionButton>
                               </div>
                             </fieldset>
                           </form>
@@ -795,14 +799,14 @@ export function StaffManagement({
                                   <input type="hidden" name="id" value={employee.id} />
                                   <input type="hidden" name="operation" value="replace_password" />
                                   <TemporaryPasswordFields />
-                                  <button className={workspaceSecondary + ' w-fit sm:col-span-2'} type="submit">Replace password</button>
+                                  <ActionButton className={workspaceSecondary + ' w-fit sm:col-span-2'} type="submit">Replace password</ActionButton>
                                 </fieldset>
                               </form>
                             </details>
                           )}
                           {accountsReady && accountStates?.[employee.id] === 'awaiting_verification' && <form action={action} className="mt-3">
                             <input type="hidden" name="id" value={employee.id} />
-                            <button name="operation" value="resend_confirmation" type="submit" disabled={pending} className={workspaceSecondary}>Resend email confirmation</button>
+                            <ActionButton name="operation" value="resend_confirmation" type="submit" disabled={pending} className={workspaceSecondary}>Resend email confirmation</ActionButton>
                           </form>}
                         </details>
                       )}
@@ -873,25 +877,25 @@ export function StaffManagement({
                               value={invite.id}
                             />
 
-                            <button
+                            <ActionButton
                               className={workspaceSecondary}
                               name="operation"
                               value="reissue"
                               disabled={pending}
                             >
                               Reissue invitation
-                            </button>
+                            </ActionButton>
 
                             {invite.status ===
                               'pending' && (
-                              <button
+                              <ActionButton
                                 className={workspaceSecondary}
                                 name="operation"
                                 value="cancel_invite"
                                 disabled={pending}
                               >
                                 Revoke invitation
-                              </button>
+                              </ActionButton>
                             )}
                           </form>
                         )}
@@ -1005,7 +1009,7 @@ export function StaffManagement({
             </p>
           </div>
 
-          <button
+          <ActionButton
             type="button"
             aria-label="Close employee dialog"
             disabled={pending}
@@ -1013,7 +1017,7 @@ export function StaffManagement({
             onClick={() => inviteDialog.current?.close()}
           >
             <X size={20} aria-hidden="true" />
-          </button>
+          </ActionButton>
         </header>
 
         {onboardingFeedback?.status === 'success' ? (
@@ -1021,13 +1025,13 @@ export function StaffManagement({
             <WorkspaceNotice title="Employee account created">
               {onboardingFeedback.message}
             </WorkspaceNotice>
-            <button
+            <ActionButton
               type="button"
               className={workspacePrimary + ' justify-self-end'}
               onClick={() => inviteDialog.current?.close()}
             >
               Done
-            </button>
+            </ActionButton>
           </div>
         ) : !backendReady ? (
           <div className="grid gap-4">
@@ -1216,7 +1220,7 @@ export function StaffManagement({
               )}
 
               <div className="flex flex-wrap justify-end gap-2 border-t border-[#e9d8cf] pt-4 sm:col-span-2">
-                <button
+                <ActionButton
                   type="button"
                   className={workspaceSecondary}
                   onClick={() =>
@@ -1224,9 +1228,9 @@ export function StaffManagement({
                   }
                 >
                   Cancel
-                </button>
+                </ActionButton>
 
-                <button
+                <ActionButton
                   type="submit"
                   className={workspacePrimary}
                 >
@@ -1238,7 +1242,7 @@ export function StaffManagement({
                   {pending
                     ? 'Creating…'
                     : onboarding === 'create_account' ? 'Create employee account' : 'Send invitation'}
-                </button>
+                </ActionButton>
               </div>
               </>}
             </fieldset>

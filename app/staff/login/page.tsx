@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
+import { getStaffAccess } from '@/src/lib/golden-rose/staff';
+import { getRoleHome } from '@/src/domain/permissions';
 import { StaffLoginForm } from './form';
 import '../page.css';
 
@@ -10,7 +13,7 @@ export const metadata: Metadata = { title: "Business access — Staff" };
 const notices: Record<string, string> = {
   session: 'Sign in to access the business workspace.',
   denied: 'This account does not have active staff access. Contact your owner or manager.',
-  unavailable: 'Staff access could not be verified. Try signing in again.',
+  unavailable: 'Staff verification is temporarily unavailable. Retry without signing out.',
   signout: 'Sign-out could not be confirmed. Try again from the workspace.',
   'password-changed': 'Your password was changed. Sign in with your new password to continue.',
 };
@@ -19,6 +22,13 @@ async function AccessNotice({ searchParams }: { searchParams: Promise<{ reason?:
   const { reason } = await searchParams;
   const message = typeof reason === 'string' && Object.hasOwn(notices, reason) ? notices[reason] : null;
   return message ? <p className="gr-auth-notice" role="status">{message}</p> : null;
+}
+
+async function SessionAwareLogin() {
+  const access = await getStaffAccess();
+  if (!('reason' in access)) redirect(getRoleHome(access.role));
+  if (access.reason === 'password') redirect('/staff/change-password');
+  return <StaffLoginForm />;
 }
 
 export default function Page({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
@@ -36,7 +46,7 @@ export default function Page({ searchParams }: { searchParams: Promise<{ reason?
         <h1 id="auth-title">Business access</h1>
         <p className="gr-auth-intro">The workspace for your store, your team and daily operations.</p>
         <Suspense><AccessNotice searchParams={searchParams} /></Suspense>
-        <StaffLoginForm />
+        <Suspense fallback={<p role="status">Checking your staff session…</p>}><SessionAwareLogin /></Suspense>
         <nav className="gr-auth-links" aria-label="Staff access">
           <Link href="/staff/accept-invite">Have an invitation? Accept it here</Link>
         </nav>

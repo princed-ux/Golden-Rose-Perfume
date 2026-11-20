@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, useActionNotice } from '@/src/components/action-feedback';
 
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
@@ -25,6 +26,8 @@ function CatalogueForm({
   const busy = useRef(false);
   const request = useRef<{ fingerprint: string; id: string } | null>(null);
   const router = useRouter();
+
+  useActionNotice(result);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,9 +61,9 @@ function CatalogueForm({
     <form onSubmit={save} aria-busy={pending} className={compact ? 'min-w-0' : 'grid min-w-0 gap-3'}>
       <fieldset disabled={pending} className={compact ? 'm-0 min-w-0 border-0 p-0' : 'm-0 grid min-w-0 gap-4 border-0 p-0'}>
         {children}
-        <button type="submit" className={submitClass}>{pending ? 'Saving…' : label}
+        <ActionButton pending={pending} pendingLabel="Saving…" type="submit" className={submitClass}>{pending ? 'Saving…' : label}
           {compact && !pending && action === 'publication' && label === 'Publish' && <ArrowUpRight size={15} aria-hidden="true" />}
-        </button>
+        </ActionButton>
       </fieldset>
       {result.message && <p className={'m-0 break-words text-sm ' + (result.status === 'error' ? 'text-[#8e3147]' : 'text-[#2b6041]')}
         role={result.status === 'error' ? 'alert' : 'status'}>{result.message}</p>}

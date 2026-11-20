@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton } from '@/src/components/action-feedback';
 
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
@@ -50,7 +51,7 @@ function CheckoutForm({ lines, profile, configured, disabled }: {
           <label>Phone number<input name="phone" type="tel" autoComplete="tel" required maxLength={30} /></label>
           <label>Email (optional)<input name="email" type="email" autoComplete="email" defaultValue={profile?.email ?? ''} maxLength={254} /></label>
           <label>Delivery details (optional)<textarea name="delivery" rows={2} maxLength={240} /></label>
-          <button type="submit" className="gr-bag-primary">{pending ? 'Checking prices…' : 'Prepare WhatsApp message'}</button>
+          <ActionButton pending={pending} pendingLabel="Preparing…" type="submit" className="gr-bag-primary">{pending ? 'Checking prices…' : 'Prepare WhatsApp message'}</ActionButton>
         </fieldset>
       </form>
       {error && <p role="alert">{error}</p>}
@@ -88,7 +89,7 @@ export function ShoppingBagScreen({ checkout = false, configured = false, profil
   if (!ready) return <p className="gr-bag-panel" role="status">Loading your shopping bag…</p>;
   if (syncUnavailable) return <section className="gr-bag-panel" role="status">
     <p>Your shopping bag could not be synced. Items saved on this device will be kept.</p>
-    <button type="button" className="gr-bag-primary" onClick={retry}>Try again</button>
+    <ActionButton type="button" className="gr-bag-primary" onClick={retry}>Try again</ActionButton>
   </section>;
   if (!lines.length) return (
     <section className="gr-bag-panel gr-bag-empty">
@@ -102,7 +103,7 @@ export function ShoppingBagScreen({ checkout = false, configured = false, profil
   if (!resolved) return (
     <section className="gr-bag-panel" role="alert">
       <p>Product prices are temporarily unavailable. Your bag is saved.</p>
-      <button type="button" className="gr-bag-primary" onClick={() => setRequest(value => value + 1)}>Try again</button>
+      <ActionButton type="button" className="gr-bag-primary" onClick={() => setRequest(value => value + 1)}>Try again</ActionButton>
     </section>
   );
   const { items, unavailable, totalMinor } = resolved;
@@ -123,16 +124,16 @@ export function ShoppingBagScreen({ checkout = false, configured = false, profil
           <div>
             <p>{formatPrice(item.priceMinor * item.quantity)}</p>
             {checkout ? <p>Quantity {item.quantity}</p> : <div className="gr-bag-quantity">
-              <button type="button" disabled={pending || item.quantity <= 1} onClick={() => changeQuantity(item.variantId, item.quantity - 1)} aria-label={'Decrease quantity of ' + item.name}>−</button>
+              <ActionButton type="button" disabled={pending || item.quantity <= 1} onClick={() => changeQuantity(item.variantId, item.quantity - 1)} aria-label={'Decrease quantity of ' + item.name}>−</ActionButton>
               <span aria-label="Quantity">{item.quantity}</span>
-              <button type="button" disabled={pending || item.quantity >= MAX_QUANTITY} onClick={() => changeQuantity(item.variantId, item.quantity + 1)} aria-label={'Increase quantity of ' + item.name}>+</button>
-              <button type="button" disabled={pending} onClick={() => changeQuantity(item.variantId, 0)} aria-label={'Remove ' + item.name}>Remove</button>
+              <ActionButton type="button" disabled={pending || item.quantity >= MAX_QUANTITY} onClick={() => changeQuantity(item.variantId, item.quantity + 1)} aria-label={'Increase quantity of ' + item.name}>+</ActionButton>
+              <ActionButton type="button" disabled={pending} onClick={() => changeQuantity(item.variantId, 0)} aria-label={'Remove ' + item.name}>Remove</ActionButton>
             </div>}
           </div>
         </article>)}
         {unavailable.map((item, index) => <div className="gr-bag-item" key={item.variantId}>
           <p>Unavailable selection {index + 1} · Quantity {item.quantity}</p>
-          {!checkout && <button type="button" disabled={pending} onClick={() => changeQuantity(item.variantId, 0)} aria-label={'Remove unavailable selection ' + (index + 1)}>Remove</button>}
+          {!checkout && <ActionButton type="button" disabled={pending} onClick={() => changeQuantity(item.variantId, 0)} aria-label={'Remove unavailable selection ' + (index + 1)}>Remove</ActionButton>}
         </div>)}
         <p className="gr-bag-total"><span>Estimated item total</span><strong>{totalMinor !== null ? formatPrice(totalMinor) : 'Unavailable'}</strong></p>
         {unavailable.length > 0 && <p role="status">Remove unavailable items from your bag to continue.</p>}

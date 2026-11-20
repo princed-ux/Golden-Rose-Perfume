@@ -1,5 +1,7 @@
 
 'use client';
+import { ActionScope } from '@/src/components/action-feedback';
+import { ActionButton } from '@/src/components/action-feedback';
 
 import {
   useEffect,
@@ -322,14 +324,14 @@ function CalculatorDialog({
             </h2>
           </div>
 
-          <button
+          <ActionButton
             type="button"
             aria-label="Close calculator"
             className="pos-icon-btn"
             onClick={close}
           >
             <X size={18} />
-          </button>
+          </ActionButton>
         </div>
 
         <output className="pos-calc-display">
@@ -338,7 +340,7 @@ function CalculatorDialog({
 
         <div className="pos-calc-grid">
           {keys.map(key => (
-            <button
+            <ActionButton
               key={key}
               type="button"
               className={
@@ -347,11 +349,11 @@ function CalculatorDialog({
               onClick={() => press(key)}
             >
               {key}
-            </button>
+            </ActionButton>
           ))}
         </div>
 
-        <button
+        <ActionButton
           type="button"
           className="pos-primary pos-wide"
           disabled={parseNaira(display) === null}
@@ -361,7 +363,7 @@ function CalculatorDialog({
           }}
         >
           Use as cash received
-        </button>
+        </ActionButton>
       </section>
     </div>
   );
@@ -405,14 +407,14 @@ function ReceiptDialog({
             <h2>Sale completed</h2>
           </div>
 
-          <button
+          <ActionButton
             type="button"
             className="pos-icon-btn"
             aria-label="Close receipt"
             onClick={close}
           >
             <X size={18} />
-          </button>
+          </ActionButton>
         </div>
 
         <div
@@ -523,23 +525,23 @@ function ReceiptDialog({
         </div>
 
         <div className="pos-receipt-buttons pos-no-print">
-          <button
+          <ActionButton
             className="pos-primary"
             type="button"
             onClick={() => window.print()}
           >
             <Printer size={17} />
             Print
-          </button>
+          </ActionButton>
 
-          <button
+          <ActionButton
             className="pos-secondary"
             type="button"
             onClick={close}
           >
             Start new sale
             <ArrowRight size={16} />
-          </button>
+          </ActionButton>
         </div>
       </section>
     </div>
@@ -1197,7 +1199,7 @@ export function PosRegister({
   }
 
   return (
-    <div
+    <ActionScope pending={busy}><div
       className={'pos-screen' + (focusMode ? ' pos-focus-mode' : '')}
       onKeyDown={onRegisterKey}
     >
@@ -1223,13 +1225,13 @@ export function PosRegister({
             {notice.message}
           </span>
 
-          <button
+          <ActionButton
             type="button"
             aria-label="Dismiss alert"
             onClick={() => setNotice(null)}
           >
             <X size={16} />
-          </button>
+          </ActionButton>
         </div>
       )}
 
@@ -1257,7 +1259,7 @@ export function PosRegister({
             Cash register
           </span>
 
-          <button
+          <ActionButton
             type="button"
             className="pos-secondary"
             onClick={() =>
@@ -1266,14 +1268,14 @@ export function PosRegister({
           >
             <Calculator size={16} />
             Calculator
-          </button>
+          </ActionButton>
 
           <Link href="/workspace/orders" className="pos-secondary pos-history-link">
             <History size={16} aria-hidden="true" />
             Sales history
           </Link>
 
-          <button
+          <ActionButton
             type="button"
             className="pos-secondary pos-focus-toggle"
             aria-pressed={focusMode}
@@ -1281,9 +1283,9 @@ export function PosRegister({
           >
             {focusMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             {focusMode ? 'Exit register view' : 'Register view'}
-          </button>
+          </ActionButton>
 
-          <button
+          <ActionButton
             type="button"
             className="pos-secondary"
             disabled={locked || !cart.length}
@@ -1291,7 +1293,7 @@ export function PosRegister({
           >
             <RefreshCw size={16} />
             Clear sale
-          </button>
+          </ActionButton>
         </div>
       </header>
 
@@ -1388,23 +1390,23 @@ export function PosRegister({
             </small>
           </span>
 
-          <button
+          <ActionButton
             type="button"
             className="pos-primary"
             disabled={busy}
             onClick={() => pay(pending)}
           >
             Retry same sale
-          </button>
+          </ActionButton>
 
-          <button
+          <ActionButton
             type="button"
             className="pos-text-button"
             onClick={releasePending}
             disabled={busy}
           >
             Discard after checking
-          </button>
+          </ActionButton>
         </div>
       )}
 
@@ -1455,7 +1457,7 @@ export function PosRegister({
               )}
             </label>
 
-            <button
+            <ActionButton
               type="button"
               className="pos-secondary pos-refresh"
               aria-label="Refresh catalogue"
@@ -1477,13 +1479,13 @@ export function PosRegister({
               }
             >
               <RefreshCw size={18} />
-            </button>
+            </ActionButton>
           </div>
 
           {/* Catalogue filters */}
           <div className="pos-filter-row">
             <div className="pos-segments">
-              <button
+              <ActionButton
                 type="button"
                 aria-pressed={!inStockOnly}
                 className={
@@ -1496,9 +1498,9 @@ export function PosRegister({
                 }
               >
                 All fragrances
-              </button>
+              </ActionButton>
 
-              <button
+              <ActionButton
                 type="button"
                 aria-pressed={inStockOnly}
                 className={
@@ -1511,18 +1513,18 @@ export function PosRegister({
                 }
               >
                 In stock
-              </button>
+              </ActionButton>
             </div>
 
             <div className="pos-view-choices" role="group" aria-label="Catalogue display format">
-              <button type="button" onClick={() => chooseView('grid')}
+              <ActionButton type="button" onClick={() => chooseView('grid')}
                 aria-pressed={catalogueView === 'grid'} title="Product grid">
                 <LayoutGrid size={16} aria-hidden="true" /> Grid
-              </button>
-              <button type="button" onClick={() => chooseView('table')}
+              </ActionButton>
+              <ActionButton type="button" onClick={() => chooseView('table')}
                 aria-pressed={catalogueView === 'table'} title="Product table">
                 <List size={16} aria-hidden="true" /> Table
-              </button>
+              </ActionButton>
             </div>
           </div>
 
@@ -1592,7 +1594,7 @@ export function PosRegister({
                         </small>
                       </div>
 
-                      <button
+                      <ActionButton
                         type="button"
                         disabled={cannotAdd}
                         onClick={() =>
@@ -1601,7 +1603,7 @@ export function PosRegister({
                       >
                         <Plus size={16} />
                         Add to sale
-                      </button>
+                      </ActionButton>
                     </div>
                   </article>
                 );
@@ -1638,11 +1640,11 @@ export function PosRegister({
                             {product.available > 0 ? product.available : '0 available'}
                           </span></td>
                           <td className="pos-table-price">{money(product.priceMinor)}</td>
-                          <td><button type="button" className="pos-table-add"
+                          <td><ActionButton type="button" className="pos-table-add"
                             disabled={cannotAdd} onClick={() => add(product)}
                             aria-label={'Add ' + product.name + ' to sale'}>
                             <Plus size={15} aria-hidden="true" /> Add
-                          </button></td>
+                          </ActionButton></td>
                         </tr>
                       );
                     })}
@@ -1677,10 +1679,10 @@ export function PosRegister({
 
           {/* Pagination */}
           {catalogue.hasMore && (
-            <button
+            <ActionButton
               type="button"
               className="pos-more"
-              disabled={loadingMore}
+              pending={loadingMore} pendingLabel="Loading…" disabled={loadingMore}
               onClick={more}
             >
               {loadingMore
@@ -1688,7 +1690,7 @@ export function PosRegister({
                 : 'Load more fragrances'}
 
               <ArrowRight size={15} />
-            </button>
+            </ActionButton>
           )}
 
           <p className="pos-catalogue-foot">
@@ -1729,15 +1731,15 @@ export function PosRegister({
           </header>
 
           <div className="pos-basket-tools" role="group" aria-label="Unsaved sale actions">
-            <button type="button" disabled={locked || !cart.length} onClick={holdSale}>
+            <ActionButton type="button" disabled={locked || !cart.length} onClick={holdSale}>
               <PauseCircle size={15} aria-hidden="true" /> Hold
-            </button>
-            <button type="button" disabled={locked || !heldSale} onClick={recallSale}>
+            </ActionButton>
+            <ActionButton type="button" disabled={locked || !heldSale} onClick={recallSale}>
               <RotateCcw size={15} aria-hidden="true" /> Recall{heldSale ? ' (1)' : ''}
-            </button>
-            <button type="button" disabled={locked || !cart.length} onClick={clearSale}>
+            </ActionButton>
+            <ActionButton type="button" disabled={locked || !cart.length} onClick={clearSale}>
               <Trash2 size={15} aria-hidden="true" /> Clear
-            </button>
+            </ActionButton>
           </div>
           {heldSale && <p className="pos-held-note" role="status">
             One local basket is on hold. It does not reserve stock.
@@ -1771,7 +1773,7 @@ export function PosRegister({
                         </small>
                       </span>
 
-                      <button
+                      <ActionButton
                         type="button"
                         aria-label={
                           'Remove ' +
@@ -1789,12 +1791,12 @@ export function PosRegister({
                         }
                       >
                         <Trash2 size={16} />
-                      </button>
+                      </ActionButton>
                     </div>
 
                     <div className="pos-cart-item-bottom">
                       <div className="pos-quantity">
-                        <button
+                        <ActionButton
                           type="button"
                           aria-label="Decrease quantity"
                           disabled={locked}
@@ -1806,13 +1808,13 @@ export function PosRegister({
                           }
                         >
                           <Minus size={14} />
-                        </button>
+                        </ActionButton>
 
                         <b>
                           {row.quantity}
                         </b>
 
-                        <button
+                        <ActionButton
                           type="button"
                           aria-label="Increase quantity"
                           disabled={
@@ -1831,7 +1833,7 @@ export function PosRegister({
                           }
                         >
                           <Plus size={14} />
-                        </button>
+                        </ActionButton>
                       </div>
 
                       <strong>
@@ -1974,14 +1976,14 @@ export function PosRegister({
 
             <div className="pos-tender-pad" role="group" aria-label="Cash amount keypad">
               {['7', '8', '9', '⌫', '4', '5', '6', 'C', '1', '2', '3', '.', '00', '0'].map(key => (
-                <button type="button" key={key} onClick={() => enterCashKey(key)}
+                <ActionButton type="button" key={key} onClick={() => enterCashKey(key)}
                   disabled={locked || !cart.length} aria-label={key === '⌫' ? 'Backspace' : key === 'C' ? 'Clear cash amount' : key}>
                   {key}
-                </button>
+                </ActionButton>
               ))}
             </div>
             <div className="pos-shortcuts">
-              <button
+              <ActionButton
                 type="button"
                 disabled={
                   locked || !cart.length
@@ -1993,9 +1995,9 @@ export function PosRegister({
                 }
               >
                 Exact cash
-              </button>
+              </ActionButton>
 
-              <button
+              <ActionButton
                 type="button"
                 onClick={() =>
                   setCalculatorOpen(true)
@@ -2003,7 +2005,7 @@ export function PosRegister({
               >
                 <Calculator size={14} />
                 Calculator
-              </button>
+              </ActionButton>
             </div>
 
             {/* Change */}
@@ -2028,7 +2030,7 @@ export function PosRegister({
               )}
 
             {/* Complete sale */}
-            <button
+            <ActionButton
               type="button"
               className="pos-primary pos-pay"
               disabled={!canPay}
@@ -2041,7 +2043,7 @@ export function PosRegister({
                 : 'Complete cash sale'}
 
               <ArrowRight size={17} />
-            </button>
+            </ActionButton>
 
             <p className="pos-register-shortcuts">F2: scan/search · Ctrl+Enter: complete eligible cash sale</p>
             <p className="pos-safe">
@@ -2055,7 +2057,7 @@ export function PosRegister({
       </div>
 
       {/* Mobile checkout */}
-      <button
+      <ActionButton
         type="button"
         className="pos-mobile-cart-button"
         aria-expanded={showMobileCart}
@@ -2074,7 +2076,7 @@ export function PosRegister({
         <strong>
           {money(total)}
         </strong>
-      </button>
+      </ActionButton>
 
       {/* Calculator */}
       {calculatorOpen && (
@@ -2095,6 +2097,6 @@ export function PosRegister({
           }
         />
       )}
-    </div>
+    </div></ActionScope>
   );
 }

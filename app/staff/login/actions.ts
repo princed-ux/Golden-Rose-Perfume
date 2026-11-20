@@ -65,6 +65,8 @@ export async function signInStaff(
       } else if (passwordState === 'expired') {
         await supabase.auth.signOut({ scope: 'local' });
         return { status: 'error', message: 'Your temporary password expired. Ask the owner for a replacement.' };
+      } else if (passwordState === 'unavailable') {
+        return { status: 'error', message: 'Signed in, but staff verification is temporarily unavailable. Retry without signing out.' };
       } else if (passwordState !== 'none') {
         await supabase.auth.signOut({ scope: 'local' });
         return { status: 'error', message: 'This staff session could not be verified. If you just confirmed your email, sign in again.' };
@@ -83,11 +85,9 @@ export async function signInStaff(
         destination = getRoleHome(role) + '?notice=signed-in';
       }
     } catch {
-      await supabase.auth.signOut({ scope: 'local' });
-
       return {
         status: 'error',
-        message: 'Staff access could not be verified. Try again.',
+        message: 'Signed in, but staff access could not be verified. Retry without signing out.',
       };
     }
   } catch (error) {

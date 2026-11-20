@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, ActionStateForm } from '@/src/components/action-feedback';
 
 import { useActionState, useState } from 'react';
 import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
@@ -17,19 +18,19 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
   return (
     <div className="gr-invite-form-shell">
       {confirmed && (
-        <form className="gr-invite-confirmed" action={action}>
+        <ActionStateForm pending={pending} className="gr-invite-confirmed" action={action}>
           <input type="hidden" name="invite" value={invite} />
           <input type="hidden" name="mode" value="current" />
           <div className="gr-invite-confirmed-title"><CheckCircle2 size={18} aria-hidden="true" /> Email confirmed?</div>
           <p>If you have already signed in with your confirmed work email, you can accept this invitation immediately.</p>
-          <button type="submit" disabled={pending} className="gr-invite-confirmed-button">
+          <ActionButton type="submit" disabled={pending} className="gr-invite-confirmed-button">
             Accept with signed-in account <ArrowRight size={16} aria-hidden="true" />
-          </button>
-        </form>
+          </ActionButton>
+        </ActionStateForm>
       )}
 
       <div className="gr-invite-mode" role="group" aria-label="Choose how to use your invitation">
-        <button
+        <ActionButton
           type="button"
           aria-pressed={creating}
           className={creating ? 'is-selected' : ''}
@@ -37,8 +38,8 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
           onClick={() => setMode('register')}
         >
           New work account
-        </button>
-        <button
+        </ActionButton>
+        <ActionButton
           type="button"
           aria-pressed={!creating}
           className={!creating ? 'is-selected' : ''}
@@ -46,10 +47,10 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
           onClick={() => setMode('login')}
         >
           Existing account
-        </button>
+        </ActionButton>
       </div>
 
-      <form className="gr-auth-form gr-invite-form" action={action}>
+      <ActionStateForm pending={pending} className="gr-auth-form gr-invite-form" action={action}>
         <input type="hidden" name="invite" value={invite} />
         <input type="hidden" name="mode" value={mode} />
 
@@ -86,7 +87,7 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
               required
               disabled={pending}
             />
-            <button
+            <ActionButton
               type="button"
               className="gr-invite-reveal"
               onClick={() => setShowPassword(value => !value)}
@@ -95,7 +96,7 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
               disabled={pending}
             >
               {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
-            </button>
+            </ActionButton>
           </div>
           {creating && <small>{NEW_PASSWORD_HINT}</small>}
         </div>
@@ -129,18 +130,18 @@ export function EmployeeInvitationForm({ invite, confirmed }: { invite: string; 
           </div>
         )}
 
-        <button className="gr-auth-submit gr-invite-submit" type="submit" disabled={pending}>
+        <ActionButton className="gr-auth-submit gr-invite-submit" type="submit" disabled={pending}>
           <span>{pending ? 'Please wait…' : creating ? 'Create work account' : 'Sign in and accept invitation'}</span>
           <ArrowRight size={18} aria-hidden="true" />
-        </button>
-      </form>
+        </ActionButton>
+      </ActionStateForm>
 
       <p className="gr-invite-switch-note">
         {creating ? 'Already have a confirmed work account?' : 'New employee without an account?'}
         {' '}
-        <button type="button" disabled={pending} onClick={() => setMode(creating ? 'login' : 'register')}>
+        <ActionButton type="button" disabled={pending} onClick={() => setMode(creating ? 'login' : 'register')}>
           {creating ? 'Sign in instead' : 'Create an account'}
-        </button>
+        </ActionButton>
       </p>
     </div>
   );

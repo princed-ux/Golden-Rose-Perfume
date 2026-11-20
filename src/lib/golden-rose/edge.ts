@@ -42,7 +42,8 @@ export async function callEdge<T>(
       throw new EdgeError(response.status, message ?? fallback);
     }
 
-    if (data?.ok !== true) throw new EdgeError(502, 'Golden Rose returned an unexpected response. Try again.');
+    // The deployed staff endpoint intentionally returns {isStaff:false} on denial.
+    if (data?.ok !== true && !(name === 'staff-session' && data?.isStaff === false)) throw new EdgeError(502, 'Golden Rose returned an unexpected response. Try again.');
     return data as T;
   } catch (error) {
     if (error instanceof EdgeError) throw error;

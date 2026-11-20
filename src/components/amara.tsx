@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton } from './action-feedback';
 
 import { useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
@@ -74,7 +75,7 @@ export function Amara({ supportHref }: { supportHref: string | null }) {
           <label htmlFor="amara-search">Find a fragrance</label>
           <div>
             <input id="amara-search" name="fragrance" placeholder="Fragrance name" maxLength={80} type="search" />
-            <button disabled={pending}>{pending ? 'Searching…' : 'Search'}</button>
+            <ActionButton pending={pending} pendingLabel="Searching…" disabled={pending}>{pending ? 'Searching…' : 'Search'}</ActionButton>
           </div>
         </form>
       </div>

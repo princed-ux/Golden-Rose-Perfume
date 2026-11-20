@@ -231,13 +231,18 @@ function AboutFooter() {
 
       <div className="gr-about__container gr-about__footer-bottom">
         <span>
-          © {new Date().getFullYear()} Golden Rose Perfume
+          © <CopyrightYear /> Golden Rose Perfume
         </span>
 
         <span>The beauty of fragrance</span>
       </div>
     </footer>
   );
+}
+
+async function CopyrightYear() {
+  'use cache';
+  return new Date().getFullYear();
 }
 
 export default function AboutPage() {

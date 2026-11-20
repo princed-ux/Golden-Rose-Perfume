@@ -1,9 +1,11 @@
+import { ActionForm, ActionButton } from '@/src/components/action-feedback';
+import { actionOutcome, withActionFeedback } from '@/src/lib/action-result';
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import { connection } from 'next/server';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import {
   Building2,
   CreditCard,
@@ -129,9 +131,10 @@ function value(form: FormData, key: string) {
   return typeof item === 'string' ? item.trim() : '';
 }
 
-function go(status: Status, section: string): never {
+function go(status: Status, _section: string): never {
+  void _section;
   revalidatePath('/workspace/settings');
-  redirect(`/workspace/settings?result=${status}#${section}`);
+  actionOutcome({status: ['invalid','unavailable','notfound','conflict'].includes(status) ? 'error' : 'success', message: results[status]});
 }
 
 async function ownerClient() {
@@ -153,7 +156,7 @@ async function ownerClient() {
   };
 }
 
-async function updateProfile(form: FormData) {
+async function doupdateProfile(form: FormData) {
   'use server';
 
   const { db, ownerId } = await ownerClient();
@@ -197,7 +200,7 @@ async function updateProfile(form: FormData) {
   go('profile', 'business-profile');
 }
 
-async function updateStorefront(form: FormData) {
+async function doupdateStorefront(form: FormData) {
   'use server';
 
   const { db, ownerId } = await ownerClient();
@@ -238,7 +241,7 @@ async function updateStorefront(form: FormData) {
   go('storefront', 'storefront');
 }
 
-async function updateBank(form: FormData) {
+async function doupdateBank(form: FormData) {
   'use server';
 
   const { db, ownerId } = await ownerClient();
@@ -288,7 +291,7 @@ async function updateBank(form: FormData) {
   go('bank', 'payments');
 }
 
-async function addLocation(form: FormData) {
+async function doaddLocation(form: FormData) {
   'use server';
 
   await ownerClient();
@@ -302,7 +305,7 @@ async function addLocation(form: FormData) {
   go('new-location', 'locations');
 }
 
-async function updateLocation(form: FormData) {
+async function doupdateLocation(form: FormData) {
   'use server';
 
   const { db, ownerId } = await ownerClient();
@@ -383,7 +386,7 @@ async function updateLocation(form: FormData) {
   go('location', 'locations');
 }
 
-async function saveWhatsApp(form: FormData) {
+async function dosaveWhatsApp(form: FormData) {
   'use server';
 
   const { db, ownerId } = await ownerClient();
@@ -466,7 +469,7 @@ function socialUrl(raw: string): string | null {
   }
 }
 
-async function saveSocial(form: FormData) {
+async function dosaveSocial(form: FormData) {
   'use server';
 
   const { db, ownerId } = await ownerClient();
@@ -781,7 +784,7 @@ export default async function BusinessSettingsPage({
           subtitle="Official trading and contact information. Changes are saved to the business database."
         />
 
-        <form
+        <ActionForm
           action={updateProfile}
           className="grid gap-4"
         >
@@ -851,14 +854,14 @@ export default async function BusinessSettingsPage({
           </div>
 
           <div>
-            <button
+            <ActionButton
               className={actionClass}
               type="submit"
             >
               Save business details
-            </button>
+            </ActionButton>
           </div>
-        </form>
+        </ActionForm>
       </section>
 
       {/* LOCATIONS */}
@@ -903,7 +906,7 @@ export default async function BusinessSettingsPage({
                 </span>
               </div>
 
-              <form
+              <ActionForm
                 action={updateLocation}
                 className="grid gap-3"
               >
@@ -997,14 +1000,14 @@ export default async function BusinessSettingsPage({
                 )}
 
                 <div>
-                  <button
+                  <ActionButton
                     type="submit"
                     className={actionClass}
                   >
                     Save {loc.name}
-                  </button>
+                  </ActionButton>
                 </div>
-              </form>
+              </ActionForm>
             </article>
           ))}
         </div>
@@ -1014,7 +1017,7 @@ export default async function BusinessSettingsPage({
             Add another location
           </h3>
 
-          <form
+          <ActionForm
             action={addLocation}
             className="grid gap-3"
           >
@@ -1058,14 +1061,14 @@ export default async function BusinessSettingsPage({
             </div>
 
             <div>
-              <button
+              <ActionButton
                 className={actionClass}
                 type="submit"
               >
                 Create location
-              </button>
+              </ActionButton>
             </div>
-          </form>
+          </ActionForm>
         </div>
       </section>
 
@@ -1100,7 +1103,7 @@ export default async function BusinessSettingsPage({
 
                 <div className="flex flex-wrap gap-2">
                   {contact.isActive && !contact.isPrimary && (
-                    <form action={saveWhatsApp}>
+                    <ActionForm action={saveWhatsApp}>
                       <input
                         type="hidden"
                         name="operation"
@@ -1111,16 +1114,16 @@ export default async function BusinessSettingsPage({
                         name="id"
                         value={contact.id}
                       />
-                      <button
+                      <ActionButton
                         className={subtleClass}
                         type="submit"
                       >
                         Make primary
-                      </button>
-                    </form>
+                      </ActionButton>
+                    </ActionForm>
                   )}
 
-                  <form action={saveWhatsApp}>
+                  <ActionForm action={saveWhatsApp}>
                     <input
                       type="hidden"
                       name="operation"
@@ -1134,13 +1137,13 @@ export default async function BusinessSettingsPage({
                       value={contact.id}
                     />
 
-                    <button
+                    <ActionButton
                       className={subtleClass}
                       type="submit"
                     >
                       {contact.isActive ? 'Disable' : 'Enable'}
-                    </button>
-                  </form>
+                    </ActionButton>
+                  </ActionForm>
                 </div>
               </div>
 
@@ -1149,7 +1152,7 @@ export default async function BusinessSettingsPage({
                   Edit this number
                 </summary>
 
-                <form
+                <ActionForm
                   action={saveWhatsApp}
                   className="mt-3 grid gap-3 md:grid-cols-3"
                 >
@@ -1201,14 +1204,14 @@ export default async function BusinessSettingsPage({
                   </label>
 
                   <div className="md:col-span-3">
-                    <button
+                    <ActionButton
                       className={actionClass}
                       type="submit"
                     >
                       Save number
-                    </button>
+                    </ActionButton>
                   </div>
-                </form>
+                </ActionForm>
               </details>
             </article>
           ))}
@@ -1220,7 +1223,7 @@ export default async function BusinessSettingsPage({
           )}
         </div>
 
-        <form
+        <ActionForm
           action={saveWhatsApp}
           className="mt-5 grid gap-3 rounded-xl bg-[#fcf4ea] p-4"
         >
@@ -1273,14 +1276,14 @@ export default async function BusinessSettingsPage({
           </div>
 
           <div>
-            <button
+            <ActionButton
               className={actionClass}
               type="submit"
             >
               Add WhatsApp number
-            </button>
+            </ActionButton>
           </div>
-        </form>
+        </ActionForm>
 
         <p className="mt-4 text-xs text-[#806b76]">
           {primaryNumber
@@ -1328,7 +1331,7 @@ export default async function BusinessSettingsPage({
                   </a>
                 </div>
 
-                <form action={saveSocial}>
+                <ActionForm action={saveSocial}>
                   <input
                     type="hidden"
                     name="operation"
@@ -1342,13 +1345,13 @@ export default async function BusinessSettingsPage({
                     value={social.id}
                   />
 
-                  <button
+                  <ActionButton
                     className={subtleClass}
                     type="submit"
                   >
                     {social.is_active ? 'Disable' : 'Enable'}
-                  </button>
-                </form>
+                  </ActionButton>
+                </ActionForm>
               </div>
 
               <details className="mt-3 border-t border-[#f0e4dd] pt-3">
@@ -1356,7 +1359,7 @@ export default async function BusinessSettingsPage({
                   Edit profile
                 </summary>
 
-                <form
+                <ActionForm
                   action={saveSocial}
                   className="mt-3 grid gap-3 md:grid-cols-3"
                 >
@@ -1422,16 +1425,16 @@ export default async function BusinessSettingsPage({
                   </label>
 
                   <div className="md:col-span-3">
-                    <button
+                    <ActionButton
                       className={actionClass}
                       type="submit"
                     >
                       Save profile
-                    </button>
+                    </ActionButton>
                   </div>
-                </form>
+                </ActionForm>
 
-                <form
+                <ActionForm
                   action={saveSocial}
                   className="mt-3"
                 >
@@ -1446,13 +1449,13 @@ export default async function BusinessSettingsPage({
                     value={social.id}
                   />
 
-                  <button
+                  <ActionButton
                     type="submit"
                     className="text-xs font-semibold text-red-700 underline"
                   >
                     Delete this social profile
-                  </button>
-                </form>
+                  </ActionButton>
+                </ActionForm>
               </details>
             </article>
           ))}
@@ -1464,7 +1467,7 @@ export default async function BusinessSettingsPage({
           )}
         </div>
 
-        <form
+        <ActionForm
           action={saveSocial}
           className="mt-5 grid gap-3 rounded-xl bg-[#fcf4ea] p-4"
         >
@@ -1531,14 +1534,14 @@ export default async function BusinessSettingsPage({
           </div>
 
           <div>
-            <button
+            <ActionButton
               className={actionClass}
               type="submit"
             >
               Add social profile
-            </button>
+            </ActionButton>
           </div>
-        </form>
+        </ActionForm>
       </section>
 
       {/* STOREFRONT PREFERENCES */}
@@ -1550,7 +1553,7 @@ export default async function BusinessSettingsPage({
           subtitle="Save customer-facing information without replacing the existing Golden Rose hero slideshow or storefront banner."
         />
 
-        <form
+        <ActionForm
           action={updateStorefront}
           className="grid gap-4"
         >
@@ -1614,14 +1617,14 @@ export default async function BusinessSettingsPage({
           </p>
 
           <div>
-            <button
+            <ActionButton
               className={actionClass}
               type="submit"
             >
               Save storefront preferences
-            </button>
+            </ActionButton>
           </div>
-        </form>
+        </ActionForm>
       </section>
 
       {/* RECEIVING BANK */}
@@ -1633,7 +1636,7 @@ export default async function BusinessSettingsPage({
           subtitle="Keep the owner-approved bank account on record. Saving an account does not prove a customer paid."
         />
 
-        <form
+        <ActionForm
           action={updateBank}
           className="grid gap-4"
         >
@@ -1678,14 +1681,14 @@ export default async function BusinessSettingsPage({
           </p>
 
           <div>
-            <button
+            <ActionButton
               className={actionClass}
               type="submit"
             >
               Save receiving account
-            </button>
+            </ActionButton>
           </div>
-        </form>
+        </ActionForm>
       </section>
 
       {/* STAFF AND SECURITY */}
@@ -1730,3 +1733,17 @@ export default async function BusinessSettingsPage({
     </main>
   );
 }
+
+async function updateProfile(form: FormData) { 'use server'; return withActionFeedback(() => doupdateProfile(form)); }
+
+async function updateStorefront(form: FormData) { 'use server'; return withActionFeedback(() => doupdateStorefront(form)); }
+
+async function updateBank(form: FormData) { 'use server'; return withActionFeedback(() => doupdateBank(form)); }
+
+async function addLocation(form: FormData) { 'use server'; return withActionFeedback(() => doaddLocation(form)); }
+
+async function updateLocation(form: FormData) { 'use server'; return withActionFeedback(() => doupdateLocation(form)); }
+
+async function saveWhatsApp(form: FormData) { 'use server'; return withActionFeedback(() => dosaveWhatsApp(form)); }
+
+async function saveSocial(form: FormData) { 'use server'; return withActionFeedback(() => dosaveSocial(form)); }

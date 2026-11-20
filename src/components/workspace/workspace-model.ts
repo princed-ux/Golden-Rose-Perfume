@@ -133,7 +133,7 @@ export const coreWorkspaceModules: WorkspaceModule[] = [
   },
   {
     id: 'purchases',
-    label: 'Purchasing & Suppliers',
+    label: 'Purchasing',
     icon: Truck,
     summary:
       'Purchase orders, supplier relations and goods received.',

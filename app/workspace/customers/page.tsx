@@ -12,6 +12,7 @@ import {
   WorkspaceNotice, WorkspacePageHeader, WorkspacePanel,
   workspaceInput, workspaceLabel, workspacePrimary, workspaceSecondary,
 } from '@/src/components/workspace/page-layout';
+import { CustomerHistory } from './customer-history';
 import { CreateCustomer, EditCustomer } from './forms';
 import { loadCrmDirectory, type CrmDirectory, type CrmFilters } from './data';
 
@@ -216,6 +217,7 @@ export default async function CustomersPage({
                 {customer.notes && <p className="line-clamp-3 whitespace-pre-wrap text-xs text-[#897780]">{customer.notes}</p>}
               </div>
               <EditCustomer customer={customer} locations={locations} canArchive={canArchive} />
+              {canViewModule(role, 'invoices') && <CustomerHistory customerId={customer.id} storeId={customer.locationId} />}
             </article>)}
         </div>
       )}
@@ -239,8 +241,7 @@ export default async function CustomersPage({
 
     <p className="text-xs leading-6 text-[#8b7780]">
       Customer profiles are private CRM records, not automatically authenticated
-      shopping accounts. Verified purchase history and invoicing links will be
-      added when those transactions can be matched to the customer securely.
+      shopping accounts. Billing history links use customer IDs; names alone never link purchases.
     </p>
   </div>;
 }

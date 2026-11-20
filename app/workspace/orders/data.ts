@@ -34,6 +34,7 @@ export interface SaleFilters {
   from: string;
   to: string;
   offset: number;
+  locationId?: string;
 }
 
 async function requestHistory<T>(
@@ -82,14 +83,22 @@ export async function loadSalesPage(
   filters: SaleFilters,
 ): Promise<SalesPage> {
   const params = new URLSearchParams({
-    search: filters.search,
+    search: /^GR-0*\d+$/i.test(filters.search) ? filters.search.replace(/^GR-0*/i, '') || '0' : filters.search,
     from: filters.from,
     to: filters.to,
     offset: String(filters.offset),
     limit: '30',
   });
+  if (filters.locationId) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filters.locationId)) throw new Error('Select a valid sales location.');
+    params.set('locationId', filters.locationId);
+  }
+  if (filters.from && filters.to && filters.from > filters.to) throw new Error('The start date must be before the end date.');
   const result = await requestHistory<SalesPage & { ok: true }>(token, params, 'list');
-  if (!Array.isArray(result.items) || typeof result.hasMore !== 'boolean') {
+  if (!Array.isArray(result.items) || typeof result.hasMore !== 'boolean' || result.items.some(sale =>
+    sale.status !== 'completed' || sale.currency !== 'NGN' ||
+    ![sale.subtotalMinor, sale.discountMinor, sale.taxMinor, sale.totalMinor, sale.units, sale.lineCount].every(value => Number.isSafeInteger(value) && value >= 0) ||
+    sale.totalMinor !== sale.subtotalMinor - sale.discountMinor + sale.taxMinor)) {
     throw new Error('Sales History returned an unexpected response.');
   }
   return {
@@ -110,7 +119,7 @@ export async function loadRecordedReceipt(
     'receipt',
   );
   if (!result.receipt || result.receipt.saleId !== saleId ||
-      !Array.isArray(result.receipt.items)) {
+      result.receipt.status !== 'completed' || !Array.isArray(result.receipt.items)) {
     throw new Error('Receipt data could not be verified.');
   }
   return result.receipt;

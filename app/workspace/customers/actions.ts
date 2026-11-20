@@ -21,6 +21,7 @@ export async function submitCrmCustomer(
   form: FormData,
 ): Promise<CrmActionState> {
   const staff = await getStaffAccess();
+  if ('reason' in staff && staff.reason === 'unavailable') return result('error', 'Staff verification is temporarily unavailable. Retry without signing out.');
   if ('reason' in staff || !canViewModule(staff.role, 'customers')) {
     return result('error', 'Sign in with an authorized CRM staff account.');
   }
@@ -75,6 +76,7 @@ export async function submitCrmCustomer(
       return result('error', 'Customer update could not be confirmed. Refresh the directory.');
     }
     revalidatePath('/workspace/customers');
+    revalidatePath('/workspace/invoices');
     return result('success',
       mode === 'create' ? 'Customer created and saved.' :
       mode === 'update' ? 'Customer details updated.' :

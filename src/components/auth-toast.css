@@ -18,6 +18,12 @@
   animation: gr-auth-toast-in 260ms cubic-bezier(.2,.8,.2,1) both;
   overflow-wrap: anywhere;
 }
+.gr-action-fields { display: contents; }
+.gr-action-spinner { display: inline-block; flex: none; margin-right: 7px; vertical-align: middle; animation: gr-action-spin .8s linear infinite; }
+.gr-action-result { grid-column: 1 / -1; margin: 8px 0 0; padding: 10px 12px; border-radius: 9px; background: #fff3e7; color: #75263f; font-size: 13px; }
+.gr-action-result[data-status="success"] { background: #edf7ef; color: #286043; }
+@keyframes gr-action-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .gr-action-spinner { animation: none; } }
 .gr-auth-toast--error { --toast-accent: #bb3344; --toast-tint: #fae8ec; }
 .gr-auth-toast--success { --toast-accent: #237954; --toast-tint: #e5f3eb; }
 .gr-auth-toast--info { --toast-accent: #9b783b; --toast-tint: #faf1de; }

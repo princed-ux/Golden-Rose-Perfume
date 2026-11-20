@@ -12,7 +12,7 @@ export interface AuthToastResult {
 }
 
 /** Accessible, dismissible, auto-expiring authentication notice. Never exposes credentials. */
-export function AuthToast({ result }: { result: AuthToastResult }) {
+export function AuthToast({ result, title }: { result: AuthToastResult; title?: string }) {
   const [dismissed, setDismissed] = useState<AuthToastResult | null>(null);
   const visible = Boolean(result.message) && dismissed !== result;
 
@@ -34,7 +34,7 @@ export function AuthToast({ result }: { result: AuthToastResult }) {
       aria-atomic="true">
       <span className="gr-auth-toast__symbol"><Icon size={21} aria-hidden="true" /></span>
       <div className="gr-auth-toast__copy">
-        <strong>{kind === 'error' ? 'Sign-in needs attention' : kind === 'success' ? 'Signed in successfully' : 'Golden Rose'}</strong>
+        <strong>{title ?? (kind === 'error' ? 'Action needs attention' : kind === 'success' ? 'Action completed' : 'Golden Rose')}</strong>
         <p>{result.message}</p>
       </div>
       <button className="gr-auth-toast__close" type="button" onClick={() => setDismissed(result)}
@@ -62,5 +62,5 @@ export function SignedInToast({ destination }: { destination: 'workspace' | 'cus
     window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
   }, [signedIn]);
 
-  return <AuthToast result={result} />;
+  return <AuthToast result={result} title="Signed in successfully" />;
 }

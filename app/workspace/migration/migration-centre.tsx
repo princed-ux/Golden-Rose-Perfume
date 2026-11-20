@@ -1,4 +1,5 @@
 'use client';
+import { ActionScope, ActionButton } from '@/src/components/action-feedback';
 
 import { useCallback, useEffect, useRef, useState, type DragEvent } from 'react';
 import { AlertCircle, Check, Download, FileSpreadsheet, History, Package, RefreshCw, Upload } from 'lucide-react';
@@ -262,7 +263,7 @@ export function MigrationCentre() {
   const brokenDatasets = review?.datasets.filter(item => item.error) ?? [];
 
   return (
-    <div className="gr-import">
+    <ActionScope pending={Boolean(busy)}><div className="gr-import">
       <header className="gr-import-heading">
         <div>
           <p className="gr-import-eyebrow">Data Management</p>
@@ -294,9 +295,9 @@ export function MigrationCentre() {
           <span className="gr-import-drop-icon"><FileSpreadsheet aria-hidden="true" size={24} /></span>
           <strong>{file?.name ?? 'Drop your export here'}</strong>
           <p>CSV, XLSX, JSON or ZIP · Up to 4 MB</p>
-          <button type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => input.current?.click()}>
+          <ActionButton type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => input.current?.click()}>
             <Upload aria-hidden="true" size={16} />{file ? 'Choose another file' : 'Choose file'}
-          </button>
+          </ActionButton>
         </div>
       </section>
 
@@ -369,11 +370,11 @@ export function MigrationCentre() {
           })}
         </details>
         <div className="gr-import-actions">
-          {reviewIssues.length > 0 && <button type="button" className="gr-import-secondary" onClick={() => downloadIssues(reviewIssues)}>
+          {reviewIssues.length > 0 && <ActionButton type="button" className="gr-import-secondary" onClick={() => downloadIssues(reviewIssues)}>
             <Download aria-hidden="true" size={16} /> Download review report
-          </button>}
-          {changed && file && <button type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => void reviewFile(file, source, settings)}>Review changes</button>}
-          {review.approval && !changed && <button type="button" className="gr-import-button" disabled={Boolean(busy)} onClick={() => void runImport()}>Import reviewed records</button>}
+          </ActionButton>}
+          {changed && file && <ActionButton type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => void reviewFile(file, source, settings)}>Review changes</ActionButton>}
+          {review.approval && !changed && <ActionButton type="button" className="gr-import-button" disabled={Boolean(busy)} onClick={() => void runImport()}>Import reviewed records</ActionButton>}
         </div>
       </section>}
 
@@ -389,16 +390,16 @@ export function MigrationCentre() {
         </ul>
         <div className="gr-import-actions">
           {(progress.status === 'in progress' || progress.status === 'paused') && (busy ?
-            <button type="button" className="gr-import-secondary" onClick={() => { pause.current = true; }}>Pause after current batch</button> :
-            <button type="button" className="gr-import-button" onClick={() => void runImport(progress)}>Resume import</button>)}
-          {importIssues.length > 0 && <button type="button" className="gr-import-secondary" onClick={() => downloadIssues(importIssues)}>Download import report</button>}
+            <ActionButton type="button" className="gr-import-secondary" onClick={() => { pause.current = true; }}>Pause after current batch</ActionButton> :
+            <ActionButton type="button" className="gr-import-button" onClick={() => void runImport(progress)}>Resume import</ActionButton>)}
+          {importIssues.length > 0 && <ActionButton type="button" className="gr-import-secondary" onClick={() => downloadIssues(importIssues)}>Download import report</ActionButton>}
         </div>
       </section>}
 
       <section className="owner-panel gr-import-panel gr-import-flow-panel" aria-labelledby="gr-import-history">
         <div className="gr-import-history-top">
           <h2 id="gr-import-history"><History aria-hidden="true" size={19} /> Import history</h2>
-          <button type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => void refreshHistory()}>Refresh</button>
+          <ActionButton type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => void refreshHistory()}>Refresh</ActionButton>
         </div>
         {historyError && <p role="alert">{historyError}</p>}
         {history?.packageError && <p role="alert">{history.packageError}</p>}
@@ -407,24 +408,24 @@ export function MigrationCentre() {
           <JobCounts job={job} />
           {job.status === 'uploading' && <p>Choose the same export and source key to finish staging this job.</p>}
           <div className="gr-import-actions">
-            {['ready', 'processing', 'cancelled'].includes(job.status) && <button type="button" className="gr-import-button"
-              disabled={Boolean(busy)} onClick={() => void resumeJob(job)}>Resume dataset</button>}
-            {job.issues.length > 0 && <button type="button" className="gr-import-secondary" onClick={() => downloadIssues(job.issues)}>Download job report</button>}
+            {['ready', 'processing', 'cancelled'].includes(job.status) && <ActionButton type="button" className="gr-import-button"
+              disabled={Boolean(busy)} onClick={() => void resumeJob(job)}>Resume dataset</ActionButton>}
+            {job.issues.length > 0 && <ActionButton type="button" className="gr-import-secondary" onClick={() => downloadIssues(job.issues)}>Download job report</ActionButton>}
           </div>
         </div>}
         {history && !history.jobs.length && !history.packages.length && !history.packageError && <p>No import jobs yet</p>}
         {history && (history.jobs.length > 0 || history.packages.length > 0) && <ul className="gr-import-jobs">
           {history.packages.map(item => <li key={item.id}>
             <div><strong className="gr-import-history-file">{item.filename}</strong><small>Package · {item.source}</small></div>
-            <button type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => void showImport(item.id)}>View import</button>
+            <ActionButton type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => void showImport(item.id)}>View import</ActionButton>
           </li>)}
           {history.jobs.map(item => <li key={item.id}>
             <div><strong className="gr-import-history-file">{item.filename}</strong><small>{importLabels[item.kind]} · {item.source}</small></div>
             <JobBadge job={item} />
-            <button type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => void showJob(item.id)}>View dataset</button>
+            <ActionButton type="button" className="gr-import-secondary" disabled={Boolean(busy)} onClick={() => void showJob(item.id)}>View dataset</ActionButton>
           </li>)}
         </ul>}
       </section>
-    </div>
+    </div></ActionScope>
   );
 }

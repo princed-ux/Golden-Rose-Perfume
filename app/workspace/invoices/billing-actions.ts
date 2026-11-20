@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { canViewModule } from '@/src/domain/permissions';
 import { getStaffAccess } from '@/src/lib/golden-rose/staff';
 import { createClient } from '@/src/lib/supabase/server';
@@ -7,6 +8,8 @@ import type {
   BillingAction, BillingDocument, BillingFilters, BillingPayload, BillingRegisterData, BillingResult,
 } from '@/src/lib/golden-rose/billing';
 import type { InvoiceCustomerChoice, LookupPage } from './lookup-actions';
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Command = BillingAction | 'list' | 'get' | 'customers';
 const writes: readonly BillingAction[] = [
@@ -16,6 +19,7 @@ const writes: readonly BillingAction[] = [
 async function execute<T>(action: Command, payload: BillingPayload): Promise<BillingResult<T>> {
   try {
     const access = await getStaffAccess();
+    if ('reason' in access && access.reason === 'unavailable') return { error: 'Staff verification is temporarily unavailable. Retry without signing out.' };
     if ('reason' in access || !canViewModule(access.role, 'invoices')) {
       return { error: 'Your active staff role does not allow access to billing.' };
     }
@@ -24,7 +28,7 @@ async function execute<T>(action: Command, payload: BillingPayload): Promise<Bil
     }
     const client = await createClient();
     const { data, error } = await client.rpc('gr_billing', { p_action: action, p_payload: payload });
-    if (!error && data !== null && typeof data === 'object') return { data: data as T };
+    if (!error && data !== null && typeof data === 'object' && (Array.isArray(data) ? action === 'customers' : action !== 'customers')) return { data: data as T };
     if (error?.code === 'PGRST202' || error?.code === '42883') {
       return { error: 'The billing migration is not installed. Only local draft previews are available.', unavailable: true };
     }
@@ -39,16 +43,27 @@ async function execute<T>(action: Command, payload: BillingPayload): Promise<Bil
 }
 
 export async function loadBilling(filters: BillingFilters): Promise<BillingResult<BillingRegisterData>> {
-  return execute('list', { ...filters });
+  const result = await execute<BillingRegisterData>('list', { ...filters });
+  if (result.data && (!Array.isArray(result.data.documents) || !Array.isArray(result.data.stores) || typeof result.data.more !== 'boolean')) return {error:'Billing returned an unexpected register. Retry before making changes.'};
+  return result;
 }
 
 export async function getBillingDocument(id: string): Promise<BillingResult<BillingDocument>> {
-  return execute('get', { id });
+  if (!UUID.test(id)) return {error:'Select a valid billing document.'};
+  const result = await execute<BillingDocument>('get', {id});
+  if (result.data && (result.data.id !== id || !Array.isArray(result.data.lines) || !Array.isArray(result.data.payments))) return {error:'Billing returned an unverifiable document. Refresh and retry.'};
+  return result;
 }
 
 export async function updateBilling(action: BillingAction, payload: BillingPayload): Promise<BillingResult<BillingDocument | { configured: true }>> {
   if (!writes.includes(action)) return { error: 'Unknown billing operation.' };
-  return execute(action, payload);
+  const result = await execute<BillingDocument | {configured:true}>(action, payload);
+  if (result.data) {
+    revalidatePath('/workspace/invoices');
+    revalidatePath('/workspace/customers');
+    revalidatePath('/workspace/orders');
+  }
+  return result;
 }
 
 export async function findBillingCustomers(storeId: string, query: string): Promise<LookupPage<InvoiceCustomerChoice>> {

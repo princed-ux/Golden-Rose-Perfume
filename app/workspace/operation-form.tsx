@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, useActionNotice } from '@/src/components/action-feedback';
 
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { INITIAL_RESULT, type OperationResult } from '@/src/lib/golden-rose/contracts';
@@ -14,6 +15,8 @@ export function OperationForm({
   const [result, setResult] = useState(INITIAL_RESULT);
   const [pending, setPending] = useState(false);
   const inFlight = useRef(false);
+
+  useActionNotice(result);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,9 +42,9 @@ export function OperationForm({
     <form onSubmit={submit} aria-busy={pending}>
       <fieldset className={inline ? 'gr-live-inline-form' : 'gr-live-fields'} disabled={pending}>
         {children}
-        <button type="submit" className={inline ? 'gr-live-secondary' : 'gr-live-primary'}>
+        <ActionButton pending={pending} pendingLabel="Saving…" type="submit" className={inline ? 'gr-live-secondary' : 'gr-live-primary'}>
           {pending ? 'Saving…' : label}
-        </button>
+        </ActionButton>
       </fieldset>
       {result.message && <p className="gr-live-result" data-status={result.status} role={result.status === 'error' ? 'alert' : 'status'}>{result.message}</p>}
     </form>

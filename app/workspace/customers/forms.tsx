@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, ActionStateForm, useActionNotice } from '@/src/components/action-feedback';
 
 import { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -12,6 +13,7 @@ import {
 const initial: CrmActionState = { status: 'idle', message: '' };
 
 function Result({ state }: { state: CrmActionState }) {
+  useActionNotice(state);
   if (!state.message) return null;
   return <p role={state.status === 'error' ? 'alert' : 'status'}
     className={'rounded-xl border p-3 text-sm leading-5 ' +
@@ -28,7 +30,7 @@ function useCrmAction() {
   const router = useRouter();
   useEffect(() => {
     if (state.status === 'success') router.refresh();
-  }, [router, state.status]);
+  }, [router, state]);
   return { state, action, pending };
 }
 
@@ -97,20 +99,20 @@ export function CreateCustomer({ locations }: { locations: CrmLocation[] }) {
       </span>
       <span className="text-xs font-semibold text-[#9a713a]">Open form</span>
     </summary>
-    <form action={action} className="mt-5 grid gap-5 border-t border-[#eee1d9] pt-5">
+    <ActionStateForm pending={pending} action={action} className="mt-5 grid gap-5 border-t border-[#eee1d9] pt-5">
       <input type="hidden" name="mode" value="create" />
       <Fields locations={locations} />
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" className={workspacePrimary} disabled={pending || locations.length === 0}>
+        <ActionButton type="submit" className={workspacePrimary} disabled={pending || locations.length === 0}>
           <Plus size={17} aria-hidden="true" />
           {pending ? 'Saving customer…' : 'Create customer'}
-        </button>
+        </ActionButton>
         {locations.length === 0 && <span className="text-xs text-[#946a3f]">
           Create an active retail store in Inventory first.
         </span>}
       </div>
       <Result state={state} />
-    </form>
+    </ActionStateForm>
   </details>;
 }
 
@@ -131,32 +133,32 @@ export function EditCustomer({
       View & manage
     </summary>
     <div className="mt-4 grid gap-4 border-t border-[#f0e5df] pt-4">
-      {customer.status === 'active' && <form action={edit.action} className="grid gap-4">
+      {customer.status === 'active' && <ActionStateForm pending={edit.pending} action={edit.action} className="grid gap-4">
         <input type="hidden" name="mode" value="update" />
         <input type="hidden" name="id" value={customer.id} />
         <input type="hidden" name="updatedAt" value={customer.updatedAt} />
         <Fields customer={customer} locations={locations} />
-        <button className={workspacePrimary + ' w-fit'} type="submit" disabled={edit.pending}>
+        <ActionButton className={workspacePrimary + ' w-fit'} type="submit" disabled={edit.pending}>
           {edit.pending ? 'Saving changes…' : 'Save customer changes'}
-        </button>
+        </ActionButton>
         <Result state={edit.state} />
-      </form>}
+      </ActionStateForm>}
       {customer.status === 'archived' && <p className="text-sm text-[#8c7280]">
         This customer is archived. Restore the profile before editing.
       </p>}
-      {canArchive && <form action={statusChange.action}
+      {canArchive && <ActionStateForm pending={statusChange.pending} action={statusChange.action}
         className="grid gap-3 border-t border-[#f0e5df] pt-4">
         <input type="hidden" name="id" value={customer.id} />
         <input type="hidden" name="updatedAt" value={customer.updatedAt} />
         <input type="hidden" name="mode" value={customer.status === 'active' ? 'archive' : 'restore'} />
-        <button type="submit" disabled={statusChange.pending}
+        <ActionButton type="submit" disabled={statusChange.pending}
           className={workspaceSecondary + ' w-fit'}>
           {customer.status === 'active' ? <Archive size={16} /> : <RotateCcw size={16} />}
           {statusChange.pending ? 'Updating…' : customer.status === 'active'
             ? 'Archive customer' : 'Restore customer'}
-        </button>
+        </ActionButton>
         <Result state={statusChange.state} />
-      </form>}
+      </ActionStateForm>}
     </div>
   </details>;
 }

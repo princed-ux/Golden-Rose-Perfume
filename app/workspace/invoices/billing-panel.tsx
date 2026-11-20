@@ -1,5 +1,6 @@
 'use client';
 
+import { ActionButton } from '@/src/components/action-feedback';
 import { useState, type FormEvent } from 'react';
 import {
   billingFilters, billingMinor, billingStatus, invoiceNumber, quoteReference,
@@ -71,8 +72,8 @@ export function BillingRegister({ data, filters, busy, apply, open, configure }:
         <label className={label}>From <input className={field} type="date" name="from" defaultValue={filters.from} /></label>
         <label className={label}>To <input className={field} type="date" name="to" defaultValue={filters.to} /></label>
         <div className="flex flex-wrap items-end gap-2">
-          <button className={primary} disabled={busy}>Search</button>
-          <button className={button} type="button" disabled={busy} onClick={() => apply(billingFilters)}>Clear</button>
+          <ActionButton className={primary} disabled={busy}>Search</ActionButton>
+          <ActionButton className={button} type="button" disabled={busy} onClick={() => apply(billingFilters)}>Clear</ActionButton>
         </div>
       </form>
       {!data.documents.length ? <p className="rounded-xl border border-dashed border-[#e5d6cc] p-5 text-sm text-[#6f5162]">
@@ -88,18 +89,18 @@ export function BillingRegister({ data, filters, busy, apply, open, configure }:
               <div className="tabular-nums"><p>{money(doc.total_minor)}</p>
                 {doc.balance_minor !== null && <p className="text-xs">Balance {money(doc.balance_minor)}</p>}
               </div>
-              <button type="button" className={button} disabled={busy} onClick={() => open(doc.id)}
-                aria-label={'Open ' + (invoiceNumber(doc.invoice_number) || doc.kind) + ' for ' + doc.recipient}>Open</button>
+              <ActionButton type="button" className={button} disabled={busy} onClick={() => open(doc.id)}
+                aria-label={'Open ' + (invoiceNumber(doc.invoice_number) || doc.kind) + ' for ' + doc.recipient}>Open</ActionButton>
             </li>
           ))}
         </ul>
       )}
       {(data.page > 0 || data.more) && <div className="flex flex-wrap items-center gap-2 text-sm">
-        <button type="button" className={button} disabled={busy || data.page === 0}
-          onClick={() => apply({ ...filters, page: data.page - 1 })}>Previous</button>
+        <ActionButton type="button" className={button} disabled={busy || data.page === 0}
+          onClick={() => apply({ ...filters, page: data.page - 1 })}>Previous</ActionButton>
         <span>Page {data.page + 1}</span>
-        <button type="button" className={button} disabled={busy || !data.more}
-          onClick={() => apply({ ...filters, page: data.page + 1 })}>Next</button>
+        <ActionButton type="button" className={button} disabled={busy || !data.more}
+          onClick={() => apply({ ...filters, page: data.page + 1 })}>Next</ActionButton>
       </div>}
       {data.canConfigure && <details className="rounded-xl border border-[#ecdfd9] bg-[#fffaf5] p-4 text-[#53203a]">
         <summary className="cursor-pointer font-semibold">Store billing identity and verified tax</summary>
@@ -124,7 +125,7 @@ export function BillingRegister({ data, filters, busy, apply, open, configure }:
           <label className={label}>Verification reference or basis <textarea className={field} name="taxBasis" required minLength={3} maxLength={500}
             defaultValue={selectedStore.taxBasis ?? undefined} /></label>
           <label className="flex items-center gap-2 text-xs sm:col-span-2"><input type="checkbox" required /> I have verified these details and the tax rule.</label>
-          <button className={primary} disabled={busy}>Save verified billing settings</button>
+          <ActionButton className={primary} disabled={busy}>Save verified billing settings</ActionButton>
         </form>}
       </details>}
     </section>
@@ -157,7 +158,7 @@ export function BillingDocumentControls({ doc, data, busy, run, edit }: {
       </div>
       {activeStore && !activeStore.active && <p className="text-sm">This store is inactive. The saved document is available for reference only.</p>}
       {doc.state === 'draft' && activeStore?.active && <div className="grid gap-3">
-        {!doc.original_quote_id && <button type="button" className={button} disabled={busy} onClick={edit}>Edit saved draft</button>}
+        {!doc.original_quote_id && <ActionButton type="button" className={button} disabled={busy} onClick={edit}>Edit saved draft</ActionButton>}
         {doc.tax_bps === null && <p className="text-sm">Verify the store billing identity and tax, then save this draft again to finalize it.</p>}
         {doc.tax_bps !== null && doc.kind === 'quotation' && <form className="grid gap-2" onSubmit={event => {
           const values = getValues(event);
@@ -165,17 +166,17 @@ export function BillingDocumentControls({ doc, data, busy, run, edit }: {
         }}>
           <label className={label}>Customer acceptance reference <input className={field} name="reason" required minLength={3} maxLength={500}
             placeholder="Reference for the customer's confirmed acceptance" /></label>
-          <button className={primary} disabled={busy}>Record quote acceptance</button>
+          <ActionButton className={primary} disabled={busy}>Record quote acceptance</ActionButton>
         </form>}
         {doc.tax_bps !== null && doc.kind === 'invoice' && (confirmIssue ? (
           <div className="grid gap-2 rounded-xl bg-[#fff3e9] p-3 text-sm">
             <p>Issue this invoice for {money(doc.total_minor)}? The server will assign its official number and lock the financial details.</p>
             <div className="flex flex-wrap gap-2">
-              <button type="button" className={primary} disabled={busy} onClick={() => run('issue', base)}>Confirm issuance</button>
-              <button type="button" className={button} disabled={busy} onClick={() => setConfirmIssue(false)}>Cancel</button>
+              <ActionButton type="button" className={primary} disabled={busy} onClick={() => run('issue', base)}>Confirm issuance</ActionButton>
+              <ActionButton type="button" className={button} disabled={busy} onClick={() => setConfirmIssue(false)}>Cancel</ActionButton>
             </div>
           </div>
-        ) : <button type="button" className={primary} disabled={busy} onClick={() => setConfirmIssue(true)}>Issue invoice</button>)}
+        ) : <ActionButton type="button" className={primary} disabled={busy} onClick={() => setConfirmIssue(true)}>Issue invoice</ActionButton>)}
       </div>}
       {doc.state === 'accepted' && activeStore?.active && <form className="grid gap-2" onSubmit={event => {
         const values = getValues(event);
@@ -184,7 +185,7 @@ export function BillingDocumentControls({ doc, data, busy, run, edit }: {
         <label className={label}>Invoice payment due date
           <input className={field} name="dueDate" type="date" min={data.today} required />
         </label>
-        <button className={primary} disabled={busy}>Create invoice from quotation</button>
+        <ActionButton className={primary} disabled={busy}>Create invoice from quotation</ActionButton>
       </form>}
       {doc.state === 'issued' && (
         <div className="grid gap-3">
@@ -205,18 +206,18 @@ export function BillingDocumentControls({ doc, data, busy, run, edit }: {
                     <option value="" disabled>Select outcome</option><option value="verified">Evidence verified</option><option value="rejected">Reject evidence</option>
                   </select></label>
                   <label className={label}>Review note <textarea className={field} name="reason" required minLength={3} maxLength={500} /></label>
-                  <button className={primary} disabled={busy}>Submit review</button>
+                  <ActionButton className={primary} disabled={busy}>Submit review</ActionButton>
                 </form>
-              ) : <button type="button" className={button} disabled={busy} onClick={() => setReview(payment.id)}>Review evidence</button>)}
+              ) : <ActionButton type="button" className={button} disabled={busy} onClick={() => setReview(payment.id)}>Review evidence</ActionButton>)}
             </li>)}
           </ul>}
           {activeStore?.active && <div className="flex flex-wrap gap-2">
             {!!doc.balance_minor && <>
-              <button type="button" className={button} onClick={() => setMode(mode === 'pos' ? null : 'pos')} aria-expanded={mode === 'pos'}>Apply POS receipt</button>
-              <button type="button" className={button} onClick={() => setMode(mode === 'offline' ? null : 'offline')} aria-expanded={mode === 'offline'}>Submit offline payment</button>
+              <ActionButton type="button" className={button} onClick={() => setMode(mode === 'pos' ? null : 'pos')} aria-expanded={mode === 'pos'}>Apply POS receipt</ActionButton>
+              <ActionButton type="button" className={button} onClick={() => setMode(mode === 'offline' ? null : 'offline')} aria-expanded={mode === 'offline'}>Submit offline payment</ActionButton>
             </>}
             {data.canConfigure && doc.paid_minor === 0 && !doc.payments.some(payment => payment.status === 'pending') &&
-              <button type="button" className={button} onClick={() => setMode(mode === 'void' ? null : 'void')} aria-expanded={mode === 'void'}>Void invoice</button>}
+              <ActionButton type="button" className={button} onClick={() => setMode(mode === 'void' ? null : 'void')} aria-expanded={mode === 'void'}>Void invoice</ActionButton>}
           </div>}
           {activeStore?.active && mode === 'pos' && !!doc.balance_minor && <form className="grid gap-2" onSubmit={event => {
             const values = getValues(event);
@@ -224,7 +225,7 @@ export function BillingDocumentControls({ doc, data, busy, run, edit }: {
           }}>
             <p className="text-sm">Match a completed receipt from this store. Its net amount can be applied once; the original POS sale stays unchanged.</p>
             <label className={label}>POS receipt number <input className={field} name="receipt" required inputMode="numeric" pattern="[0-9]{1,15}" /></label>
-            <button className={primary} disabled={busy}>Apply completed receipt</button>
+            <ActionButton className={primary} disabled={busy}>Apply completed receipt</ActionButton>
           </form>}
           {activeStore?.active && mode === 'offline' && !!doc.balance_minor && <form className="grid gap-2" onSubmit={event => {
             const values = getValues(event);
@@ -239,7 +240,7 @@ export function BillingDocumentControls({ doc, data, busy, run, edit }: {
             <label className={label}>Evidence reference and reconciliation details
               <textarea className={field} name="evidence" required minLength={10} maxLength={500} placeholder="Internal bank statement or deposit reference; omit credentials and account numbers" />
             </label>
-            <button className={primary} disabled={busy}>Submit for verification</button>
+            <ActionButton className={primary} disabled={busy}>Submit for verification</ActionButton>
           </form>}
           {activeStore?.active && mode === 'void' && doc.paid_minor === 0 && <form className="grid gap-2" onSubmit={event => {
             const values = getValues(event);
@@ -247,7 +248,7 @@ export function BillingDocumentControls({ doc, data, busy, run, edit }: {
           }}>
             <p className="text-sm">The invoice will be marked void and its number and contents will remain in history.</p>
             <label className={label}>Reason for voiding <textarea className={field} name="reason" required minLength={3} maxLength={500} /></label>
-            <button className={primary} disabled={busy}>Confirm void</button>
+            <ActionButton className={primary} disabled={busy}>Confirm void</ActionButton>
           </form>}
         </div>
       )}
