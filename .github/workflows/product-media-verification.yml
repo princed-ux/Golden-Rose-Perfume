@@ -32,4 +32,9 @@ jobs:
         continue-on-error: true
         run: npm run lint
       - name: Build Next.js
+        env:
+          # Public non-secret fixture values for build-time config only.
+          # Do not supply any service-role key or credentials to CI.
+          NEXT_PUBLIC_SUPABASE_URL: https://eixbmsethgrtezhdmgsh.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_build_fixture
         run: npm run build
