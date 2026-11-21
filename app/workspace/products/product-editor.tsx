@@ -239,7 +239,11 @@ export function ProductEditor({ initial }: { initial: ManagedProduct }) {
         </div>
       </div>
       {product.active ? (<>
-        <SalesChannelsForm key={product.revision} product={product} onSuccess={onSuccess} />
+        {typeof product.posEnabled === 'boolean'
+          ? <SalesChannelsForm key={product.revision} product={product} onSuccess={onSuccess} />
+          : <p role="status" className="text-sm text-[#796570]">
+            Sales-channel settings are unavailable until the database upgrade is installed.
+          </p>}
         <div className="grid min-w-0 gap-6 xl:grid-cols-2">
           <div className="grid min-w-0 content-start gap-3">
             <h3 className="m-0 font-serif text-xl text-[#4b1f38]">Product details</h3>
