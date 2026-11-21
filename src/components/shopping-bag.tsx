@@ -10,10 +10,11 @@ import { useShoppingBag } from './use-shopping-bag';
 import { prepareCheckout } from '@/app/checkout/actions';
 import { loadBagProducts } from '@/app/account/shopping-actions';
 
-function CheckoutForm({ lines, profile, configured, disabled }: {
+function CheckoutForm({ lines, profile, configured, contactUnavailable, disabled }: {
   lines: BagLine[];
   profile: { name: string; email: string | null } | null;
   configured: boolean;
+  contactUnavailable: boolean;
   disabled: boolean;
 }) {
   const [pending, setPending] = useState(false);
@@ -44,7 +45,8 @@ function CheckoutForm({ lines, profile, configured, disabled }: {
     <section className="gr-bag-panel" aria-labelledby="whatsapp-heading">
       <h2 id="whatsapp-heading">Checkout on WhatsApp</h2>
       <p>Golden Rose will confirm availability, final prices and delivery in the chat.</p>
-      {!configured && <p role="status">The store’s WhatsApp number is not configured yet.</p>}
+      {contactUnavailable ? <p role="alert">WhatsApp checkout is temporarily unavailable. Your bag remains saved.</p> :
+        !configured && <p role="status">The store has not configured an active WhatsApp checkout contact yet.</p>}
       <form className="gr-bag-form" onSubmit={submit} onChange={() => { setPrepared(null); setError(''); }} aria-busy={pending}>
         <fieldset disabled={pending || disabled || !configured} className="gr-bag-form">
           <label>Name<input name="name" autoComplete="name" defaultValue={profile?.name} required maxLength={120} /></label>
@@ -66,9 +68,10 @@ function CheckoutForm({ lines, profile, configured, disabled }: {
   );
 }
 
-export function ShoppingBagScreen({ checkout = false, configured = false, profile = null }: {
+export function ShoppingBagScreen({ checkout = false, configured = false, contactUnavailable = false, profile = null }: {
   checkout?: boolean;
   configured?: boolean;
+  contactUnavailable?: boolean;
   profile?: { name: string; email: string | null } | null;
 }) {
   const { ready, lines, unavailable: syncUnavailable, deviceOnly, pending, update, error, retry } = useShoppingBag();
@@ -141,7 +144,8 @@ export function ShoppingBagScreen({ checkout = false, configured = false, profil
         {checkout ? <Link href="/cart" className="text-link">Edit shopping bag</Link> :
           canCheckout && <Link href="/checkout" className="gr-bag-primary">Continue to WhatsApp checkout</Link>}
       </section>
-      {checkout && <CheckoutForm lines={lines} profile={profile} configured={configured} disabled={!canCheckout} />}
+      {checkout && <CheckoutForm lines={lines} profile={profile} configured={configured}
+        contactUnavailable={contactUnavailable} disabled={!canCheckout} />}
     </div>
   );
 }
