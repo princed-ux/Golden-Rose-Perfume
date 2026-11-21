@@ -48,8 +48,10 @@ jobs:
         run: npm test
       - name: Build desktop renderer
         run: npm run build
-      - name: Run Electron and browser acceptance tests
-        run: npm run test:browser
+      # The separate web-pos.spec.ts requires the Next.js web test harness,
+      # not this standalone Vite/Electron server.
+      - name: Run desktop register and Electron acceptance tests
+        run: npm run test:browser -- tests/browser/register.spec.ts tests/browser/electron.spec.ts
 
       - name: Preserve failed browser-test artifacts
         if: failure()
