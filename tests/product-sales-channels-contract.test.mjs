@@ -62,7 +62,11 @@ test('owner analytics exclude staff and keep customer records private', () => {
   assert.match(sql, /s\.role='owner' AND s\.status='active'/);
   assert.match(sql, /NOT EXISTS\(SELECT 1 FROM golden_rose\.staff_members s WHERE s\.user_id=u\.id\)/);
   assert.match(sql, /NOT coalesce\(u\.is_anonymous,false\)/);
+  assert.match(sql, /'productChannels',\(/);
+  assert.match(sql, /'posOnly',count\(\*\) FILTER\(WHERE is_active AND pos_enabled AND NOT is_published\)/);
+  assert.match(sql, /'onlineOnly',count\(\*\) FILTER\(WHERE is_active AND NOT pos_enabled AND is_published\)/);
   const overview = read('app/workspace/page.tsx');
   assert.match(overview, /gr_owner_customer_counts/);
+  assert.match(overview, /Sales-channel metrics awaiting database upgrade/);
   assert.match(overview, /role === 'owner' && \(/);
 });
