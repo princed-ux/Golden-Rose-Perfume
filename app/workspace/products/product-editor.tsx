@@ -9,6 +9,7 @@ import { workspaceInput, workspaceLabel, workspacePrimary } from '@/src/componen
 import { INITIAL_RESULT } from '@/src/lib/golden-rose/contracts';
 import type { CatalogueCommand, CatalogueOperation, ManagedProduct, ManagedVariant } from '@/src/lib/golden-rose/catalogue-management';
 import { changeCatalogue } from './management-actions';
+import { ProductImages } from './product-images';
 
 function CatalogueForm({
   action, label, children, onSuccess, compact = false, reset = false, submitClass = workspacePrimary,
@@ -188,6 +189,7 @@ export function ProductEditor({ initial }: { initial: ManagedProduct }) {
         </div>
       </div>
       {product.active ? (
+        <>
         <div className="grid min-w-0 gap-6 xl:grid-cols-2">
           <div className="grid min-w-0 content-start gap-3">
             <h3 className="m-0 font-serif text-xl text-[#4b1f38]">Product details</h3>
@@ -222,6 +224,14 @@ export function ProductEditor({ initial }: { initial: ManagedProduct }) {
             )}
           </div>
         </div>
+        <ProductImages
+          productId={product.productId}
+          productName={product.name}
+          slug={product.slug}
+          published={product.published}
+          initialImages={product.images ?? []}
+        />
+        </>
       ) : <p className="text-sm text-[#796570]">This inactive product is read-only.</p>}
     </section>
   );
