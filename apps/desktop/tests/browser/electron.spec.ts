@@ -23,6 +23,12 @@ test("existing Electron shell opens an isolated customer monitor and synchronize
   });
   try {
     const cashier = await application.firstWindow();
+    // Verify Electron itself rendered the login page before any test navigation.
+    // Previously the initial window could remain completely white while the
+    // browser-only fixture passed after navigating directly to the Vite URL.
+    await expect(
+      cashier.getByRole("heading", { name: "Staff sign in", exact: true }),
+    ).toBeVisible({ timeout: 30_000 });
     await backend(cashier);
     await login(cashier);
     await cashier
