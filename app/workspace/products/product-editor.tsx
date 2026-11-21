@@ -136,6 +136,58 @@ export function PublicationForm({ productId, revision, published, onSuccess }: {
   );
 }
 
+export function SalesChannelsForm({ product, onSuccess }: {
+  product: ManagedProduct;
+  onSuccess?: (result: CatalogueOperation) => void;
+}) {
+  const [posEnabled, setPosEnabled] = useState(product.posEnabled);
+  const [published, setPublished] = useState(product.published);
+
+  return (
+    <section className="grid min-w-0 gap-3 rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-4 sm:p-6"
+      aria-labelledby="product-sales-channels">
+      <div>
+        <h3 id="product-sales-channels" className="m-0 font-serif text-xl text-[#4b1f38]">
+          Where can customers buy this perfume?
+        </h3>
+        <p className="m-0 mt-1 text-sm leading-6 text-[#796570]">
+          In-store POS and the customer website are independent. Switching either off does not delete
+          the product, its stock, its Odoo identity or its sales history.
+        </p>
+      </div>
+      <CatalogueForm action="channels" label="Save sales channels"
+        onSuccess={result => onSuccess?.(result)}>
+        <input type="hidden" name="productId" value={product.productId} />
+        <input type="hidden" name="revision" value={product.revision} />
+        <input type="hidden" name="posEnabled" value={String(posEnabled)} />
+        <input type="hidden" name="published" value={String(published)} />
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#eaded8] bg-white p-4 text-sm text-[#4b1f38]">
+          <input type="checkbox" checked={posEnabled} onChange={event => setPosEnabled(event.target.checked)}
+            className="mt-1 h-4 w-4 accent-[#8b506a]" />
+          <span><strong className="block">Sell in store (staff POS)</strong>
+            <span className="mt-1 block text-[#796570]">Staff can search and sell this product at the register.</span></span>
+        </label>
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#eaded8] bg-white p-4 text-sm text-[#4b1f38]">
+          <input type="checkbox" checked={published} onChange={event => setPublished(event.target.checked)}
+            className="mt-1 h-4 w-4 accent-[#8b506a]" />
+          <span><strong className="block">Sell online (website and customer account)</strong>
+            <span className="mt-1 block text-[#796570]">Appears in the public /shop catalogue and customer recommendations.</span></span>
+        </label>
+        <p role="status" className="m-0 text-xs leading-5 text-[#796570]">
+          {posEnabled && published ? 'Available in both channels.' :
+            posEnabled ? 'In-store only; hidden from customers online.' :
+              published ? 'Online only; hidden from the staff POS.' :
+                'Draft for both channels; retained in the internal catalogue.'}
+        </p>
+      </CatalogueForm>
+      <p className="m-0 text-xs leading-5 text-[#796570]">
+        Private customer-specific collections are a separate permission-controlled feature.
+        This public-online switch does not make a perfume private.
+      </p>
+    </section>
+  );
+}
+
 export function AddProductForm({ extended }: { extended: boolean }) {
   const [created, setCreated] = useState<{ productId?: string; name: string } | null>(null);
   return (
@@ -183,11 +235,11 @@ export function ProductEditor({ initial }: { initial: ManagedProduct }) {
           <p className="m-0 mt-1 text-sm text-[#796570]">{product.published ? 'Published in the storefront.' : 'Draft listing.'}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {product.active && <PublicationForm productId={product.productId} revision={product.revision} published={product.published} onSuccess={onSuccess} />}
           <Link className="catalogue-btn catalogue-btn--ghost" href="/workspace/products">Back to catalogue</Link>
         </div>
       </div>
-      {product.active ? (
+      {product.active ? (<>
+        <SalesChannelsForm key={product.revision} product={product} onSuccess={onSuccess} />
         <div className="grid min-w-0 gap-6 xl:grid-cols-2">
           <div className="grid min-w-0 content-start gap-3">
             <h3 className="m-0 font-serif text-xl text-[#4b1f38]">Product details</h3>
@@ -222,6 +274,7 @@ export function ProductEditor({ initial }: { initial: ManagedProduct }) {
             )}
           </div>
         </div>
+        </>
       ) : <p className="text-sm text-[#796570]">This inactive product is read-only.</p>}
     </section>
   );
