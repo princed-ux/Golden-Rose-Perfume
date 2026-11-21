@@ -270,7 +270,32 @@ async function ownerCustomerCounts() {
     if (totalCustomers === null || verifiedCustomers === null ||
         new30Days === null || signedIn30Days === null) return null;
 
-    return { totalCustomers, verifiedCustomers, new30Days, signedIn30Days };
+    const channelData = row.productChannels;
+    let productChannels: {
+      totalProducts: number;
+      posOnly: number;
+      onlineOnly: number;
+      bothChannels: number;
+      hidden: number;
+    } | null = null;
+    if (channelData && typeof channelData === 'object' && !Array.isArray(channelData)) {
+      const values = channelData as Record<string, unknown>;
+      const count = (key: string): number | null => {
+        const value = values[key];
+        return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null;
+      };
+      const totalProducts = count('totalProducts');
+      const posOnly = count('posOnly');
+      const onlineOnly = count('onlineOnly');
+      const bothChannels = count('bothChannels');
+      const hidden = count('hidden');
+      if (totalProducts !== null && posOnly !== null && onlineOnly !== null &&
+          bothChannels !== null && hidden !== null) {
+        productChannels = { totalProducts, posOnly, onlineOnly, bothChannels, hidden };
+      }
+    }
+
+    return { totalCustomers, verifiedCustomers, new30Days, signedIn30Days, productChannels };
   } catch {
     return null;
   }
@@ -486,6 +511,42 @@ export default async function WorkspaceOverview() {
                 title,
                 value: count === undefined ? '—' : count.toLocaleString('en-NG'),
                 detail: count === undefined ? 'Customer analytics unavailable or awaiting migration' : detail,
+                icon,
+                status: count === undefined ? 'unavailable' : 'connected',
+              }} />
+            ))}
+          </div>
+        </section>
+      )}
+
+
+      {role === 'owner' && (
+        <section aria-label="Product sales channel analytics">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+                Catalogue / Sales channels
+              </p>
+              <h3 className="mt-1 font-serif text-2xl text-[#46172f]">
+                Where your products are available
+              </h3>
+            </div>
+            <Link href="/workspace/products" className="text-sm font-semibold text-[#7a435f] underline underline-offset-4">
+              Manage product visibility
+            </Link>
+          </div>
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            {([
+              ['Total products', customerCounts?.productChannels?.totalProducts, 'All catalogue products', Package],
+              ['In-store only', customerCounts?.productChannels?.posOnly, 'Sellable through POS only', ScanBarcode],
+              ['Online only', customerCounts?.productChannels?.onlineOnly, 'Public shop without POS', ShoppingBag],
+              ['Both channels', customerCounts?.productChannels?.bothChannels, 'POS and public online shop', Boxes],
+              ['Hidden or inactive', customerCounts?.productChannels?.hidden, 'Not available for purchase', CircleAlert],
+            ] as const).map(([title, count, detail, icon]) => (
+              <MetricCard key={title} metric={{
+                title,
+                value: count === undefined ? '—' : count.toLocaleString('en-NG'),
+                detail: count === undefined ? 'Sales-channel metrics awaiting database upgrade' : detail,
                 icon,
                 status: count === undefined ? 'unavailable' : 'connected',
               }} />
