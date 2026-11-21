@@ -1,0 +1,56 @@
+name: Desktop POS verification
+
+on:
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - ".github/workflows/desktop-pos-verification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop-pos:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Install desktop dependencies
+        run: npm ci
+
+      - name: Set up isolated browser-test environment
+        run: |
+          @(
+            'VITE_SUPABASE_URL=https://eixbmsethgrtezhdmgsh.supabase.co'
+            'VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_fixture_only'
+            'VITE_WORKSPACE_URL=http://localhost:3000'
+          ) | Set-Content -Path '.env.local' -Encoding utf8
+
+      - name: Check desktop TypeScript
+        run: npm run typecheck
+      - name: Lint desktop source
+        run: npm run lint
+      - name: Run desktop unit tests
+        run: npm test
+      - name: Build desktop renderer
+        run: npm run build
+      - name: Run Electron and browser acceptance tests
+        run: npm run test:browser
+
+      - name: Preserve failed browser-test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-pos-test-failures
+          path: apps/desktop/test-results
+          if-no-files-found: ignore
