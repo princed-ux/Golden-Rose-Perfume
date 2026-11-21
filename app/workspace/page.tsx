@@ -252,6 +252,29 @@ async function ownerStaffCounts() {
   }
 }
 
+async function ownerCustomerCounts() {
+  try {
+    const client = await createClient();
+    const { data, error } = await client.rpc('gr_owner_customer_counts');
+    if (error || !data || typeof data !== 'object' || Array.isArray(data)) return null;
+
+    const row = data as Record<string, unknown>;
+    const getCount = (key: string) =>
+      typeof row[key] === 'number' && Number.isSafeInteger(row[key]) && row[key] >= 0
+        ? row[key] as number : null;
+    const totalCustomers = getCount('totalCustomers');
+    const verifiedCustomers = getCount('verifiedCustomers');
+    const new30Days = getCount('new30Days');
+    const signedIn30Days = getCount('signedIn30Days');
+    if (totalCustomers === null || verifiedCustomers === null ||
+        new30Days === null || signedIn30Days === null) return null;
+
+    return { totalCustomers, verifiedCustomers, new30Days, signedIn30Days };
+  } catch {
+    return null;
+  }
+}
+
 export default async function WorkspaceOverview() {
   const { role, token } = await requireStaff();
 
@@ -273,7 +296,7 @@ export default async function WorkspaceOverview() {
     'inventory',
   );
 
-  const [catalogue, inventory, staff] =
+  const [catalogue, inventory, staff, customerCounts] =
     await Promise.all([
       mayViewProducts
         ? getAdminProductsPage(token, 0, 1)
@@ -294,6 +317,10 @@ export default async function WorkspaceOverview() {
 
       role === 'owner'
         ? ownerStaffCounts()
+        : Promise.resolve(null),
+
+      role === 'owner'
+        ? ownerCustomerCounts()
         : Promise.resolve(null),
     ]);
 
@@ -430,6 +457,41 @@ export default async function WorkspaceOverview() {
           />
         ))}
       </div>
+
+
+      {role === 'owner' && (
+        <section aria-label="Customer account analytics">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+                Customers / Online store
+              </p>
+              <h3 className="mt-1 font-serif text-2xl text-[#46172f]">
+                Registered customer accounts
+              </h3>
+            </div>
+            <p className="text-xs text-[#85717d]">
+              Staff accounts, POS contacts and WhatsApp enquiries are not counted as registered customers.
+            </p>
+          </div>
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {([
+              ['Registered customers', customerCounts?.totalCustomers, 'All non-staff customer accounts', UsersRound],
+              ['Verified customers', customerCounts?.verifiedCustomers, 'Accounts with confirmed email', CircleCheck],
+              ['New in 30 days', customerCounts?.new30Days, 'Customer registrations in the past 30 days', ShoppingBag],
+              ['Signed in recently', customerCounts?.signedIn30Days, 'Customer accounts signed in within 30 days', ChartNoAxesCombined],
+            ] as const).map(([title, count, detail, icon]) => (
+              <MetricCard key={title} metric={{
+                title,
+                value: count === undefined ? '—' : count.toLocaleString('en-NG'),
+                detail: count === undefined ? 'Customer analytics unavailable or awaiting migration' : detail,
+                icon,
+                status: count === undefined ? 'unavailable' : 'connected',
+              }} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,1fr)]">
         <section
