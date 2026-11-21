@@ -1,0 +1,40 @@
+name: Golden Rose product media verification
+
+on:
+  pull_request:
+    paths:
+      - "app/workspace/products/**"
+      - "src/lib/golden-rose/product-images.ts"
+      - "supabase/migrations/*owner_product_media*.sql"
+      - ".github/workflows/product-media-verification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify TypeScript
+        run: npx tsc --noEmit
+      - name: Strict lint for modified product source
+        run: npx eslint app/workspace/products/product-editor.tsx app/workspace/products/product-images.tsx app/workspace/products/images/route.ts
+      - name: Report repository-wide legacy lint errors
+        continue-on-error: true
+        run: npm run lint
+      - name: Build Next.js
+        env:
+          # Public non-secret fixture values for build-time config only.
+          # Do not supply any service-role key or credentials to CI.
+          NEXT_PUBLIC_SUPABASE_URL: https://eixbmsethgrtezhdmgsh.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_build_fixture
+        run: npm run build
