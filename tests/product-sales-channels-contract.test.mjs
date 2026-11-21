@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { test } from 'node:test';
 
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
@@ -69,4 +69,19 @@ test('owner analytics exclude staff and keep customer records private', () => {
   assert.match(overview, /gr_owner_customer_counts/);
   assert.match(overview, /Sales-channel metrics awaiting database upgrade/);
   assert.match(overview, /role === 'owner' && \(/);
+});
+
+test('every database fixture references a migration that exists in GitHub', () => {
+  const testsDir = new URL('./', import.meta.url);
+  const missing = [];
+  for (const file of readdirSync(testsDir)) {
+    if (!file.endsWith('.mjs')) continue;
+    const body = readFileSync(new URL(file, testsDir), 'utf8');
+    for (const [, name] of body.matchAll(/\\b(20\\d{12}_[a-z0-9_]+\\.sql)\\b/g)) {
+      if (!existsSync(new URL('../supabase/migrations/' + name, import.meta.url))) {
+        missing.push(file + ': ' + name);
+      }
+    }
+  }
+  assert.deepEqual(missing, [], 'Fixture SQL paths must resolve before database tests run');
 });
