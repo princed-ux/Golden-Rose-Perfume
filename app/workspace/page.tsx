@@ -259,9 +259,10 @@ async function ownerCustomerCounts() {
     if (error || !data || typeof data !== 'object' || Array.isArray(data)) return null;
 
     const row = data as Record<string, unknown>;
-    const getCount = (key: string) =>
-      typeof row[key] === 'number' && Number.isSafeInteger(row[key]) && row[key] >= 0
-        ? row[key] as number : null;
+    const getCount = (key: string) => {
+      const value = row[key];
+      return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null;
+    };
     const totalCustomers = getCount('totalCustomers');
     const verifiedCustomers = getCount('verifiedCustomers');
     const new30Days = getCount('new30Days');
