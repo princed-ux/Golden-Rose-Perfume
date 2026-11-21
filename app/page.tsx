@@ -33,7 +33,7 @@ import {
 } from '@/src/lib/golden-rose/contracts';
 
 import { ProductPhoto } from '@/src/components/product-photo';
-import { getWhatsAppNumber } from '@/src/lib/customer/bag';
+import { getStoreWhatsAppContact } from '@/src/lib/customer/whatsapp-contacts';
 
 /*
  * GOLDEN ROSE — REAL PHOTOGRAPHS
@@ -808,8 +808,9 @@ function Gallery() {
    FOOTER
 ===================================================== */
 
-function Footer() {
-  const whatsapp = getWhatsAppNumber();
+async function Footer() {
+  const contact = await getStoreWhatsAppContact().catch(() => null);
+  const whatsapp = contact?.number ?? null;
 
   return (
     <footer className="gr-footer">

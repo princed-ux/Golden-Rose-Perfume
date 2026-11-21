@@ -4,13 +4,19 @@ import Link from 'next/link';
 import { SiteHeader } from '@/src/components/site-header';
 import { ShoppingBagScreen } from '@/src/components/shopping-bag';
 import { getCustomer } from '@/src/lib/customer/session';
-import { getWhatsAppNumber } from '@/src/lib/customer/bag';
+import { getStoreWhatsAppContact } from '@/src/lib/customer/whatsapp-contacts';
 import '@/app/cart/bag.css';
 
 async function Checkout() {
   await connection();
-  const customer = await getCustomer().catch(() => null);
-  return <ShoppingBagScreen checkout configured={Boolean(getWhatsAppNumber())}
+  const [customer, contact] = await Promise.all([
+    getCustomer().catch(() => null),
+    getStoreWhatsAppContact().then(
+      value => ({ configured: Boolean(value), unavailable: false }),
+      () => ({ configured: false, unavailable: true }),
+    ),
+  ]);
+  return <ShoppingBagScreen checkout configured={contact.configured} contactUnavailable={contact.unavailable}
     profile={customer ? { name: customer.name, email: customer.email } : null} />;
 }
 

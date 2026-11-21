@@ -1,8 +1,9 @@
 'use server';
 
 import { findCatalogProducts } from '@/src/lib/golden-rose/edge';
-import { createWhatsAppLink, getWhatsAppNumber, MAX_BAG_LINES, parseBag, resolveBag } from '@/src/lib/customer/bag';
+import { createWhatsAppLink, MAX_BAG_LINES, parseBag, resolveBag } from '@/src/lib/customer/bag';
 import { validEmail } from '@/src/lib/customer/auth-policy';
+import { getStoreWhatsAppContact } from '@/src/lib/customer/whatsapp-contacts';
 
 function text(form: FormData, key: string) {
   const value = form.get(key);
@@ -10,9 +11,6 @@ function text(form: FormData, key: string) {
 }
 
 export async function prepareCheckout(form: FormData) {
-  const number = getWhatsAppNumber();
-  if (!number) return { error: 'The store’s WhatsApp number is not configured yet.' };
-
   const lines = parseBag(text(form, 'bag'), MAX_BAG_LINES + 1);
   if (!lines.length) return { error: 'Add a fragrance to your bag first.' };
   if (lines.length > MAX_BAG_LINES) return { error: 'Reduce the number of fragrances in your bag before continuing.' };
@@ -26,6 +24,15 @@ export async function prepareCheckout(form: FormData) {
       contact.phone.replace(/\D/g, '').length > 15 ||
       (contact.email && !validEmail(contact.email)) || contact.delivery.length > 240) {
     return { error: 'Check your name, phone number, email and delivery details.' };
+  }
+
+  let number: string;
+  try {
+    const destination = await getStoreWhatsAppContact();
+    if (!destination) return { error: 'The store has not configured an active WhatsApp checkout contact.' };
+    number = destination.number;
+  } catch {
+    return { error: 'WhatsApp checkout is temporarily unavailable. Please try again.' };
   }
 
   try {

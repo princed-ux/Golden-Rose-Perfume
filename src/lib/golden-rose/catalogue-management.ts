@@ -1,7 +1,7 @@
 import { nairaToKobo, toProductSlug, UUID, type AdminProduct, type OperationResult } from './contracts';
 
 export type CataloguePublication = 'all' | 'published' | 'draft';
-export type CatalogueCommand = 'create' | 'details' | 'variant' | 'publication';
+export type CatalogueCommand = 'create' | 'details' | 'variant' | 'publication' | 'channels';
 
 export function catalogueFilters(search: string, publication: string | null | undefined) {
   return {
@@ -29,6 +29,7 @@ export type ManagedVariant = AdminProduct['variants'][number] & {
 };
 
 export interface ManagedProduct extends AdminProduct {
+  posEnabled: boolean;
   revision: string;
   variants: ManagedVariant[];
 }
@@ -106,6 +107,15 @@ export function cataloguePayload(action: CatalogueCommand, form: FormData) {
     return { error: 'Reload the product before trying again.' } as const;
   }
   const identity = { requestId, productId: productId || undefined, revision: revision || undefined };
+
+  if (action === 'channels') {
+    const posEnabled = field(form, 'posEnabled');
+    const published = field(form, 'published');
+    if (!['true', 'false'].includes(posEnabled) || !['true', 'false'].includes(published)) {
+      return { error: 'Choose valid POS and online selling channels.' } as const;
+    }
+    return { data: { ...identity, posEnabled: posEnabled === 'true', published: published === 'true' } } as const;
+  }
 
   if (action === 'publication') {
     const state = field(form, 'published');

@@ -25,14 +25,14 @@ test('catalogue changes flow to the shop, inventory, POS and sales history witho
   for (const migration of [
     '20261112003607_golden_rose_replace_kolextrader_with_catalogue_inventory.sql',
     '20261112004128_golden_rose_staff_atomic_stock_transactions.sql',
-    '20261112163007_customer_shopping_and_catalogue_photos.sql',
-    '20261113182003_golden_rose_owner_access.sql',
+    '20261112173223_golden_rose_customer_shopping_and_catalogue_photos.sql',
+    '20261113185953_golden_rose_owner_access.sql',
     '20261114141541_golden_rose_atomic_cash_pos_register.sql',
     '20261114141844_golden_rose_pos_price_verification.sql',
     '20261114172002_golden_rose_pos_actor_authorization.sql',
     '20261115131653_golden_rose_staff_management.sql',
     '20261116132500_golden_rose_sales_history.sql',
-    '20261116180311_golden_rose_catalogue_management.sql',
+    '20261117164018_golden_rose_catalogue_management.sql',
   ]) await db.exec(readFileSync(new URL('../supabase/migrations/' + migration, import.meta.url),'utf8'));
 
   const [store, otherStore] = Array.from({length:2},randomUUID);

@@ -35,11 +35,11 @@ test('separate PostgreSQL connections issue each draft once and share a single s
     for (const name of [
       '20261112003607_golden_rose_replace_kolextrader_with_catalogue_inventory.sql',
       '20261112004128_golden_rose_staff_atomic_stock_transactions.sql',
-      '20261113182003_golden_rose_owner_access.sql',
+      '20261113185953_golden_rose_owner_access.sql',
       '20261114141541_golden_rose_atomic_cash_pos_register.sql',
       '20261115131653_golden_rose_staff_management.sql',
       '20261116150000_golden_rose_customer_crm.sql',
-      '20261116180000_golden_rose_billing.sql',
+      '20261117164015_golden_rose_billing.sql',
     ]) await query(readFileSync(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
     const [store,actor,session]=Array.from({length:3},randomUUID);
     await query("insert into auth.users values ('"+actor+"','owner@fixture.example',now(),false,null,'{}');"+

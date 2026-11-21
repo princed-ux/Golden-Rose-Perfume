@@ -19,7 +19,7 @@ test('the read-only proposal exposes dates and stock evidence without initializi
   for (const name of [
     '20261112003607_golden_rose_replace_kolextrader_with_catalogue_inventory.sql',
     '20261112004128_golden_rose_staff_atomic_stock_transactions.sql',
-    '20261113182003_golden_rose_owner_access.sql',
+    '20261113185953_golden_rose_owner_access.sql',
     '20261114141541_golden_rose_atomic_cash_pos_register.sql',
     '20261115131653_golden_rose_staff_management.sql',
   ]) await db.exec(readFileSync(new URL('../supabase/migrations/' + name, import.meta.url), 'utf8'));

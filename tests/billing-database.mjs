@@ -22,11 +22,11 @@ test('billing preserves saved and issued snapshots and reconciles authorized, un
   for (const name of [
     '20261112003607_golden_rose_replace_kolextrader_with_catalogue_inventory.sql',
     '20261112004128_golden_rose_staff_atomic_stock_transactions.sql',
-    '20261113182003_golden_rose_owner_access.sql',
+    '20261113185953_golden_rose_owner_access.sql',
     '20261114141541_golden_rose_atomic_cash_pos_register.sql',
     '20261115131653_golden_rose_staff_management.sql',
     '20261116150000_golden_rose_customer_crm.sql',
-    '20261116180000_golden_rose_billing.sql',
+    '20261117164015_golden_rose_billing.sql',
   ]) await db.exec(readFileSync(new URL('../supabase/migrations/' + name, import.meta.url), 'utf8'));
   const [a,b,product,variant,contact] = Array.from({length:5}, randomUUID);
   await db.query("insert into golden_rose.locations(id,name,code) values ($1,'Fixture A','A'),($2,'Fixture B','B')",[a,b]);

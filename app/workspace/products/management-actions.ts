@@ -9,7 +9,7 @@ import { createProduct, setPublication } from '../actions';
 import { catalogueError } from './data';
 
 export async function changeCatalogue(action: CatalogueCommand, form: FormData): Promise<CatalogueOperation> {
-  if (action !== 'create' && action !== 'details' && action !== 'variant' && action !== 'publication') {
+  if (action !== 'create' && action !== 'details' && action !== 'variant' && action !== 'publication' && action !== 'channels') {
     return { status: 'error', message: 'Unknown catalogue operation.' };
   }
   const staff = await getStaffAccess();
@@ -34,11 +34,14 @@ export async function changeCatalogue(action: CatalogueCommand, form: FormData):
     revalidatePath('/workspace/inventory');
     revalidatePath('/workspace/pos');
     revalidatePath('/shop');
+    revalidatePath('/');
     revalidatePath('/shop/[slug]', 'page');
     const product = data as ManagedProduct;
-    const message = action === 'publication'
-      ? (product.published ? 'Product published to the shop.' : 'Product removed from the shop.')
-      : action === 'create' ? 'Product created as a draft.' : action === 'variant' ? 'Variant saved.' : 'Product details saved.';
+    const message = action === 'channels'
+      ? 'POS and online selling channels saved.'
+      : action === 'publication'
+        ? (product.published ? 'Product published to the shop.' : 'Product removed from the shop.')
+        : action === 'create' ? 'Product created as a draft.' : action === 'variant' ? 'Variant saved.' : 'Product details saved.';
     return { status: 'success', message, productId: product.productId, product };
   } catch {
     return { status: 'error', message: 'Could not confirm the change. Retry this same request or refresh the catalogue.' };

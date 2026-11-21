@@ -29,12 +29,12 @@ test('employee invitations, role and store changes, and scoped POS transactions'
     for (const filename of [
       '20261112003607_golden_rose_replace_kolextrader_with_catalogue_inventory.sql',
       '20261112004128_golden_rose_staff_atomic_stock_transactions.sql',
-      '20261113182003_golden_rose_owner_access.sql',
+      '20261113185953_golden_rose_owner_access.sql',
       '20261114141541_golden_rose_atomic_cash_pos_register.sql',
       '20261114141844_golden_rose_pos_price_verification.sql',
       '20261114172002_golden_rose_pos_actor_authorization.sql',
       '20261115131653_golden_rose_staff_management.sql',
-      '20261115170000_owner_created_employee_accounts.sql',
+      '20261117164012_owner_created_employee_accounts.sql',
     ]) await db.exec(migration(filename));
 
     const [owner, otherOwner, cashier, shopper, expired, firstStore, otherStore, product, variant] =

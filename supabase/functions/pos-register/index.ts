@@ -8,6 +8,7 @@ function problem(error: unknown): Response {
   const issue = error as { code?: string; message?: string };
   if (issue.code === "GR403") return respond({ ok: false, error: "Your active staff role does not permit this POS operation." }, 403);
   if (issue.code === "23514") return respond({ ok: false, error: "Insufficient available stock. Refresh the register and check quantities." }, 409);
+  if (issue.code === "GR409") return respond({ ok: false, error: "This product is no longer available at the in-store register. Refresh the catalogue before retrying." }, 409);
   if (issue.code === "22023" || issue.code === "22P02") return respond({ ok: false, error: issue.message ?? "Invalid register request." }, 400);
   if (issue.code === "P0002") return respond({ ok: false, error: "Receipt was not found." }, 404);
   console.error("POS register RPC failed", { code: issue.code ?? "unknown" });
