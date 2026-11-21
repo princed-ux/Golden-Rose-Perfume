@@ -225,6 +225,7 @@ export function ProductEditor({ initial }: { initial: ManagedProduct }) {
           </div>
         </div>
         <ProductImages
+          key={product.productId + ':' + product.revision}
           productId={product.productId}
           productName={product.name}
           slug={product.slug}
