@@ -1,5 +1,7 @@
 import { test, expect, _electron } from "@playwright/test";
 import { mkdtemp, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { backend, login, products } from "./fixtures";
@@ -15,14 +17,35 @@ test("existing Electron shell opens an isolated customer monitor and synchronize
       env[name] = value;
   }
   env.GOLDEN_ROSE_TEST_PROFILE = profile;
+  const electronPath = resolve("node_modules/electron/dist/electron.exe");
+  expect(existsSync(electronPath), "Electron binary was not installed").toBe(true);
+  const binary = spawnSync(electronPath, ["--version"], {
+    cwd: process.cwd(),
+    env,
+    encoding: "utf8",
+    timeout: 10_000,
+  });
+  console.log("Electron binary preflight:", JSON.stringify({
+    status: binary.status,
+    signal: binary.signal,
+    error: binary.error?.message,
+    stdout: String(binary.stdout).slice(0, 400),
+    stderr: String(binary.stderr).slice(0, 400),
+  }));
   const application = await _electron.launch({
-    executablePath: resolve("node_modules/electron/dist/electron.exe"),
+    executablePath: electronPath,
     args: ["--disable-gpu", "electron-shell"],
     env,
     timeout: 20_000,
   });
   try {
     const cashier = await application.firstWindow();
+    // Verify Electron itself rendered the login page before any test navigation.
+    // Previously the initial window could remain completely white while the
+    // browser-only fixture passed after navigating directly to the Vite URL.
+    await expect(
+      cashier.getByRole("heading", { name: "Staff sign in", exact: true }),
+    ).toBeVisible({ timeout: 30_000 });
     await backend(cashier);
     await login(cashier);
     await cashier

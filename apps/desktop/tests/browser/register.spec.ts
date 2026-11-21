@@ -34,7 +34,7 @@ test("cashier register handles scanning, independent quantities, cash, receipt a
     "1",
   );
   await page.getByRole("button", { name: /^Checkout/ }).click();
-  await page.getByLabel("Total discount (₦)").fill("100");
+  await page.getByLabel("Discount (₦)").fill("100");
   await page.getByRole("button", { name: "Cash payment", exact: true }).click();
   await page.getByRole("button", { name: "Exact cash" }).click();
   await page.getByRole("button", { name: "Confirm cash payment" }).click();
@@ -67,9 +67,14 @@ test("checkout follows confirm, payment and receipt without enabling unsupported
   await expect(
     page.getByRole("heading", { name: "Confirm sale", exact: true }),
   ).toBeVisible();
+  // Bank details are previewable, but completing an unverified transfer is blocked.
+  await page.getByRole("button", { name: "Bank transfer", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Bank transfer" })).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Bank transfer", exact: true }),
+    page.getByRole("button", { name: "Awaiting payment integration" }),
   ).toBeDisabled();
+  expect(requests).toHaveLength(0);
+  await page.getByRole("button", { name: "Back", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "POS terminal", exact: true }),
   ).toBeDisabled();

@@ -1,0 +1,90 @@
+name: Desktop POS verification
+
+on:
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - ".github/workflows/desktop-pos-verification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop-pos:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Install shared web dependencies for cross-app TypeScript imports
+        working-directory: .
+        run: npm ci
+
+      - name: Install desktop dependencies
+        run: npm ci
+
+      - name: Ensure native Electron binary is available on Windows
+        run: |
+          $electron = "node_modules/electron/dist/electron.exe"
+          if (!(Test-Path $electron)) {
+            # Electron 45 ships an explicit install.js but the npm lock
+            # does not mark it as a postinstall dependency. npm rebuild alone
+            # therefore does not fetch the native executable.
+            Remove-Item Env:ELECTRON_SKIP_BINARY_DOWNLOAD -ErrorAction SilentlyContinue
+            $installer = "node_modules/electron/install.js"
+            if (!(Test-Path $installer)) {
+              throw "Electron's bundled native installer is missing."
+            }
+            node $installer
+            if ($LASTEXITCODE -ne 0) {
+              throw "Electron executable download failed."
+            }
+          }
+          if (!(Test-Path $electron)) {
+            throw "Electron npm package was installed without its Windows executable."
+          }
+
+      - name: Set up isolated browser-test environment
+        run: |
+          @(
+            'VITE_SUPABASE_URL=https://eixbmsethgrtezhdmgsh.supabase.co'
+            'VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_fixture_only'
+            'VITE_WORKSPACE_URL=http://localhost:3000'
+          ) | Set-Content -Path '.env.local' -Encoding utf8
+
+      - name: Check desktop TypeScript
+        run: npm run typecheck
+      - name: Lint desktop source
+        run: npm run lint
+      - name: Run desktop unit tests
+        run: npm test
+      - name: Build desktop renderer
+        run: npm run build
+      # Run the native process first so startup failures get their own clear log.
+      - name: Verify native Electron window startup
+        env:
+          DEBUG: "pw:browser*"
+          DEBUG_COLORS: "0"
+        run: npm run test:browser -- tests/browser/electron.spec.ts
+
+      # The separate web-pos.spec.ts requires the Next.js web test harness,
+      # not this standalone Vite/Electron server.
+      - name: Verify desktop register browser workflows
+        run: npm run test:browser -- tests/browser/register.spec.ts
+
+      - name: Preserve failed browser-test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-pos-test-failures
+          path: apps/desktop/test-results
+          if-no-files-found: ignore

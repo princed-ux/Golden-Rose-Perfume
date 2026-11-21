@@ -437,7 +437,7 @@ export function CheckoutDialog({
             <>
               <p className="notice pending">
                 Ask the customer to transfer the
-                exact amount to the store's
+                exact amount to the store&apos;s
                 verified receiving account.
               </p>
 
@@ -473,7 +473,7 @@ export function CheckoutDialog({
               className="notice pending"
               role="status"
             >
-              The store's receiving bank account
+              The store&apos;s receiving bank account
               has not been connected to the
               desktop application yet.
             </p>
