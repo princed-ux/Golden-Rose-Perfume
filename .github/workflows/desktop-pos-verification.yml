@@ -36,13 +36,17 @@ jobs:
         run: |
           $electron = "node_modules/electron/dist/electron.exe"
           if (!(Test-Path $electron)) {
-            # Some runner configurations install the npm package without
-            # executing the native download postinstall script.
+            # Electron 45 ships an explicit install.js but the npm lock
+            # does not mark it as a postinstall dependency. npm rebuild alone
+            # therefore does not fetch the native executable.
             Remove-Item Env:ELECTRON_SKIP_BINARY_DOWNLOAD -ErrorAction SilentlyContinue
-            $env:npm_config_ignore_scripts = "false"
-            npm rebuild electron --foreground-scripts
+            $installer = "node_modules/electron/install.js"
+            if (!(Test-Path $installer)) {
+              throw "Electron's bundled native installer is missing."
+            }
+            node $installer
             if ($LASTEXITCODE -ne 0) {
-              throw "Electron executable installation failed."
+              throw "Electron executable download failed."
             }
           }
           if (!(Test-Path $electron)) {
