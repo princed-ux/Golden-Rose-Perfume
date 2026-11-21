@@ -7,9 +7,6 @@ import { canManageStockSetup, UUID } from '@/src/lib/golden-rose/contracts';
 import { getStaffAccess } from '@/src/lib/golden-rose/staff';
 import { createClient } from '@/src/lib/supabase/server';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 const BUCKET = 'golden-rose-products';
 const MAX_FILE_BYTES = 4_000_000;
 const MAX_BODY_BYTES = MAX_FILE_BYTES + 100_000;
