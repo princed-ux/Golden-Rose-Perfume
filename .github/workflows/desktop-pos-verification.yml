@@ -48,10 +48,17 @@ jobs:
         run: npm test
       - name: Build desktop renderer
         run: npm run build
+      # Run the native process first so startup failures get their own clear log.
+      - name: Verify native Electron window startup
+        env:
+          DEBUG: "pw:browser*"
+          DEBUG_COLORS: "0"
+        run: npm run test:browser -- tests/browser/electron.spec.ts
+
       # The separate web-pos.spec.ts requires the Next.js web test harness,
       # not this standalone Vite/Electron server.
-      - name: Run desktop register and Electron acceptance tests
-        run: npm run test:browser -- tests/browser/register.spec.ts tests/browser/electron.spec.ts
+      - name: Verify desktop register browser workflows
+        run: npm run test:browser -- tests/browser/register.spec.ts
 
       - name: Preserve failed browser-test artifacts
         if: failure()
