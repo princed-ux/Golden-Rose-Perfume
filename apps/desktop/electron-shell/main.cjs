@@ -9,6 +9,10 @@ const ORIGIN = "http://127.0.0.1:1420";
 const APP_URL = ORIGIN + "/";
 const PRELOAD = path.join(__dirname, "preload.cjs");
 const STARTUP_TIMEOUT_MS = 25000;
+// The native browser test uses a disposable profile; never reuse cashier auth in tests.
+if (process.env.GOLDEN_ROSE_TEST_PROFILE) {
+  app.setPath("userData", path.resolve(process.env.GOLDEN_ROSE_TEST_PROFILE));
+}
 let cashierWindow = null;
 let customerWindow = null;
 let lastCustomerSale = emptySale();
@@ -121,7 +125,7 @@ async function waitForRenderer() {
 
 function watchRenderer(window) {
   window.webContents.on("did-fail-load", (_event, code, description, url, isMainFrame) => {
-    if (!isMainFrame || !isLocalAppUrl(url)) return;
+    if (!isMainFrame || code === -3 || !isLocalAppUrl(url)) return;
     console.error("[Golden Rose] Renderer load failed:", code, description);
     void showDiagnostic(
       window,
