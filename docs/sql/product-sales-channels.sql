@@ -261,4 +261,64 @@ BEGIN
 END;
 $fn$;
 
+
+-- Owner-only authentication analytics. These are accounts, not CRM contacts
+-- or WhatsApp enquiries; staff and anonymous accounts are excluded.
+CREATE FUNCTION golden_rose_catalogue.customer_counts()
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $fn$
+DECLARE
+  actor uuid := auth.uid();
+  session_text text := auth.jwt()->>'session_id';
+  session_id_claim uuid;
+  eligible boolean;
+BEGIN
+  IF actor IS NULL OR coalesce(session_text,'') !~*
+    '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+  THEN RAISE EXCEPTION 'Sign in to view customer analytics.' USING ERRCODE='GR403'; END IF;
+  session_id_claim := session_text::uuid;
+  IF NOT EXISTS(SELECT 1 FROM auth.sessions WHERE id=session_id_claim AND user_id=actor) THEN
+    RAISE EXCEPTION 'Your session has ended.' USING ERRCODE='GR403';
+  END IF;
+  IF NOT EXISTS(
+    SELECT 1 FROM golden_rose.staff_members s
+    JOIN auth.users u ON u.id=s.user_id
+    WHERE s.user_id=actor AND s.role='owner' AND s.status='active'
+      AND s.revoked_at IS NULL AND u.email_confirmed_at IS NOT NULL
+      AND NOT coalesce(u.is_anonymous,false)
+      AND (u.banned_until IS NULL OR u.banned_until<=now())
+  ) THEN
+    RAISE EXCEPTION 'Only the owner can view customer account analytics.' USING ERRCODE='GR403';
+  END IF;
+  IF to_regprocedure('public.gr_employee_session_allowed(uuid,uuid)') IS NOT NULL THEN
+    EXECUTE 'SELECT public.gr_employee_session_allowed($1,$2)' INTO eligible
+      USING actor,session_id_claim;
+    IF eligible IS DISTINCT FROM true THEN
+      RAISE EXCEPTION 'Sign in again after changing your password.' USING ERRCODE='GR403';
+    END IF;
+  END IF;
+
+  RETURN (
+    SELECT jsonb_build_object(
+      'totalCustomers',count(*),
+      'verifiedCustomers',count(*) FILTER(WHERE u.email_confirmed_at IS NOT NULL),
+      'new30Days',count(*) FILTER(WHERE u.created_at>=now()-interval '30 days'),
+      'signedIn30Days',count(*) FILTER(WHERE u.last_sign_in_at>=now()-interval '30 days')
+    )
+    FROM auth.users u
+    WHERE NOT coalesce(u.is_anonymous,false)
+      AND NOT EXISTS(SELECT 1 FROM golden_rose.staff_members s WHERE s.user_id=u.id)
+  );
+END;
+$fn$;
+REVOKE ALL ON FUNCTION golden_rose_catalogue.customer_counts()
+  FROM PUBLIC,anon,service_role;
+GRANT EXECUTE ON FUNCTION golden_rose_catalogue.customer_counts()
+  TO authenticated;
+CREATE FUNCTION public.gr_owner_customer_counts()
+RETURNS jsonb LANGUAGE sql STABLE SET search_path='' AS $fn$
+  SELECT golden_rose_catalogue.customer_counts();
+$fn$;
+REVOKE ALL ON FUNCTION public.gr_owner_customer_counts() FROM PUBLIC,anon,service_role;
+GRANT EXECUTE ON FUNCTION public.gr_owner_customer_counts() TO authenticated;
+
 COMMIT;
