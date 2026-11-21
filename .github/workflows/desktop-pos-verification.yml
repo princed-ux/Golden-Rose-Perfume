@@ -25,6 +25,10 @@ jobs:
           cache: npm
           cache-dependency-path: apps/desktop/package-lock.json
 
+      - name: Install shared web dependencies for cross-app TypeScript imports
+        working-directory: .
+        run: npm ci
+
       - name: Install desktop dependencies
         run: npm ci
 
