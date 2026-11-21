@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ImagePlus, LoaderCircle, Trash2, ArrowUpRight } from 'lucide-react';
@@ -38,10 +39,7 @@ export function ProductImages({
   const [error, setError] = useState('');
   const [altText, setAltText] = useState(productName);
   const fileInput = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setImages(initialImages);
-  }, [initialImages]);
+  const router = useRouter();
 
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,6 +79,7 @@ export function ProductImages({
       setImages(result.images);
       setMessage(result.message || 'Photo added to this product.');
       if (input) input.value = '';
+      router.refresh();
     } catch {
       setError('The upload could not be confirmed. Check your connection and retry.');
     } finally {
@@ -108,6 +107,7 @@ export function ProductImages({
       }
       setImages(result.images);
       setMessage(result.message || 'Photograph removed.');
+      router.refresh();
     } catch {
       setError('Could not confirm removal. Refresh the product to check its photos.');
     } finally {
