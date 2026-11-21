@@ -205,7 +205,7 @@ BEGIN
     count(*)>page_limit
     INTO page_items,more_items
   FROM (
-    SELECT row_number() OVER () AS rn, page.*
+    SELECT row_number() OVER (ORDER BY page.name,page.sku,page.id) AS rn, page.*
     FROM (
       SELECT v.id,v.sku,p.name,
         jsonb_build_object(
@@ -315,7 +315,7 @@ REVOKE ALL ON FUNCTION golden_rose_catalogue.customer_counts()
 GRANT EXECUTE ON FUNCTION golden_rose_catalogue.customer_counts()
   TO authenticated;
 CREATE FUNCTION public.gr_owner_customer_counts()
-RETURNS jsonb LANGUAGE sql STABLE SET search_path='' AS $fn$
+RETURNS jsonb LANGUAGE sql SET search_path='' AS $fn$
   SELECT golden_rose_catalogue.customer_counts();
 $fn$;
 REVOKE ALL ON FUNCTION public.gr_owner_customer_counts() FROM PUBLIC,anon,service_role;
