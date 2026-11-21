@@ -60,7 +60,7 @@ async function boundedMultipart(request: Request) {
   if (!request.body) throw new Error('Choose an image to upload.');
 
   const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
+  const chunks: ArrayBuffer[] = [];
   let count = 0;
   try {
     while (true) {
@@ -71,7 +71,9 @@ async function boundedMultipart(request: Request) {
         await reader.cancel('Image upload exceeded the size limit.');
         throw new Error('Choose a photo smaller than 4 MB.');
       }
-      chunks.push(new Uint8Array(value));
+      const chunk = new Uint8Array(new ArrayBuffer(value.byteLength));
+      chunk.set(value);
+      chunks.push(chunk.buffer);
     }
   } finally {
     reader.releaseLock();
