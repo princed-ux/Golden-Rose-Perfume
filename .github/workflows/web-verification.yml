@@ -1,0 +1,48 @@
+name: Golden Rose web verification
+
+on:
+  push:
+    branches:
+      - main
+      - 'desktop-pos-review-*'
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: TypeScript, ESLint, channel contracts and Next.js build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_CI_PLACEHOLDER_DO_NOT_USE
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify TypeScript
+        run: npx tsc --noEmit
+
+      - name: Check lint
+        run: npm run lint
+
+      - name: Check product channels and customer journey contracts
+        run: node --test tests/product-sales-channels-contract.test.mjs
+
+      - name: Build customer storefront and staff workspace
+        run: npm run build
