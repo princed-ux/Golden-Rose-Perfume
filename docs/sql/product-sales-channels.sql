@@ -302,7 +302,16 @@ BEGIN
       'totalCustomers',count(*),
       'verifiedCustomers',count(*) FILTER(WHERE u.email_confirmed_at IS NOT NULL),
       'new30Days',count(*) FILTER(WHERE u.created_at>=now()-interval '30 days'),
-      'signedIn30Days',count(*) FILTER(WHERE u.last_sign_in_at>=now()-interval '30 days')
+      'signedIn30Days',count(*) FILTER(WHERE u.last_sign_in_at>=now()-interval '30 days'),
+      'productChannels',(
+        SELECT jsonb_build_object(
+          'totalProducts',count(*),
+          'posOnly',count(*) FILTER(WHERE is_active AND pos_enabled AND NOT is_published),
+          'onlineOnly',count(*) FILTER(WHERE is_active AND NOT pos_enabled AND is_published),
+          'bothChannels',count(*) FILTER(WHERE is_active AND pos_enabled AND is_published),
+          'hidden',count(*) FILTER(WHERE NOT is_active OR (NOT pos_enabled AND NOT is_published))
+        ) FROM golden_rose.products
+      )
     )
     FROM auth.users u
     WHERE NOT coalesce(u.is_anonymous,false)
