@@ -1,0 +1,588 @@
+
+/*
+ * GOLDEN ROSE PERFUME
+ * COMPACT CASHIER WORKSPACE
+ *
+ * This stylesheet improves the existing POS
+ * without replacing its transaction, inventory,
+ * barcode, receipt or payment components.
+ *
+ * It loads AFTER pos.css.
+ */
+
+/* ---------------------------------------
+   1. COMPACT MAIN HEADING
+--------------------------------------- */
+
+.pos-screen .pos-heading,
+.pos-screen.pos-focus-mode .pos-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  min-height: 43px;
+  margin: 0 0 7px;
+  padding: 0;
+}
+
+.pos-screen .pos-heading > div:first-child {
+  min-width: 0;
+}
+
+.pos-screen .pos-heading .pos-eyebrow,
+.pos-screen .pos-heading > div:first-child > p:last-child {
+  display: none !important;
+}
+
+.pos-screen .pos-heading h1,
+.pos-screen.pos-focus-mode .pos-heading h1 {
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #42172b;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.pos-screen .pos-heading h1 span {
+  color: #c59b61;
+}
+
+/* ---------------------------------------
+   2. SMALL HEADER ACTIONS
+--------------------------------------- */
+
+.pos-screen .pos-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+
+  min-width: 0;
+}
+
+.pos-screen .pos-heading-actions .pos-online {
+  display: none;
+}
+
+.pos-screen .pos-heading-actions .pos-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  min-height: 33px;
+  padding: 6px 10px;
+
+  border: 1px solid #e6d9dc;
+  border-radius: 7px;
+
+  color: #613147;
+  background: #fff;
+
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  white-space: nowrap;
+}
+
+.pos-screen .pos-heading-actions .pos-secondary:hover {
+  background: #faf1ec;
+  border-color: #d8bda9;
+}
+
+.pos-screen .pos-heading-actions svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------------------------------------
+   3. REMOVE THE UNNECESSARY LOCATION BAR
+   WHEN THERE IS ONLY ONE SELLING STORE
+--------------------------------------- */
+
+/*
+ * The existing register supplies:
+ *
+ * - One placeholder option
+ * - One option for each available store
+ *
+ * With exactly one configured store,
+ * the selection is retained in React state
+ * but the large visual bar is hidden.
+ */
+
+.pos-screen .pos-store-bar:has(
+  #pos-location option:nth-child(2)
+):not(
+  :has(#pos-location option:nth-child(3))
+) {
+  display: none !important;
+}
+
+/*
+ * With multiple stores, retain a small
+ * location selector for stock safety.
+ */
+
+.pos-screen .pos-store-bar {
+  min-height: 0;
+  margin: 0 0 7px;
+  padding: 5px 8px;
+
+  border-radius: 7px;
+}
+
+.pos-screen .pos-store-bar > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.pos-screen .pos-store-bar .pos-store-caption {
+  display: none;
+}
+
+.pos-screen .pos-store-bar .pos-select select {
+  height: 33px;
+  min-width: 170px;
+  font-size: 11px;
+}
+
+.pos-screen .pos-store-bar .pos-select svg {
+  top: 8px;
+}
+
+/* ---------------------------------------
+   4. REDUCE EMPTY SPACE ABOVE PRODUCTS
+--------------------------------------- */
+
+.pos-screen .pos-columns {
+  gap: 9px;
+  min-height: 0;
+}
+
+.pos-screen .pos-catalogue {
+  min-width: 0;
+  min-height: 0;
+  padding: 10px;
+}
+
+.pos-screen .pos-section-title {
+  flex: 0 0 auto;
+  margin-bottom: 7px;
+}
+
+.pos-screen .pos-section-title .pos-eyebrow {
+  display: none;
+}
+
+.pos-screen .pos-section-title h2 {
+  margin: 0 !important;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.pos-screen .pos-section-title .pos-counter {
+  padding: 5px 9px;
+  font-size: 10px;
+}
+
+/* ---------------------------------------
+   5. COMPACT SEARCH AND FILTERS
+--------------------------------------- */
+
+.pos-screen .pos-search-row {
+  gap: 6px;
+}
+
+.pos-screen .pos-search {
+  height: 39px;
+  min-height: 39px;
+}
+
+.pos-screen .pos-search input {
+  font-size: 12px;
+}
+
+.pos-screen .pos-refresh {
+  width: 39px;
+  min-height: 39px;
+  flex-basis: 39px;
+}
+
+.pos-screen .pos-filter-row {
+  flex: 0 0 auto;
+  gap: 7px;
+
+  margin: 7px 0;
+}
+
+.pos-screen .pos-segments,
+.pos-screen .pos-view-choices {
+  padding: 3px;
+}
+
+.pos-screen .pos-segments button,
+.pos-screen .pos-view-choices button {
+  min-height: 29px;
+  padding: 5px 9px;
+  font-size: 10px;
+}
+
+/* ---------------------------------------
+   6. PRODUCT TABLE TAKES THE SPACE
+--------------------------------------- */
+
+.pos-screen .pos-product-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.pos-screen .pos-products {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.pos-screen .pos-product-table thead th {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.pos-screen .pos-product-table tbody td {
+  height: 60px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.pos-screen .pos-catalogue-foot {
+  margin-top: 6px !important;
+  font-size: 9px;
+}
+
+/* ---------------------------------------
+   7. COMPACT CURRENT SALE HEADER
+--------------------------------------- */
+
+.pos-screen .pos-cart {
+  min-height: 0;
+}
+
+.pos-screen .pos-cart-heading {
+  flex: 0 0 auto;
+
+  min-height: 53px;
+  padding: 9px 12px;
+}
+
+.pos-screen .pos-cart-heading .pos-eyebrow {
+  display: none;
+}
+
+.pos-screen .pos-cart-heading h2 {
+  margin: 0 !important;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.pos-screen .pos-basket-tools {
+  flex: 0 0 auto;
+  padding: 7px;
+  gap: 6px;
+}
+
+.pos-screen .pos-basket-tools button {
+  min-height: 32px;
+  padding: 5px;
+  font-size: 10px;
+}
+
+.pos-screen .pos-cart-contents {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ---------------------------------------
+   8. COMPACT FIXED CHECKOUT FOOTER
+--------------------------------------- */
+
+.pos-screen .pos-checkout {
+  flex: 0 0 auto;
+  gap: 7px;
+  padding: 10px 12px;
+
+  overflow: visible;
+}
+
+.pos-screen .pos-amount-due {
+  margin-top: 0;
+  padding: 8px 0 4px;
+}
+
+.pos-screen .pos-amount-due strong {
+  font-size: 21px;
+}
+
+.pos-screen .pos-pay {
+  min-height: 46px;
+  padding: 9px 12px;
+}
+
+.pos-screen .pos-register-shortcuts {
+  font-size: 9px;
+}
+
+.pos-screen .pos-safe {
+  font-size: 9px;
+}
+
+/* ---------------------------------------
+   9. REAL FULL-SCREEN REGISTER VIEW
+--------------------------------------- */
+
+@media (min-width: 901px) {
+  .pos-screen.pos-focus-mode {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100vw;
+    height: 100dvh;
+    min-height: 0;
+
+    margin: 0;
+    padding: 6px 8px 8px;
+
+    overflow: hidden;
+
+    background: #f8f5f4;
+  }
+
+  .pos-screen.pos-focus-mode .pos-heading {
+    flex: 0 0 auto;
+    margin-bottom: 6px;
+  }
+
+  .pos-screen.pos-focus-mode .pos-columns {
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1.3fr)
+      minmax(370px, 1fr);
+
+    align-items: stretch;
+
+    flex: 1 1 auto;
+
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .pos-screen.pos-focus-mode .pos-catalogue,
+  .pos-screen.pos-focus-mode .pos-cart {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+
+    overflow: hidden;
+  }
+
+  .pos-screen.pos-focus-mode .pos-product-table-wrap,
+  .pos-screen.pos-focus-mode .pos-products {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .pos-screen.pos-focus-mode .pos-cart-contents {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .pos-screen.pos-focus-mode .pos-checkout {
+    flex: 0 0 auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  body:has(.pos-screen.pos-focus-mode) {
+    overflow: hidden;
+  }
+
+  .owner-suite:has(.pos-screen.pos-focus-mode)
+  > .owner-sidebar,
+  .owner-suite:has(.pos-screen.pos-focus-mode)
+  .owner-topbar,
+  .owner-suite:has(.pos-screen.pos-focus-mode)
+  .owner-amara-launch {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------
+   10. NORMAL WORKSPACE REGISTER
+--------------------------------------- */
+
+@media (min-width: 901px) {
+  .pos-screen:not(.pos-focus-mode) .pos-columns {
+    grid-template-columns:
+      minmax(0, 1.3fr)
+      minmax(350px, 1fr);
+  }
+}
+
+/* ---------------------------------------
+   11. MEDIUM DESKTOPS
+--------------------------------------- */
+
+@media (min-width: 901px) and (max-width: 1120px) {
+  .pos-screen.pos-focus-mode .pos-columns,
+  .pos-screen:not(.pos-focus-mode) .pos-columns {
+    grid-template-columns:
+      minmax(0, 1.1fr)
+      minmax(330px, 1fr);
+  }
+
+  .pos-screen .pos-heading h1 {
+    font-size: 21px;
+  }
+
+  .pos-screen .pos-heading-actions .pos-secondary {
+    padding: 5px 8px;
+    font-size: 10px !important;
+  }
+}
+
+/* ---------------------------------------
+   12. TABLETS
+--------------------------------------- */
+
+@media (max-width: 900px) {
+  .pos-screen .pos-heading {
+    align-items: center;
+  }
+
+  .pos-screen .pos-heading h1 {
+    font-size: 22px;
+  }
+
+  .pos-screen .pos-columns {
+    display: block;
+  }
+
+  .pos-screen .pos-catalogue {
+    min-height: 420px;
+  }
+}
+
+/* ---------------------------------------
+   13. MOBILE DEVICES
+--------------------------------------- */
+
+@media (max-width: 780px) {
+  .pos-screen .pos-heading {
+    gap: 8px;
+  }
+
+  .pos-screen .pos-heading h1 {
+    font-size: 21px;
+  }
+
+  .pos-screen .pos-heading-actions {
+    justify-content: flex-start;
+    gap: 5px;
+  }
+
+  .pos-screen .pos-heading-actions .pos-secondary {
+    min-height: 31px;
+    padding: 5px 7px;
+    font-size: 10px !important;
+  }
+
+  .pos-screen .pos-catalogue {
+    padding: 9px;
+  }
+
+  .pos-screen .pos-cart.pos-cart-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pos-screen .pos-cart.pos-cart-open .pos-cart-contents {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* ---------------------------------------
+   14. HIDE FLOATING ASSISTANT ON POS
+--------------------------------------- */
+
+.owner-suite:has(.pos-screen)
+.owner-amara-launch {
+  display: none !important;
+}
+
+/* ---------------------------------------
+   15. PRINTING
+--------------------------------------- */
+
+@media print {
+  .pos-screen .pos-heading,
+  .pos-screen .pos-store-bar,
+  .pos-screen .pos-columns {
+    display: none !important;
+  }
+
+  .pos-screen .pos-receipt-dialog,
+  .pos-screen .pos-receipt-paper {
+    display: block !important;
+  }
+}
+
+/* ---------------------------------------
+   16. ACCESSIBILITY
+--------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .pos-screen *,
+  .pos-screen *::before,
+  .pos-screen *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

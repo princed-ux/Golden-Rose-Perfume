@@ -8,6 +8,8 @@
   "permissions": [
     "core:default",
     "core:webview:allow-create-webview-window",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
     {
       "identifier": "opener:allow-open-url",
       "allow": [
@@ -15,8 +17,6 @@
           "url": "http://localhost:3000/workspace*"
         }
       ]
-    },
-    "core:window:allow-show",
-    "core:window:allow-set-focus"
+    }
   ]
 }

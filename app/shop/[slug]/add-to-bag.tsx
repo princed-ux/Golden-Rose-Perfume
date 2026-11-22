@@ -1,57 +1,359 @@
+
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { formatPrice, UUID, type CatalogVariant } from '@/src/lib/golden-rose/contracts';
-import { MAX_QUANTITY, setBagQuantity } from '@/src/lib/customer/bag';
-import { useShoppingBag } from '@/src/components/use-shopping-bag';
+import {
+  ArrowRight,
+  ShoppingBag,
+} from 'lucide-react';
 
-export function AddToBag({ variants }: { variants: CatalogVariant[] }) {
+import {
+  useState,
+  type FormEvent,
+} from 'react';
+
+import {
+  formatPrice,
+  UUID,
+  type CatalogVariant,
+} from '@/src/lib/golden-rose/contracts';
+
+import {
+  MAX_QUANTITY,
+  setBagQuantity,
+} from '@/src/lib/customer/bag';
+
+import {
+  useShoppingBag,
+} from '@/src/components/use-shopping-bag';
+
+export function AddToBag({
+  variants,
+}: {
+  variants: CatalogVariant[];
+}) {
   const [notice, setNotice] = useState('');
-  const { ready, unavailable, deviceOnly, pending, error, retry, update } = useShoppingBag();
-  const options = variants.filter(variant => variant.currency === 'NGN' && UUID.test(variant.id) &&
-    Number.isSafeInteger(variant.priceMinor) && variant.priceMinor >= 0);
+  const [selectedId, setSelectedId] = useState('');
+  const [quantity, setQuantity] = useState(1);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  const {
+    ready,
+    unavailable,
+    deviceOnly,
+    pending,
+    error,
+    retry,
+    update,
+    lines,
+  } = useShoppingBag();
+
+  // Only variants that can be used by the current
+  // NGN shopping-bag and WhatsApp checkout are eligible.
+  const options = variants.filter(
+    variant =>
+      variant.currency === 'NGN' &&
+      UUID.test(variant.id) &&
+      Number.isSafeInteger(variant.priceMinor) &&
+      variant.priceMinor >= 0,
+  );
+
+  const selectedVariant =
+    options.find(variant => variant.id === selectedId) ??
+    options[0];
+
+  const selectedQuantity = selectedVariant
+    ? lines.find(
+        line => line.variantId === selectedVariant.id,
+      )?.quantity ?? 0
+    : 0;
+
+  async function submit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const id = String(form.get('variant'));
-    const quantity = Number(form.get('quantity'));
-    if (!options.some(variant => variant.id === id) || !Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY) {
-      setNotice('Choose a variant and a valid quantity.');
+
+    if (!ready || unavailable || pending) {
       return;
     }
-    const changed = await update(lines => {
-      const previous = lines.find(line => line.variantId === id)?.quantity ?? 0;
-      if (previous + quantity > MAX_QUANTITY) return lines;
-      return setBagQuantity(lines, id, previous + quantity);
-    }, id);
-    setNotice(changed ? (deviceOnly ? 'Added to the bag on this device.' : 'Added to your shopping bag.')
-      : 'Unable to add this selection. Check your bag and quantity.');
+
+    const form = new FormData(event.currentTarget);
+
+    const id = String(
+      form.get('variant') ?? '',
+    );
+
+    const requestedQuantity = Number(
+      form.get('quantity'),
+    );
+
+    if (
+      !options.some(variant => variant.id === id) ||
+      !Number.isInteger(requestedQuantity) ||
+      requestedQuantity < 1 ||
+      requestedQuantity > MAX_QUANTITY
+    ) {
+      setNotice(
+        'Choose a valid bottle size and quantity.',
+      );
+      return;
+    }
+
+    const existingQuantity =
+      lines.find(line => line.variantId === id)
+        ?.quantity ?? 0;
+
+    if (
+      existingQuantity + requestedQuantity >
+      MAX_QUANTITY
+    ) {
+      setNotice(
+        `Your bag already contains ${existingQuantity} of this selection. The maximum is ${MAX_QUANTITY} per variant.`,
+      );
+      return;
+    }
+
+    setNotice('');
+
+    try {
+      const changed = await update(
+        current => {
+          const previous =
+            current.find(
+              line => line.variantId === id,
+            )?.quantity ?? 0;
+
+          if (
+            previous + requestedQuantity >
+            MAX_QUANTITY
+          ) {
+            return current;
+          }
+
+          return setBagQuantity(
+            current,
+            id,
+            previous + requestedQuantity,
+          );
+        },
+        id,
+      );
+
+      setNotice(
+        changed
+          ? deviceOnly
+            ? 'Added to the shopping bag on this device.'
+            : 'Fragrance added to your shopping bag.'
+          : 'Unable to add this selection. Check your bag and quantity.',
+      );
+    } catch {
+      setNotice(
+        'The fragrance could not be added. Please try again.',
+      );
+    }
   }
 
-  if (!options.length) return <p>This fragrance is currently unavailable to add to your bag.</p>;
+  if (!options.length) {
+    return (
+      <div
+        className="mt-6 rounded-xl border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] p-5"
+        role="status"
+      >
+        <h2 className="font-serif text-xl text-[var(--gr-theme-text)]">
+          Ordering temporarily unavailable
+        </h2>
+
+        <p className="mt-2 text-sm leading-7 text-[var(--gr-theme-muted)]">
+          This fragrance does not currently have a
+          selectable NGN variant. You can still
+          explore the collection.
+        </p>
+
+        <Link
+          href="/shop"
+          className="text-link mt-4"
+        >
+          Explore other perfumes
+          <ArrowRight
+            size={16}
+            aria-hidden="true"
+          />
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <form className="gr-bag-form mt-6" onSubmit={submit} onChange={() => setNotice('')}>
-      <label>Variant
-        <select name="variant" aria-label="Fragrance variant">
-          {options.map(variant => <option key={variant.id} value={variant.id}>
-            {variant.sizeMl ? variant.sizeMl + ' ml' : variant.sku ?? 'Standard'} · {formatPrice(variant.priceMinor)}
-            {variant.sizeMl && variant.sku ? ' · ' + variant.sku : ''}
-          </option>)}
-        </select>
-      </label>
-      <label>Quantity<input name="quantity" type="number" defaultValue={1} min={1} max={MAX_QUANTITY} step={1} required /></label>
-      <div className="flex flex-wrap items-center gap-4">
-        <button type="submit" className="gr-bag-primary" disabled={!ready || unavailable || pending}>
-          <ShoppingBag size={16} aria-hidden="true" /> {pending ? 'Saving…' : 'Add to bag'}
-        </button>
-        <Link className="text-link" href="/cart">View bag</Link>
+    <section
+      className="mt-7 rounded-2xl border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] p-5 shadow-sm sm:p-6"
+      aria-labelledby="gr-order-heading"
+    >
+      <div className="mb-5 border-b border-[var(--gr-theme-border)] pb-4">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--gr-theme-gold)]">
+          YOUR SELECTION
+        </p>
+
+        <h2
+          id="gr-order-heading"
+          className="font-serif text-2xl font-normal text-[var(--gr-theme-text)]"
+        >
+          Choose your fragrance.
+        </h2>
+
+        <p className="mt-2 text-sm leading-6 text-[var(--gr-theme-muted)]">
+          Select a bottle size and quantity to add
+          to your shopping bag.
+        </p>
       </div>
-      {unavailable ? <p role="status">Your bag could not be synced. <button type="button" className="text-link" onClick={retry}>Try again</button></p> :
-        (error || notice) && <p role="status">{error || notice}</p>}
-    </form>
+
+      <form
+        className="gr-bag-form"
+        onSubmit={submit}
+        onChange={() => setNotice('')}
+        aria-busy={pending}
+      >
+        <div className="grid w-full gap-4 sm:grid-cols-2">
+          <label>
+            Bottle size / variant
+
+            <select
+              name="variant"
+              aria-label="Choose fragrance variant"
+              value={selectedVariant.id}
+              onChange={event =>
+                setSelectedId(event.target.value)
+              }
+              required
+            >
+              {options.map(variant => (
+                <option
+                  key={variant.id}
+                  value={variant.id}
+                >
+                  {variant.sizeMl
+                    ? `${variant.sizeMl} ml`
+                    : variant.sku ?? 'Standard'}
+
+                  {' · '}
+                  {formatPrice(variant.priceMinor)}
+
+                  {variant.sizeMl && variant.sku
+                    ? ` · ${variant.sku}`
+                    : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Quantity
+
+            <input
+              name="quantity"
+              type="number"
+              value={quantity}
+              onChange={event =>
+                setQuantity(
+                  Number(event.target.value),
+                )
+              }
+              min={1}
+              max={MAX_QUANTITY}
+              step={1}
+              required
+            />
+          </label>
+        </div>
+
+        <div className="flex w-full flex-wrap items-center justify-between gap-3 rounded-xl bg-[var(--gr-theme-bg)] px-4 py-3">
+          <div>
+            <p className="mb-1 text-[11px] text-[var(--gr-theme-muted)]">
+              Selected bottle price
+            </p>
+
+            <strong className="font-serif text-2xl text-[var(--gr-theme-text)]">
+              {formatPrice(
+                selectedVariant.priceMinor,
+                selectedVariant.currency,
+              )}
+            </strong>
+          </div>
+
+          <p className="mb-0 text-xs text-[var(--gr-theme-muted)]">
+            {selectedQuantity > 0
+              ? `${selectedQuantity} already in your bag`
+              : 'Ready to add to bag'}
+          </p>
+        </div>
+
+        <div className="flex w-full flex-wrap items-center gap-4">
+          <button
+            type="submit"
+            className="gr-bag-primary !min-h-12 !rounded-lg !border-[#58243d] !bg-[#58243d] !px-6 !text-white hover:!bg-[#7c3b58]"
+            disabled={
+              !ready ||
+              unavailable ||
+              pending
+            }
+          >
+            <ShoppingBag
+              size={17}
+              aria-hidden="true"
+            />
+
+            {pending
+              ? 'Adding to bag…'
+              : 'Add to shopping bag'}
+          </button>
+
+          <Link
+            className="text-link"
+            href="/cart"
+          >
+            View shopping bag
+            <ArrowRight
+              size={16}
+              aria-hidden="true"
+            />
+          </Link>
+        </div>
+
+        {unavailable ? (
+          <div
+            className="grid gap-2 text-sm"
+            role="alert"
+          >
+            <p>
+              Your shopping bag could not be synced.
+              Your existing selections have not been
+              deliberately cleared.
+            </p>
+
+            <button
+              type="button"
+              className="text-link"
+              onClick={retry}
+            >
+              Try again
+            </button>
+          </div>
+        ) : (
+          (error || notice) && (
+            <p
+              role={error ? 'alert' : 'status'}
+              aria-live="polite"
+              className="text-sm leading-6"
+            >
+              {error || notice}
+            </p>
+          )
+        )}
+      </form>
+
+      <p className="mt-5 mb-0 border-t border-[var(--gr-theme-border)] pt-4 text-xs leading-6 text-[var(--gr-theme-muted)]">
+        Checkout continues through WhatsApp. Golden Rose
+        will confirm availability, delivery arrangements
+        and payment details before completing your order.
+      </p>
+    </section>
   );
 }

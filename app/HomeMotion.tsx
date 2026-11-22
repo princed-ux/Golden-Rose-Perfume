@@ -10,99 +10,46 @@ type MotionRule = {
   direction: MotionDirection;
 };
 
-/*
- * GOLDEN ROSE — SCROLL MOTION
+/**
+ * Fallback for browsers without CSS view-timeline animation support.
+ * In supporting browsers, the existing homepage CSS owns the animations;
+ * running a second JS animation system would cause competing transforms.
  *
- * Left / right / upward reveals.
- *
- * Uses IntersectionObserver to animate elements
- * only when they enter the visible viewport.
- *
- * Uses MutationObserver so dynamically loaded
- * catalogue products are included.
- *
- * No external animation dependency required.
+ * Content stays visible when observers are unavailable or motion is reduced.
  */
-
-const motionRules: MotionRule[] = [
-  {
-    selector: '.gr-intro__main',
-    direction: 'left',
-  },
-  {
-    selector: '.gr-intro__aside',
-    direction: 'right',
-  },
-  {
-    selector: '.gr-section-heading > div',
-    direction: 'left',
-  },
-  {
-    selector: '.gr-section-heading > a',
-    direction: 'right',
-  },
-  {
-    selector: '.gr-product-card',
-    direction: 'up',
-  },
-  {
-    selector: '.gr-category-card',
-    direction: 'up',
-  },
-  {
-    selector: '.gr-editorial__heading',
-    direction: 'left',
-  },
-  {
-    selector: '.gr-editorial__main',
-    direction: 'left',
-  },
-  {
-    selector: '.gr-editorial__side',
-    direction: 'right',
-  },
-  {
-    selector: '.gr-gallery-card',
-    direction: 'up',
-  },
-  {
-    selector: '.gr-statement__inner',
-    direction: 'up',
-  },
-  {
-    selector: '.gr-experience__intro',
-    direction: 'left',
-  },
-  {
-    selector: '.gr-experience__step',
-    direction: 'up',
-  },
-  {
-    selector: '.gr-story__image',
-    direction: 'left',
-  },
-  {
-    selector: '.gr-story__content',
-    direction: 'right',
-  },
-  {
-    selector: '.gr-final__content',
-    direction: 'up',
-  },
-  {
-    selector: '.gr-footer__main',
-    direction: 'up',
-  },
+const motionRules: readonly MotionRule[] = [
+  { selector: '.gr-intro__main', direction: 'left' },
+  { selector: '.gr-intro__aside', direction: 'right' },
+  { selector: '.gr-section-heading > div', direction: 'left' },
+  { selector: '.gr-section-heading > a', direction: 'right' },
+  { selector: '.gr-product-card', direction: 'up' },
+  { selector: '.gr-category-card', direction: 'up' },
+  { selector: '.gr-editorial__heading', direction: 'left' },
+  { selector: '.gr-editorial__main', direction: 'left' },
+  { selector: '.gr-editorial__side', direction: 'right' },
+  { selector: '.gr-gallery-card', direction: 'up' },
+  { selector: '.gr-statement__inner', direction: 'up' },
+  { selector: '.gr-experience__intro', direction: 'left' },
+  { selector: '.gr-experience__step', direction: 'up' },
+  { selector: '.gr-photo-mosaic__visual', direction: 'left' },
+  { selector: '.gr-photo-mosaic__copy', direction: 'right' },
+  { selector: '.gr-story__image', direction: 'left' },
+  { selector: '.gr-story__content', direction: 'right' },
+  { selector: '.gr-final__content', direction: 'up' },
+  { selector: '.gr-footer__main', direction: 'up' },
 ];
 
 export default function HomeMotion() {
   useEffect(() => {
-    const root =
-      document.querySelector<HTMLElement>('.gr-home');
+    const root = document.querySelector<HTMLElement>('.gr-home');
+    if (!root) return;
 
-    if (!root) {
-      return;
-    }
+    // page.tsx/page.css already provide native view-timeline reveals.
+    const hasNativeMotion =
+      typeof CSS !== 'undefined' &&
+      CSS.supports('animation-timeline: view()');
+
+    if (hasNativeMotion) return;
 
     if (
       typeof IntersectionObserver === 'undefined' ||
@@ -114,176 +61,93 @@ export default function HomeMotion() {
     const motionPreference = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     );
-
     const registered = new WeakSet<Element>();
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) {
-            return;
-          }
-
-          entry.target.classList.add(
-            'gr-motion-visible',
-          );
-
-          observer.unobserve(entry.target);
-        });
+    const intersection = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('gr-motion-visible');
+          intersection.unobserve(entry.target);
+        }
       },
-      {
-        threshold: 0.12,
-        rootMargin: '0px 0px -5% 0px',
-      },
+      { threshold: 0.08, rootMargin: '0px 0px -4% 0px' },
     );
-
-    /*
-     * Register elements.
-     * Existing elements are only registered once.
-     */
 
     function registerElements() {
-      if (!root || motionPreference.matches) {
-        return;
-      }
+      if (!root || motionPreference.matches) return;
 
+      // Add the enabled class only when the fallback can observe elements.
       root.classList.add('gr-motion-enabled');
 
-      motionRules.forEach(
-        ({ selector, direction }) => {
-          const elements =
-            root.querySelectorAll<HTMLElement>(selector);
+      for (const { selector, direction } of motionRules) {
+        const elements = root.querySelectorAll<HTMLElement>(selector);
 
-          elements.forEach((element, index) => {
-            if (registered.has(element)) {
-              return;
-            }
+        elements.forEach((element, index) => {
+          if (registered.has(element)) return;
+          registered.add(element);
 
-            registered.add(element);
+          element.classList.add(
+            'gr-motion-item',
+            `gr-motion-from-${direction}`,
+          );
 
-            element.classList.add(
-              'gr-motion-item',
-              `gr-motion-from-${direction}`,
-            );
+          element.style.setProperty(
+            '--gr-motion-delay',
+            `${(index % 4) * 65}ms`,
+          );
 
-            /*
-             * Small sequential delays for product
-             * and category cards.
-             */
+          const rectangle = element.getBoundingClientRect();
+          const alreadyVisible =
+            rectangle.top < window.innerHeight * 0.9 &&
+            rectangle.bottom > 0 &&
+            rectangle.right > 0 &&
+            rectangle.left < window.innerWidth;
 
-            const delay = (index % 4) * 65;
-
-            element.style.setProperty(
-              '--gr-motion-delay',
-              `${delay}ms`,
-            );
-
-            const rectangle =
-              element.getBoundingClientRect();
-
-            /*
-             * Never hide content already on screen.
-             */
-
-            if (
-              rectangle.top <
-                window.innerHeight * 0.88 &&
-              rectangle.bottom > 0
-            ) {
-              element.classList.add(
-                'gr-motion-visible',
-              );
-            } else {
-              observer.observe(element);
-            }
-          });
-        },
-      );
+          if (alreadyVisible) {
+            element.classList.add('gr-motion-visible');
+          } else {
+            intersection.observe(element);
+          }
+        });
+      }
     }
 
-    let animationFrame = 0;
+    let registrationFrame = 0;
 
     function scheduleRegistration() {
-      if (animationFrame !== 0) {
-        return;
-      }
-
-      animationFrame = window.requestAnimationFrame(
-        () => {
-          animationFrame = 0;
-          registerElements();
-        },
-      );
+      if (registrationFrame) return;
+      registrationFrame = window.requestAnimationFrame(() => {
+        registrationFrame = 0;
+        registerElements();
+      });
     }
 
-    /*
-     * Detect catalogue sections streamed into
-     * the homepage after initial render.
-     */
+    // Includes products streamed into Suspense after the hero hydrates.
+    const mutations = new MutationObserver(scheduleRegistration);
+    mutations.observe(root, { childList: true, subtree: true });
 
-    const mutationObserver = new MutationObserver(
-      scheduleRegistration,
-    );
-
-    mutationObserver.observe(root, {
-      childList: true,
-      subtree: true,
-    });
-
-    /*
-     * Respond when the visitor changes their
-     * operating-system motion preference.
-     */
-
-    function handleMotionPreference() {
-      if (!root) {
-        return;
-      }
-
+    function updateMotionPreference() {
       if (motionPreference.matches) {
-        root.classList.remove(
-          'gr-motion-enabled',
-        );
-
-        observer.disconnect();
-
-        root
-          .querySelectorAll<HTMLElement>(
-            '.gr-motion-item',
-          )
-          .forEach((element) => {
-            element.classList.add(
-              'gr-motion-visible',
-            );
-          });
+        root?.classList.remove('gr-motion-enabled');
+        intersection.disconnect();
+        root?.querySelectorAll('.gr-motion-item').forEach(element => {
+          element.classList.add('gr-motion-visible');
+        });
       } else {
         registerElements();
       }
     }
 
-    motionPreference.addEventListener(
-      'change',
-      handleMotionPreference,
-    );
-
-    registerElements();
+    motionPreference.addEventListener('change', updateMotionPreference);
+    updateMotionPreference();
 
     return () => {
-      observer.disconnect();
-      mutationObserver.disconnect();
-
-      motionPreference.removeEventListener(
-        'change',
-        handleMotionPreference,
-      );
-
-      if (animationFrame !== 0) {
-        window.cancelAnimationFrame(animationFrame);
-      }
-
-      root.classList.remove(
-        'gr-motion-enabled',
-      );
+      mutations.disconnect();
+      intersection.disconnect();
+      motionPreference.removeEventListener('change', updateMotionPreference);
+      if (registrationFrame) window.cancelAnimationFrame(registrationFrame);
+      root.classList.remove('gr-motion-enabled');
     };
   }, []);
 

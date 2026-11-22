@@ -2,6 +2,7 @@
 import { Suspense, type ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
 import {
   ArrowDownToLine,
   ArrowRight,
@@ -27,6 +28,7 @@ import {
 
 import { canViewModule } from '@/src/domain/permissions';
 import { requireStaff } from '@/src/lib/golden-rose/staff';
+import { createClient } from '@/src/lib/supabase/server';
 
 import {
   EdgeError,
@@ -51,6 +53,88 @@ const card =
 
 const heading =
   'font-serif text-xl font-normal tracking-tight text-[#471a31] sm:text-2xl';
+
+/**
+ * One database-wide snapshot for every authorized active location.
+ * This is intentionally separate from the paginated stock register
+ * and its physical-count evidence indicators.
+ */
+type InventorySummary = {
+  totalProducts: number;
+  activeProducts: number;
+  publishedProducts: number;
+  qaProducts: number;
+  activeVariants: number;
+  activeStores: number;
+  activeLocations: number;
+  recordedBalanceRows: number;
+  physicalOnHand: number;
+  reservedUnits: number;
+  availableUnits: number;
+  lowRecordedRows: number;
+  emptyRecordedRows: number;
+  missingBalanceRows: number;
+  scope: 'all-active-locations' | 'assigned-active-location';
+};
+
+const summaryCounts = [
+  'totalProducts',
+  'activeProducts',
+  'publishedProducts',
+  'qaProducts',
+  'activeVariants',
+  'activeStores',
+  'activeLocations',
+  'recordedBalanceRows',
+  'physicalOnHand',
+  'reservedUnits',
+  'availableUnits',
+  'lowRecordedRows',
+  'emptyRecordedRows',
+  'missingBalanceRows',
+] as const satisfies readonly (keyof InventorySummary)[];
+
+function isSummary(value: unknown): value is InventorySummary {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  return (
+    summaryCounts.every(key => {
+      const count = candidate[key];
+
+      return typeof count === 'number' &&
+        Number.isSafeInteger(count) &&
+        count >= 0;
+    }) &&
+    (
+      candidate.scope === 'all-active-locations' ||
+      candidate.scope === 'assigned-active-location'
+    )
+  );
+}
+
+async function loadInventorySummary(): Promise<InventorySummary> {
+  const client = await createClient();
+
+  const { data, error } = await client.rpc(
+    'gr_workspace_inventory_summary',
+  );
+
+  if (error || !isSummary(data)) {
+    throw new Error('Whole-inventory summary could not be verified.');
+  }
+
+  return data;
+}
+
+function numberLabel(value: number | null | undefined): string {
+  return value === null || value === undefined
+    ? '—'
+    : value.toLocaleString('en-NG');
+}
 
 function Metric({
   icon,
@@ -88,9 +172,22 @@ function Metric({
   );
 }
 
-export default function InventoryPage({ searchParams }: { searchParams: Promise<{ offset?: string }> }) {
+export default function InventoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ offset?: string }>;
+}) {
   return (
-    <Suspense fallback={<p className="p-5 text-sm text-[#6f5162]" role="status">Loading inventory…</p>}>
+    <Suspense
+      fallback={
+        <p
+          className="p-5 text-sm text-[#6f5162]"
+          role="status"
+        >
+          Loading inventory…
+        </p>
+      }
+    >
       <InventoryWorkspace searchParams={searchParams} />
     </Suspense>
   );
@@ -119,13 +216,21 @@ async function InventoryWorkspace({
   const mayCreateLocations = canManageStockSetup(role);
   const mayReceiveStock = canReceiveStock(role);
 
-  const [inventoryResult, productsResult] =
+  // The summary is computed by PostgreSQL across all authorized
+  // active locations. The register remains paginated for performance.
+  const [inventoryResult, productsResult, summaryResult] =
     await Promise.allSettled([
       getInventoryPage(token, offset),
       mayReceiveStock
         ? listAdminProducts(token)
         : Promise.resolve([]),
+      loadInventorySummary(),
     ]);
+
+  const summary =
+    summaryResult.status === 'fulfilled'
+      ? summaryResult.value
+      : null;
 
   const inventory =
     inventoryResult.status === 'fulfilled'
@@ -141,15 +246,6 @@ async function InventoryWorkspace({
 
   const locations = inventory?.locations ?? [];
   const balances = inventory?.items ?? [];
-
-  const activeLocations = locations.filter(
-    location => location.active,
-  );
-
-  const activeStores = locations.filter(
-    location =>
-      location.active && location.type === 'store',
-  );
 
   const variants =
     productsResult.status === 'fulfilled'
@@ -176,15 +272,16 @@ async function InventoryWorkspace({
           )
       : [];
 
-  const displayedAvailable = balances.reduce(
-    (sum, balance) => sum + balance.available,
-    0,
-  );
-
-  const countsToVerify = balances.filter(balance => {
+  // Physical-count evidence is exposed by the current inventory
+  // page only. Do not present this as a database-wide audit total.
+  const countsToVerifyOnPage = balances.filter(balance => {
     const state = stockState(balance);
     return state === 'not-counted' || state === 'unverified-zero';
   }).length;
+
+  const globalStockAlerts = summary
+    ? summary.lowRecordedRows + summary.missingBalanceRows
+    : null;
 
   return (
     <div className="grid min-w-0 gap-6 pb-10">
@@ -229,55 +326,134 @@ async function InventoryWorkspace({
         </div>
       </header>
 
-      {/* DASHBOARD STATISTICS */}
+      {/* DATABASE-WIDE INVENTORY STATISTICS */}
       <section
-        aria-label="Inventory overview"
+        aria-label="Whole-inventory overview"
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       >
         <Metric
           icon={<Building2 size={20} />}
           label="Active stores"
-          value={
-            inventory
-              ? String(activeStores.length)
-              : '—'
-          }
-          description="Retail locations currently configured"
+          value={numberLabel(summary?.activeStores)}
+          description="All authorized active retail stores; not a register-page count"
         />
 
         <Metric
           icon={<Warehouse size={20} />}
           label="All active locations"
-          value={
-            inventory
-              ? String(activeLocations.length)
-              : '—'
-          }
-          description="Stores, warehouses and stockrooms"
+          value={numberLabel(summary?.activeLocations)}
+          description="Active stores, warehouses and stockrooms within your authorized scope"
         />
 
         <Metric
           icon={<Boxes size={20} />}
-          label="Available units"
-          value={
-            inventory
-              ? displayedAvailable.toLocaleString('en-NG')
-              : '—'
-          }
-          description="Sum of balances on this page only"
+          label="Available stock units"
+          value={numberLabel(summary?.availableUnits)}
+          description="Whole-inventory on-hand minus reserved units, across active locations"
         />
 
         <Metric
           icon={<PackageCheck size={20} />}
-          label="Counts to verify"
-          value={
-            inventory
-              ? String(countsToVerify)
-              : '—'
-          }
-          description="Entries without a confirmed quantity on this page"
+          label="Stock rows needing attention"
+          value={numberLabel(globalStockAlerts)}
+          description={summary
+            ? `${numberLabel(summary.lowRecordedRows)} recorded low/empty · ${numberLabel(summary.missingBalanceRows)} without a balance record`
+            : 'Whole-inventory stock coverage could not be verified'}
+        />
+
+        <Metric
+          icon={<Package size={20} />}
+          label="Physical units on hand"
+          value={numberLabel(summary?.physicalOnHand)}
+          description="Whole-inventory units, including inactive products still physically held"
+        />
+
+        <Metric
+          icon={<ShieldCheck size={20} />}
+          label="Reserved stock units"
+          value={numberLabel(summary?.reservedUnits)}
+          description="Reservations already reflected in the available-stock total"
+        />
+
+        <Metric
+          icon={<Barcode size={20} />}
+          label="Active product variants"
+          value={numberLabel(summary?.activeVariants)}
+          description={summary
+            ? `${numberLabel(summary.activeProducts)} active products · ${numberLabel(summary.publishedProducts)} published online`
+            : 'Full active-catalogue count unavailable'}
+        />
+
+        <Metric
+          icon={<ClipboardList size={20} />}
+          label="Counts to verify · current page"
+          value={inventory
+            ? numberLabel(countsToVerifyOnPage)
+            : '—'}
+          description="Unverified or not-counted entries in the currently loaded stock page only"
         />
       </section>
+
+      {/* DISTINGUISH GLOBAL STOCK COVERAGE FROM PAGE-LOCAL EVIDENCE */}
+      {summary ? (
+        <div
+          className="rounded-xl border border-[#e5d8cc] bg-[#fbf7f1] px-4 py-3 text-xs leading-5 text-[#755e6a]"
+          role="status"
+        >
+          <strong className="text-[#4b273b]">
+            Whole-inventory totals verified by the database.
+          </strong>
+          {' '}
+          {numberLabel(summary.recordedBalanceRows)} recorded
+          balance row(s) across {numberLabel(summary.activeLocations)}
+          {' '}active location(s).
+          {' '}
+          {numberLabel(summary.missingBalanceRows)} active
+          variant/location pair(s) have no stock balance record.
+          {' '}An absent balance does not prove a physical zero.
+          {' '}
+          {summary.scope === 'assigned-active-location'
+            ? 'Your summary is limited to your assigned active location.'
+            : 'Your summary covers all active locations.'}
+          {' '}The stock register, search and physical-count evidence
+          below continue to operate on the current page.
+        </div>
+      ) : (
+        <WorkspaceNotice
+          title="Whole-inventory totals unavailable"
+          tone="pending"
+          action={
+            <Link
+              href="/workspace/inventory"
+              className={workspaceSecondary}
+            >
+              <RefreshCw size={16} aria-hidden="true" />
+              Retry stock totals
+            </Link>
+          }
+        >
+          The secure inventory summary could not be retrieved.
+          No first-page totals have been substituted for
+          whole-inventory figures. The stock register and receiving
+          controls can still be used if their services are available.
+          If this persists, verify the installed
+          gr_workspace_inventory_summary database function
+          and your staff location assignment.
+        </WorkspaceNotice>
+      )}
+
+      {summary && summary.qaProducts > 0 && (
+        <WorkspaceNotice
+          title="QA catalogue records detected"
+          tone="pending"
+        >
+          {numberLabel(summary.qaProducts)} product(s) are labelled
+          as QA tests. Their recorded stock quantities are included
+          in the database summary. Do not treat these totals as
+          confirmed client inventory until physical stock and
+          imported product records have been reconciled.
+        </WorkspaceNotice>
+      )}
 
       {/* QUICK SECTION NAVIGATION */}
       <nav
@@ -626,11 +802,22 @@ async function InventoryWorkspace({
           </span>
         </div>
 
-        {inventory && balances.some(balance => balance.balanceRecorded === undefined && stockState(balance) === 'unverified-zero') && (
-          <WorkspaceNotice title="Opening quantities need verification" tone="pending">
-            This inventory service reports a missing balance as zero. Confirm the physical quantity before treating an unverified row as a confirmed zero.
-          </WorkspaceNotice>
-        )}
+        {inventory &&
+          balances.some(
+            balance =>
+              balance.balanceRecorded === undefined &&
+              stockState(balance) === 'unverified-zero',
+          ) && (
+            <WorkspaceNotice
+              title="Opening quantities need verification"
+              tone="pending"
+            >
+              This inventory service reports a missing balance as zero.
+              Confirm the physical quantity before treating an
+              unverified row as a confirmed zero.
+            </WorkspaceNotice>
+          )}
+
         {!inventory ? (
           <WorkspaceNotice
             title="Stock register unavailable"

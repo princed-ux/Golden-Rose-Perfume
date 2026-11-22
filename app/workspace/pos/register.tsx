@@ -1,38 +1,34 @@
 
 'use client';
-import { ActionScope } from '@/src/components/action-feedback';
-import { ActionButton } from '@/src/components/action-feedback';
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
   type KeyboardEvent,
 } from 'react';
-
-import Link from 'next/link';
 import Image from 'next/image';
-
+import Link from 'next/link';
 import {
   AlertCircle,
   ArrowRight,
-  Banknote,
   Calculator,
   CheckCircle2,
+  ChevronDown,
   History,
   LayoutGrid,
   List,
   Maximize2,
   Minimize2,
-  PauseCircle,
-  RotateCcw,
-  ChevronDown,
   Minus,
   Package,
+  PauseCircle,
   Plus,
   Printer,
   ReceiptText,
   RefreshCw,
+  RotateCcw,
   ScanBarcode,
   Search,
   ShoppingBag,
@@ -41,9 +37,16 @@ import {
 } from 'lucide-react';
 
 import {
+  ActionButton,
+  ActionScope,
+} from '@/src/components/action-feedback';
+
+import {
   completeCashSale,
   loadPosCatalogue,
 } from './actions';
+
+import { PosCheckoutModal } from './PosCheckoutModal';
 
 import type {
   CashSaleRequest,
@@ -65,6 +68,7 @@ const money = (minor: number) =>
 const PENDING_KEY = 'golden-rose-pos-pending-sale';
 const HELD_KEY = 'golden-rose-pos-held-sale';
 const VIEW_KEY = 'golden-rose-pos-catalogue-view';
+
 const MAX_CART_LINES = 40;
 const MAX_PER_LINE = 100;
 
@@ -88,9 +92,29 @@ type HeldSale = {
   createdAt: number;
 };
 
+function parseNaira(value: string): number | null {
+  const cleaned = value.trim().replaceAll(',', '');
+
+  if (!/^\d{1,10}(?:\.\d{1,2})?$/.test(cleaned)) {
+    return null;
+  }
+
+  const [whole, fraction = ''] = cleaned.split('.');
+
+  const minor =
+    Number(whole) * 100 +
+    Number(fraction.padEnd(2, '0'));
+
+  return Number.isSafeInteger(minor) ? minor : null;
+}
+
 function isHeldSale(value: unknown): value is HeldSale {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
   const sale = value as Partial<HeldSale>;
+
   return (
     typeof sale.locationId === 'string' &&
     typeof sale.discount === 'string' &&
@@ -100,54 +124,38 @@ function isHeldSale(value: unknown): value is HeldSale {
     sale.cart.length > 0 &&
     sale.cart.length <= MAX_CART_LINES &&
     sale.cart.every((entry: unknown) => {
-      if (!entry || typeof entry !== 'object') return false;
+      if (!entry || typeof entry !== 'object') {
+        return false;
+      }
+
       const row = entry as Partial<CartItem>;
+      const product = row.product;
+
       return (
         Number.isInteger(row.quantity) &&
         (row.quantity ?? 0) >= 1 &&
         (row.quantity ?? 0) <= MAX_PER_LINE &&
-        !!row.product &&
-        typeof row.product.id === 'string' &&
-        typeof row.product.name === 'string' &&
-        Number.isSafeInteger(row.product.priceMinor) &&
-        Number.isSafeInteger(row.product.available) &&
-        row.product.currency === 'NGN'
+        !!product &&
+        typeof product.id === 'string' &&
+        typeof product.name === 'string' &&
+        Number.isSafeInteger(product.priceMinor) &&
+        Number.isSafeInteger(product.available) &&
+        product.currency === 'NGN'
       );
     })
   );
 }
 
-/**
- * Convert entered naira to integer kobo.
- * Never calculate transaction totals using floating-point naira.
- */
-function parseNaira(text: string): number | null {
-  const clean = text.trim().replace(/,/g, '');
-
-  if (!/^\d{1,10}(?:\.\d{1,2})?$/.test(clean)) {
-    return null;
-  }
-
-  const [whole, decimal = ''] = clean.split('.');
-
-  const minor =
-    Number(whole) * 100 +
-    Number(decimal.padEnd(2, '0'));
-
-  return Number.isSafeInteger(minor) ? minor : null;
-}
-
-/**
- * Product photograph:
- * Show the approved cloud image when available.
- * Otherwise use a neutral Golden Rose placeholder.
- */
 function ProductPhoto({
   product,
 }: {
   product: PosProduct;
 }) {
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [product.imagePath]);
 
   const image = product.imagePath
     ? 'https://eixbmsethgrtezhdmgsh.supabase.co/storage/v1/object/public/golden-rose-products/' +
@@ -169,10 +177,7 @@ function ProductPhoto({
           onError={() => setFailed(true)}
         />
       ) : (
-        <span
-          className="pos-photo-mark"
-          aria-hidden="true"
-        >
+        <span className="pos-photo-mark" aria-hidden="true">
           GR
         </span>
       )}
@@ -180,11 +185,6 @@ function ProductPhoto({
   );
 }
 
-/**
- * Standalone business calculator.
- * Using the result fills the cash-received field.
- * Calculator actions never create a transaction.
- */
 function CalculatorDialog({
   close,
   onUseValue,
@@ -221,7 +221,7 @@ function CalculatorDialog({
     }
 
     if (key === '⌫') {
-      setDisplay(value => value.slice(0, -1) || '0');
+      setDisplay((value) => value.slice(0, -1) || '0');
       return;
     }
 
@@ -262,7 +262,7 @@ function CalculatorDialog({
       return;
     }
 
-    setDisplay(current => {
+    setDisplay((current) => {
       if (
         key === '.' &&
         !replace &&
@@ -275,9 +275,7 @@ function CalculatorDialog({
         return key === '.' ? '0.' : key;
       }
 
-      if (
-        current.replace(/\D/g, '').length >= 12
-      ) {
+      if (current.replace(/\D/g, '').length >= 12) {
         return current;
       }
 
@@ -304,7 +302,7 @@ function CalculatorDialog({
   return (
     <div
       className="pos-modal-backdrop"
-      onMouseDown={event => {
+      onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           close();
         }
@@ -319,15 +317,13 @@ function CalculatorDialog({
         <div className="pos-dialog-header">
           <div>
             <small>WORKSPACE TOOL</small>
-            <h2 id="pos-calc-title">
-              Calculator
-            </h2>
+            <h2 id="pos-calc-title">Calculator</h2>
           </div>
 
           <ActionButton
             type="button"
-            aria-label="Close calculator"
             className="pos-icon-btn"
+            aria-label="Close calculator"
             onClick={close}
           >
             <X size={18} />
@@ -339,13 +335,11 @@ function CalculatorDialog({
         </output>
 
         <div className="pos-calc-grid">
-          {keys.map(key => (
+          {keys.map((key) => (
             <ActionButton
-              key={key}
               type="button"
-              className={
-                key === '=' ? 'pos-equals' : ''
-              }
+              key={key}
+              className={key === '=' ? 'pos-equals' : ''}
               onClick={() => press(key)}
             >
               {key}
@@ -369,9 +363,6 @@ function CalculatorDialog({
   );
 }
 
-/**
- * Printable receipt from a server-confirmed POS transaction.
- */
 function ReceiptDialog({
   receipt,
   close,
@@ -418,26 +409,21 @@ function ReceiptDialog({
         </div>
 
         <div
-          className="pos-receipt-paper"
           id="pos-print-receipt"
+          className="pos-receipt-paper"
         >
           <div className="pos-receipt-brand">
             <strong>GOLDEN ROSE</strong>
             <small>BEAUTY OF FRAGRANCE</small>
           </div>
 
-          <h2 id="pos-receipt-title">
-            Sales receipt
-          </h2>
+          <h2 id="pos-receipt-title">Sales receipt</h2>
 
           <div className="pos-receipt-meta">
             <span>Receipt</span>
             <b>
               GR-
-              {String(receipt.saleNumber).padStart(
-                7,
-                '0',
-              )}
+              {String(receipt.saleNumber).padStart(7, '0')}
             </b>
 
             <span>Date</span>
@@ -456,7 +442,7 @@ function ReceiptDialog({
 
           <div className="pos-receipt-lines">
             {receipt.items.map((line, index) => (
-              <div key={index}>
+              <div key={line.variantId + '-' + index}>
                 <span>
                   <b>{line.name}</b>
                   <small>
@@ -467,9 +453,7 @@ function ReceiptDialog({
                   </small>
                 </span>
 
-                <b>
-                  {money(line.lineTotalMinor)}
-                </b>
+                <b>{money(line.lineTotalMinor)}</b>
               </div>
             ))}
           </div>
@@ -477,57 +461,44 @@ function ReceiptDialog({
           <div className="pos-receipt-totals">
             <div>
               <span>Subtotal</span>
-              <span>
-                {money(receipt.subtotalMinor)}
-              </span>
+              <span>{money(receipt.subtotalMinor)}</span>
             </div>
 
             <div>
               <span>Discount</span>
-              <span>
-                −{money(receipt.discountMinor)}
-              </span>
+              <span>−{money(receipt.discountMinor)}</span>
             </div>
 
             <div>
               <span>Tax</span>
-              <span>
-                {money(receipt.taxMinor)}
-              </span>
+              <span>{money(receipt.taxMinor)}</span>
             </div>
 
             <div className="pos-receipt-grand">
               <b>Total</b>
-              <b>
-                {money(receipt.totalMinor)}
-              </b>
+              <b>{money(receipt.totalMinor)}</b>
             </div>
 
             <div>
               <span>Cash received</span>
-              <span>
-                {money(receipt.tenderedMinor)}
-              </span>
+              <span>{money(receipt.tenderedMinor)}</span>
             </div>
 
             <div>
               <b>Change</b>
-              <b>
-                {money(receipt.changeMinor)}
-              </b>
+              <b>{money(receipt.changeMinor)}</b>
             </div>
           </div>
 
           <p className="pos-receipt-thanks">
-            Thank you for shopping with
-            Golden Rose Perfume.
+            Thank you for shopping with Golden Rose Perfume.
           </p>
         </div>
 
         <div className="pos-receipt-buttons pos-no-print">
           <ActionButton
-            className="pos-primary"
             type="button"
+            className="pos-primary"
             onClick={() => window.print()}
           >
             <Printer size={17} />
@@ -535,8 +506,8 @@ function ReceiptDialog({
           </ActionButton>
 
           <ActionButton
-            className="pos-secondary"
             type="button"
+            className="pos-secondary"
             onClick={close}
           >
             Start new sale
@@ -548,13 +519,6 @@ function ReceiptDialog({
   );
 }
 
-/**
- * Full Golden Rose in-store register.
- *
- * Loads real products and stock.
- * Allows basket management and cash calculation.
- * Uses an idempotent server transaction for checkout.
- */
 export function PosRegister({
   initial,
   loadError,
@@ -564,101 +528,64 @@ export function PosRegister({
   loadError: string | null;
   role: string;
 }) {
-  const [catalogue, setCatalogue] =
-    useState(initial);
+  const [catalogue, setCatalogue] = useState(initial);
 
-  const [locationId, setLocationId] =
-    useState(initial.selectedLocationId || '');
+  const [locationId, setLocationId] = useState(
+    initial.selectedLocationId || '',
+  );
 
   const [search, setSearch] = useState('');
-  const [catalogueView, setCatalogueView] = useState<CatalogueView>('grid');
-  // Open straight into the dedicated cashier workspace on desktop.
+  const [catalogueView, setCatalogueView] =
+    useState<CatalogueView>('table');
+
   const [focusMode, setFocusMode] = useState(true);
-  const [heldSale, setHeldSale] = useState<HeldSale | null>(null);
-  const [inStockOnly, setInStockOnly] =
-    useState(false);
+  const [heldSale, setHeldSale] =
+    useState<HeldSale | null>(null);
 
-  const [cart, setCart] =
-    useState<CartItem[]>([]);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [discount, setDiscount] = useState('0');
+  const [cash, setCash] = useState('');
 
-  const [discount, setDiscount] =
-    useState('0');
+  const [busy, setBusy] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const [cash, setCash] =
-    useState('');
-
-  const [busy, setBusy] =
-    useState(false);
-
-  const [searching, setSearching] =
-    useState(false);
-
-  const [loadingMore, setLoadingMore] =
-    useState(false);
-
-  const [notice, setNotice] =
-    useState<Alert | null>(
-      loadError
-        ? {
-            kind: 'error',
-            message: loadError,
-          }
-        : null,
-    );
+  const [notice, setNotice] = useState<Alert | null>(
+    loadError
+      ? { kind: 'error', message: loadError }
+      : null,
+  );
 
   const [receipt, setReceipt] =
     useState<PosReceipt | null>(null);
 
-  const [calculatorOpen, setCalculatorOpen] =
-    useState(false);
-
-  const [showMobileCart, setShowMobileCart] =
-    useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [showMobileCart, setShowMobileCart] = useState(false);
 
   const [pending, setPending] =
     useState<CashSaleRequest | null>(null);
+
   const [pendingLoaded, setPendingLoaded] = useState(false);
 
   const searchSeq = useRef(0);
   const checkoutLock = useRef(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Preferences and unsold held baskets are local to this browser, not server reservations.
-  useEffect(() => {
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (cancelled) return;
-      try {
-        const view = localStorage.getItem(VIEW_KEY);
-        if (view === 'grid' || view === 'table') setCatalogueView(view);
-        const raw = sessionStorage.getItem(HELD_KEY);
-        if (raw) {
-          const saved: unknown = JSON.parse(raw);
-          if (isHeldSale(saved)) setHeldSale(saved);
-          else sessionStorage.removeItem(HELD_KEY);
-        }
-      } catch {
-        // Storage may be blocked in private browsing.
-      }
-    });
-    return () => { cancelled = true; };
-  }, []);
-
   const locked =
-    !pendingLoaded || busy || pending !== null;
+    !pendingLoaded ||
+    busy ||
+    pending !== null;
 
   const subtotal = cart.reduce(
     (sum, row) =>
-      sum +
-      row.product.priceMinor * row.quantity,
+      sum + row.product.priceMinor * row.quantity,
     0,
   );
 
-  const discountMinor =
-    parseNaira(discount);
-
-  const cashMinor =
-    parseNaira(cash);
+  const discountMinor = parseNaira(discount);
+  const cashMinor = parseNaira(cash);
 
   const discountLimit =
     role === 'owner' || role === 'manager'
@@ -668,66 +595,117 @@ export function PosRegister({
   const validDiscount =
     discountMinor !== null &&
     discountMinor <=
-      Math.floor(
-        subtotal * discountLimit / 100,
-      );
+      Math.floor(subtotal * discountLimit / 100);
 
   const total =
-    subtotal -
-    (validDiscount ? discountMinor! : 0);
+    subtotal - (validDiscount ? discountMinor! : 0);
 
-  const change =
-    cashMinor === null
-      ? null
-      : Math.max(0, cashMinor - total);
-
-  const canPay =
-    !locked &&
+  const canOpenCheckout =
+    pendingLoaded &&
+    !busy &&
     !!locationId &&
     cart.length > 0 &&
     validDiscount &&
+    total > 0 &&
+    pending === null;
+
+  const canPay =
+    canOpenCheckout &&
     cashMinor !== null &&
     cashMinor >= total;
 
+  const itemCount = cart.reduce(
+    (sum, row) => sum + row.quantity,
+    0,
+  );
+
   const filtered = inStockOnly
     ? catalogue.items.filter(
-        item => item.available > 0,
+        (item) => item.available > 0,
       )
     : catalogue.items;
 
-  /**
-   * Restore a previous transaction ID after an
-   * interrupted network request or page refresh.
-   */
+  // Keep the staff member's preferred catalogue view.
   useEffect(() => {
     let cancelled = false;
+
     queueMicrotask(() => {
       if (cancelled) return;
+
+      try {
+        const saved = localStorage.getItem(VIEW_KEY);
+
+        if (saved === 'grid' || saved === 'table') {
+          setCatalogueView(saved);
+        }
+
+        const raw = sessionStorage.getItem(HELD_KEY);
+
+        if (raw) {
+          const value: unknown = JSON.parse(raw);
+
+          if (isHeldSale(value)) {
+            setHeldSale(value);
+          } else {
+            sessionStorage.removeItem(HELD_KEY);
+          }
+        }
+      } catch {
+        // Storage is optional.
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Restore an interrupted transaction without creating
+  // a second idempotency key.
+  useEffect(() => {
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+
       try {
         const raw = sessionStorage.getItem(PENDING_KEY);
+
         if (!raw) return;
+
         const saved: unknown = JSON.parse(raw);
-        if (!saved || typeof saved !== 'object' ||
-            !('idempotencyKey' in saved) || typeof saved.idempotencyKey !== 'string' ||
-            !('items' in saved) || !Array.isArray(saved.items)) return;
+
+        if (
+          !saved ||
+          typeof saved !== 'object' ||
+          !('idempotencyKey' in saved) ||
+          typeof saved.idempotencyKey !== 'string' ||
+          !('items' in saved) ||
+          !Array.isArray(saved.items)
+        ) {
+          return;
+        }
+
         setPending(saved as CashSaleRequest);
+
         setNotice({
           kind: 'info',
-          message: 'A previous sale has an unconfirmed response. Retry the same reference before starting another.',
+          message:
+            'A previous transaction has an unconfirmed response. Recover it using the same reference.',
         });
       } catch {
-        // Private browsing can block session storage.
+        // Browser storage may be unavailable.
       } finally {
         setPendingLoaded(true);
       }
     });
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  /**
-   * Live server-side catalogue search.
-   * A sequence counter prevents stale results.
-   */
+  // Live, server-paginated catalogue search.
   useEffect(() => {
     const id = ++searchSeq.current;
 
@@ -735,25 +713,17 @@ export function PosRegister({
       setSearching(true);
 
       try {
-        const data =
-          await loadPosCatalogue(
-            search,
-            locationId || null,
-          );
+        const data = await loadPosCatalogue(
+          search,
+          locationId || null,
+        );
 
-        if (id !== searchSeq.current) {
-          return;
-        }
+        if (id !== searchSeq.current) return;
 
         setCatalogue(data);
 
-        if (
-          !locationId &&
-          data.selectedLocationId
-        ) {
-          setLocationId(
-            data.selectedLocationId,
-          );
+        if (!locationId && data.selectedLocationId) {
+          setLocationId(data.selectedLocationId);
         }
       } catch (error) {
         if (id === searchSeq.current) {
@@ -778,47 +748,42 @@ export function PosRegister({
     };
   }, [search, locationId]);
 
-  /**
-   * Dismiss ordinary notifications automatically.
-   * Pending-transaction warnings remain visible.
-   */
   useEffect(() => {
-    if (!notice || notice.kind === 'info') {
-      return;
-    }
+    if (!notice || notice.kind === 'info') return;
 
-    const timer = setTimeout(
-      () => setNotice(null),
-      6500,
-    );
+    const timer = setTimeout(() => {
+      setNotice(null);
+    }, 6500);
 
     return () => clearTimeout(timer);
   }, [notice]);
 
-  function add(product: PosProduct) {
-    if (locked || product.available < 1) {
-      return;
-    }
+  const add = useCallback(
+    (product: PosProduct) => {
+      if (
+        locked ||
+        checkoutOpen ||
+        product.available < 1
+      ) {
+        return;
+      }
 
-    const found = cart.find(
-      row => row.product.id === product.id,
-    );
+      setCart((rows) => {
+        const existing = rows.find(
+          (row) => row.product.id === product.id,
+        );
 
-    if (
-      !found &&
-      cart.length >= MAX_CART_LINES
-    ) {
-      setNotice({
-        kind: 'error',
-        message:
-          'Maximum 40 different products per sale.',
-      });
-      return;
-    }
+        if (!existing && rows.length >= MAX_CART_LINES) {
+          setNotice({
+            kind: 'error',
+            message:
+              'Maximum 40 different products per sale.',
+          });
+          return rows;
+        }
 
-    setCart(rows =>
-      found
-        ? rows.map(row =>
+        if (existing) {
+          return rows.map((row) =>
             row.product.id === product.id
               ? {
                   ...row,
@@ -829,80 +794,62 @@ export function PosRegister({
                   ),
                 }
               : row,
-          )
-        : [
-            ...rows,
-            {
-              product,
-              quantity: 1,
-            },
-          ],
-    );
-  }
-
-  function quantity(
-    id: string,
-    delta: number,
-  ) {
-    if (locked) {
-      return;
-    }
-
-    setCart(rows =>
-      rows.flatMap(row => {
-        if (row.product.id !== id) {
-          return [row];
+          );
         }
 
-        const next =
-          row.quantity + delta;
+        return [...rows, { product, quantity: 1 }];
+      });
+    },
+    [locked, checkoutOpen],
+  );
 
-        if (next <= 0) {
-          return [];
-        }
+  function quantity(id: string, delta: number) {
+    if (locked || checkoutOpen) return;
 
-        return [
-          {
-            ...row,
-            quantity: Math.min(
-              MAX_PER_LINE,
-              row.product.available,
-              next,
-            ),
-          },
-        ];
+    setCart((rows) =>
+      rows.flatMap((row) => {
+        if (row.product.id !== id) return [row];
+
+        const next = row.quantity + delta;
+
+        if (next <= 0) return [];
+
+        return [{
+          ...row,
+          quantity: Math.min(
+            next,
+            MAX_PER_LINE,
+            row.product.available,
+          ),
+        }];
       }),
     );
   }
 
-  /**
-   * A USB barcode scanner usually enters text
-   * followed by Enter.
-   */
   async function findBarcode(
     event: KeyboardEvent<HTMLInputElement>,
   ) {
     if (
       event.key !== 'Enter' ||
-      !search.trim()
+      !search.trim() ||
+      locked ||
+      checkoutOpen
     ) {
       return;
     }
 
     event.preventDefault();
 
-    const code =
-      search.trim().toLowerCase();
+    const code = search.trim().toLowerCase();
 
     try {
-      const data =
-        await loadPosCatalogue(
-          code,
-          locationId || null,
-        );
+      const data = await loadPosCatalogue(
+        code,
+        locationId || null,
+      );
 
       const exact = data.items.find(
-        item =>
+        (item) =>
           item.barcode?.toLowerCase() === code ||
           item.sku?.toLowerCase() === code,
       );
@@ -914,7 +861,7 @@ export function PosRegister({
         setNotice({
           kind: 'info',
           message: exact
-            ? 'This item is out of stock.'
+            ? 'This product is out of stock.'
             : 'No exact barcode or SKU match.',
         });
       }
@@ -929,47 +876,39 @@ export function PosRegister({
     }
   }
 
-  /**
-   * Paginate the live catalogue without
-   * loading thousands of records at once.
-   */
   async function more() {
     if (
       !catalogue.hasMore ||
-      loadingMore
+      loadingMore ||
+      checkoutOpen
     ) {
       return;
     }
 
     const requestSearch = search;
     const requestLocation = locationId;
-    const pageOffset = catalogue.items.length;
-    const requestSequence = searchSeq.current;
+    const offset = catalogue.items.length;
+    const sequence = searchSeq.current;
 
     setLoadingMore(true);
 
     try {
-      const next =
-        await loadPosCatalogue(
-          requestSearch,
-          requestLocation,
-          pageOffset,
-        );
+      const next = await loadPosCatalogue(
+        requestSearch,
+        requestLocation,
+        offset,
+      );
 
-      if (
-        requestSequence !== searchSeq.current
-      ) {
-        return;
-      }
+      if (sequence !== searchSeq.current) return;
 
-      setCatalogue(current => ({
+      setCatalogue((current) => ({
         ...next,
         items: [
           ...current.items,
           ...next.items.filter(
-            item =>
+            (item) =>
               !current.items.some(
-                old => old.id === item.id,
+                (old) => old.id === item.id,
               ),
           ),
         ],
@@ -987,48 +926,54 @@ export function PosRegister({
     }
   }
 
-  /**
-   * Submit or safely retry a cash sale.
-   * Never create a new transaction ID for a retry.
-   */
+  async function refreshCatalogue() {
+    if (checkoutOpen || searching) return;
+
+    try {
+      setCatalogue(
+        await loadPosCatalogue(
+          search,
+          locationId || null,
+        ),
+      );
+    } catch (error) {
+      setNotice({
+        kind: 'error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Catalogue refresh failed.',
+      });
+    }
+  }
+
+  // This remains the original authenticated cash-sale
+  // transaction. It is now called by the modal.
   async function pay(
     retry?: CashSaleRequest,
-  ) {
+  ): Promise<boolean> {
     if (
       checkoutLock.current ||
       (!retry && !canPay)
     ) {
-      return;
+      return false;
     }
 
     const request: CashSaleRequest =
       retry || {
-        idempotencyKey:
-          crypto.randomUUID(),
-
+        idempotencyKey: crypto.randomUUID(),
         locationId,
         method: 'cash',
-
-        items: cart.map(row => ({
-          variantId:
-            row.product.id,
-
-          quantity:
-            row.quantity,
-
-          expectedPriceMinor:
-            row.product.priceMinor,
+        items: cart.map((row) => ({
+          variantId: row.product.id,
+          quantity: row.quantity,
+          expectedPriceMinor: row.product.priceMinor,
         })),
-
-        discountMinor:
-          discountMinor ?? 0,
-
-        tenderedMinor:
-          cashMinor ?? 0,
+        discountMinor: discountMinor ?? 0,
+        tenderedMinor: cashMinor ?? 0,
       };
 
     checkoutLock.current = true;
-
     setBusy(true);
     setPending(request);
     setNotice(null);
@@ -1039,17 +984,14 @@ export function PosRegister({
         JSON.stringify(request),
       );
     } catch {
-      // Preserve the pending request in memory.
+      // The pending transaction remains in memory.
     }
 
     try {
-      const result =
-        await completeCashSale(request);
+      const confirmed = await completeCashSale(request);
 
       try {
-        sessionStorage.removeItem(
-          PENDING_KEY,
-        );
+        sessionStorage.removeItem(PENDING_KEY);
       } catch {
         // Optional browser storage.
       }
@@ -1059,13 +1001,14 @@ export function PosRegister({
       setDiscount('0');
       setCash('');
 
-      setReceipt(result);
+      setReceipt(confirmed);
+      setCheckoutOpen(false);
       setShowMobileCart(false);
 
       setNotice({
         kind: 'success',
         message:
-          'Cash sale recorded. Inventory and receipt are confirmed.',
+          'Cash sale confirmed. The receipt was created and inventory was updated.',
       });
 
       try {
@@ -1076,17 +1019,23 @@ export function PosRegister({
           ),
         );
       } catch {
-        // The sale is already recorded.
-        // A failed refresh must not reverse it.
+        // A catalogue refresh failure does not
+        // reverse a confirmed transaction.
       }
+
+      return true;
     } catch (error) {
       setNotice({
         kind: 'error',
         message:
           error instanceof Error
             ? error.message
-            : 'Checkout failed.',
+            : 'Checkout was not confirmed.',
       });
+
+      // Retain the transaction reference.
+      // Do not automatically create another sale.
+      return false;
     } finally {
       checkoutLock.current = false;
       setBusy(false);
@@ -1095,1008 +1044,1012 @@ export function PosRegister({
 
   function chooseView(next: CatalogueView) {
     setCatalogueView(next);
-    try { localStorage.setItem(VIEW_KEY, next); } catch { /* Optional preference. */ }
+
+    try {
+      localStorage.setItem(VIEW_KEY, next);
+    } catch {
+      // Optional preference.
+    }
   }
 
   function clearSale() {
-    if (locked || !cart.length) return;
-    if (!window.confirm('Clear all items from this unsaved sale?')) return;
+    if (locked || checkoutOpen || !cart.length) {
+      return;
+    }
+
+    if (
+      !window.confirm(
+        'Clear all items from this unsaved sale?',
+      )
+    ) {
+      return;
+    }
+
     setCart([]);
     setDiscount('0');
     setCash('');
-    setNotice({ kind: 'info', message: 'Unsaved basket cleared. No transaction was recorded.' });
+
+    setNotice({
+      kind: 'info',
+      message:
+        'Unsaved basket cleared. No transaction was recorded.',
+    });
   }
 
   function holdSale() {
-    if (locked || !cart.length) return;
-    if (heldSale && !window.confirm('Replace the previously held sale on this browser?')) return;
+    if (locked || checkoutOpen || !cart.length) {
+      return;
+    }
+
+    if (
+      heldSale &&
+      !window.confirm(
+        'Replace the previously held basket?',
+      )
+    ) {
+      return;
+    }
+
     const held: HeldSale = {
-      cart: cart.map(row => ({ ...row, product: { ...row.product } })),
+      cart: cart.map((row) => ({
+        ...row,
+        product: { ...row.product },
+      })),
       locationId,
       discount,
       cash,
       createdAt: Date.now(),
     };
+
     setHeldSale(held);
-    try { sessionStorage.setItem(HELD_KEY, JSON.stringify(held)); } catch { /* This tab still keeps it. */ }
+
+    try {
+      sessionStorage.setItem(
+        HELD_KEY,
+        JSON.stringify(held),
+      );
+    } catch {
+      // This tab still retains the held sale.
+    }
+
     setCart([]);
     setDiscount('0');
     setCash('');
-    setNotice({ kind: 'info', message: 'Sale held in this browser only. No stock is reserved or sold.' });
+
+    setNotice({
+      kind: 'info',
+      message:
+        'Sale held in this browser. Stock is not reserved.',
+    });
+
     searchInputRef.current?.focus();
   }
 
   function recallSale() {
-    if (locked || !heldSale) return;
-    if (cart.length && !window.confirm('Replace the current unsaved basket with the held sale?')) return;
-    if (!catalogue.locations.some(store => store.id === heldSale.locationId)) {
-      setNotice({ kind: 'error', message: 'The held sale belongs to a location no longer available.' });
+    if (locked || checkoutOpen || !heldSale) {
       return;
     }
+
+    if (
+      cart.length &&
+      !window.confirm(
+        'Replace the current basket with the held sale?',
+      )
+    ) {
+      return;
+    }
+
+    if (
+      !catalogue.locations.some(
+        (store) => store.id === heldSale.locationId,
+      )
+    ) {
+      setNotice({
+        kind: 'error',
+        message:
+          'The held sale belongs to a location that is no longer available.',
+      });
+      return;
+    }
+
     setLocationId(heldSale.locationId);
     setCart(heldSale.cart);
     setDiscount(heldSale.discount);
     setCash(heldSale.cash);
     setHeldSale(null);
-    try { sessionStorage.removeItem(HELD_KEY); } catch { /* Optional storage. */ }
-    setNotice({ kind: 'info', message: 'Sale recalled. Stock and prices are verified by the server at checkout.' });
-  }
 
-  function enterCashKey(key: string) {
-    if (locked || !cart.length) return;
-    setCash(current => {
-      if (key === 'C') return '';
-      if (key === '⌫') return current.slice(0, -1);
-      if (key === '.') return current.includes('.') ? current : (current || '0') + '.';
-      const next = current === '0' && key !== '00' ? key : current + key;
-      return /^\d{0,10}(?:\.\d{0,2})?$/.test(next) ? next : current;
+    try {
+      sessionStorage.removeItem(HELD_KEY);
+    } catch {
+      // Optional storage.
+    }
+
+    setNotice({
+      kind: 'info',
+      message:
+        'Sale recalled. Stock and prices will be checked again when payment is confirmed.',
     });
   }
 
-  function onRegisterKey(event: KeyboardEvent<HTMLDivElement>) {
+  function releasePending() {
+    if (busy) return;
+
+    const approved = window.confirm(
+      'First verify the sales records. A sale may have completed despite a lost response. Discard this transaction reference?',
+    );
+
+    if (!approved) return;
+
+    try {
+      sessionStorage.removeItem(PENDING_KEY);
+    } catch {
+      // Optional browser storage.
+    }
+
+    setPending(null);
+    setCheckoutOpen(false);
+
+    setNotice({
+      kind: 'info',
+      message:
+        'Pending reference discarded after manual review. Check sales history before collecting payment again.',
+    });
+  }
+
+  function openCheckout() {
+    if (!canOpenCheckout) return;
+    setCheckoutOpen(true);
+  }
+
+  function onRegisterKey(
+    event: KeyboardEvent<HTMLDivElement>,
+  ) {
+    if (checkoutOpen || calculatorOpen || receipt) {
+      return;
+    }
+
     if (event.key === 'F2') {
       event.preventDefault();
       searchInputRef.current?.focus();
       searchInputRef.current?.select();
+      return;
     }
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' &&
-        !receipt && !calculatorOpen) {
+
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      event.key === 'Enter'
+    ) {
       event.preventDefault();
-      if (canPay) void pay();
+      openCheckout();
+      return;
     }
+
     if (event.key === 'Escape' && showMobileCart) {
       event.preventDefault();
       setShowMobileCart(false);
     }
   }
 
-  function releasePending() {
-    const approved = confirm(
-      'First check the sales record. ' +
-      'A sale may have been completed despite ' +
-      'a lost response. Discard this pending transaction?',
-    );
-
-    if (!approved) {
-      return;
-    }
-
-    try {
-      sessionStorage.removeItem(
-        PENDING_KEY,
-      );
-    } catch {
-      // Optional browser storage.
-    }
-
-    setPending(null);
-
-    setNotice({
-      kind: 'info',
-      message:
-        'Transaction reference discarded. Verify previous sales before collecting payment again.',
-    });
-  }
-
   return (
-    <ActionScope pending={busy}><div
-      className={'pos-screen' + (focusMode ? ' pos-focus-mode' : '')}
-      onKeyDown={onRegisterKey}
-    >
-      {/* Professional top-right notifications */}
-      {notice && (
-        <div
-          role={
-            notice.kind === 'error'
-              ? 'alert'
-              : 'status'
-          }
-          className={
-            'pos-toast ' + notice.kind
-          }
-        >
-          {notice.kind === 'error' ? (
-            <AlertCircle size={19} />
-          ) : (
-            <CheckCircle2 size={19} />
-          )}
-
-          <span>
-            {notice.message}
-          </span>
-
-          <ActionButton
-            type="button"
-            aria-label="Dismiss alert"
-            onClick={() => setNotice(null)}
-          >
-            <X size={16} />
-          </ActionButton>
-        </div>
-      )}
-
-      {/* Main heading */}
-      <header className="pos-heading">
-        <div>
-          <p className="pos-eyebrow">
-            RETAIL OPERATIONS / IN STORE
-          </p>
-
-          <h1>
-            Point of Sale
-            <span>.</span>
-          </h1>
-
-          <p>
-            Every fragrance. Every counter.
-            One connected inventory.
-          </p>
-        </div>
-
-        <div className="pos-heading-actions">
-          <span className="pos-online">
-            <i />
-            Cash register
-          </span>
-
-          <ActionButton
-            type="button"
-            className="pos-secondary"
-            onClick={() =>
-              setCalculatorOpen(true)
+    <ActionScope pending={busy}>
+      <div
+        className={
+          'pos-screen' +
+          (focusMode ? ' pos-focus-mode' : '')
+        }
+        onKeyDown={onRegisterKey}
+      >
+        {notice && (
+          <div
+            className={'pos-toast ' + notice.kind}
+            role={
+              notice.kind === 'error'
+                ? 'alert'
+                : 'status'
             }
           >
-            <Calculator size={16} />
-            Calculator
-          </ActionButton>
+            {notice.kind === 'error' ? (
+              <AlertCircle size={19} />
+            ) : (
+              <CheckCircle2 size={19} />
+            )}
 
-          <Link href="/workspace/orders" className="pos-secondary pos-history-link">
-            <History size={16} aria-hidden="true" />
-            Sales history
-          </Link>
+            <span>{notice.message}</span>
 
-          <ActionButton
-            type="button"
-            className="pos-secondary pos-focus-toggle"
-            aria-pressed={focusMode}
-            onClick={() => setFocusMode(value => !value)}
-          >
-            {focusMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            {focusMode ? 'Exit register view' : 'Register view'}
-          </ActionButton>
+            <ActionButton
+              type="button"
+              aria-label="Dismiss notification"
+              onClick={() => setNotice(null)}
+            >
+              <X size={16} />
+            </ActionButton>
+          </div>
+        )}
 
-          <ActionButton
-            type="button"
-            className="pos-secondary"
-            disabled={locked || !cart.length}
-            onClick={clearSale}
-          >
-            <RefreshCw size={16} />
-            Clear sale
-          </ActionButton>
-        </div>
-      </header>
+        <header className="pos-heading">
+          <div>
+            <p className="pos-eyebrow">
+              RETAIL OPERATIONS / IN STORE
+            </p>
 
-      {/* Active store / register location */}
-      <section className="pos-store-bar">
-        <label htmlFor="pos-location">
-          Selling location
-        </label>
+            <h1>
+              Point of Sale<span>.</span>
+            </h1>
 
-        <div className="pos-select">
-          <select
-            id="pos-location"
-            value={locationId}
-            disabled={
-              locked || !!cart.length
-            }
-            onChange={event => {
-              setLocationId(
-                event.target.value,
-              );
-              setSearch('');
-            }}
-          >
-            <option value="">
-              Choose a store
-            </option>
+            <p>
+              A dedicated fragrance counter, connected
+              to your Golden Rose inventory.
+            </p>
+          </div>
 
-            {catalogue.locations.map(
-              store => (
+          <div className="pos-heading-actions">
+            <span className="pos-online">
+              <i />
+              Cash register
+            </span>
+
+            <ActionButton
+              type="button"
+              className="pos-secondary"
+              onClick={() => setCalculatorOpen(true)}
+            >
+              <Calculator size={16} />
+              Calculator
+            </ActionButton>
+
+            <Link
+              href="/workspace/orders"
+              className="pos-secondary"
+            >
+              <History size={16} />
+              Sales history
+            </Link>
+
+            <ActionButton
+              type="button"
+              className="pos-secondary"
+              aria-pressed={focusMode}
+              onClick={() => setFocusMode(
+                (current) => !current,
+              )}
+            >
+              {focusMode ? (
+                <Minimize2 size={16} />
+              ) : (
+                <Maximize2 size={16} />
+              )}
+
+              {focusMode
+                ? 'Exit register view'
+                : 'Register view'}
+            </ActionButton>
+          </div>
+        </header>
+
+        <section className="pos-store-bar">
+          <label htmlFor="pos-location">
+            Selling location
+          </label>
+
+          <div className="pos-select">
+            <select
+              id="pos-location"
+              value={locationId}
+              disabled={
+                locked ||
+                checkoutOpen ||
+                cart.length > 0
+              }
+              onChange={(event) => {
+                setLocationId(event.target.value);
+                setSearch('');
+              }}
+            >
+              <option value="">Choose a store</option>
+
+              {catalogue.locations.map((store) => (
                 <option
                   key={store.id}
                   value={store.id}
                 >
                   {store.name} · {store.code}
                 </option>
-              ),
-            )}
-          </select>
+              ))}
+            </select>
 
-          <ChevronDown size={16} />
-        </div>
+            <ChevronDown size={16} />
+          </div>
 
-        <span className="pos-store-caption">
-          <ScanBarcode size={16} />
-          Barcode-ready register
-        </span>
-
-        <span className="pos-store-caption">
-          <CheckCircle2 size={16} />
-          Verified cash receipts
-        </span>
-      </section>
-
-      {/* First-time store setup */}
-      {!locationId && (
-        <div className="pos-setup-alert">
-          <AlertCircle size={19} />
-
-          <span>
-            <b>
-              No selling location configured
-            </b>
-
-            <small>
-              Create an active store
-              location in Inventory
-              before recording sales.
-            </small>
+          <span className="pos-store-caption">
+            <ScanBarcode size={16} />
+            Barcode-ready
           </span>
 
-          <Link href="/workspace/inventory">
-            Open inventory
-            <ArrowRight size={15} />
-          </Link>
-        </div>
-      )}
-
-      {/* Safe recovery of a pending transaction */}
-      {pending && (
-        <div className="pos-pending">
-          <AlertCircle size={19} />
-
-          <span>
-            <b>
-              Previous transaction
-              not yet confirmed
-            </b>
-
-            <small>
-              Retry its original
-              reference. A second
-              transaction could
-              duplicate the sale.
-            </small>
+          <span className="pos-store-caption">
+            <CheckCircle2 size={16} />
+            Verified receipts
           </span>
-
-          <ActionButton
-            type="button"
-            className="pos-primary"
-            disabled={busy}
-            onClick={() => pay(pending)}
-          >
-            Retry same sale
-          </ActionButton>
-
-          <ActionButton
-            type="button"
-            className="pos-text-button"
-            onClick={releasePending}
-            disabled={busy}
-          >
-            Discard after checking
-          </ActionButton>
-        </div>
-      )}
-
-      <div className="pos-columns">
-        {/* Left: catalogue */}
-        <section
-          className="pos-catalogue"
-          aria-labelledby="pos-catalogue-title"
-        >
-          <div className="pos-section-title">
-            <div>
-              <p className="pos-eyebrow">
-                GOLDEN ROSE COLLECTION
-              </p>
-
-              <h2 id="pos-catalogue-title">
-                Find a fragrance
-              </h2>
-            </div>
-
-            <span className="pos-counter">
-              {catalogue.items.length} shown
-            </span>
-          </div>
-
-          {/* Search and barcode lookup */}
-          <div className="pos-search-row">
-            <label className="pos-search">
-              <Search size={19} />
-
-              <input
-                type="search"
-                ref={searchInputRef}
-                value={search}
-                onChange={event =>
-                  setSearch(event.target.value)
-                }
-                onKeyDown={findBarcode}
-                placeholder="Search product, SKU or scan barcode"
-                aria-label="Find product by name, barcode or SKU"
-                disabled={!locationId}
-              />
-
-              {searching ? (
-                <small>Searching…</small>
-              ) : (
-                <ScanBarcode size={20} />
-              )}
-            </label>
-
-            <ActionButton
-              type="button"
-              className="pos-secondary pos-refresh"
-              aria-label="Refresh catalogue"
-              onClick={() =>
-                loadPosCatalogue(
-                  search,
-                  locationId || null,
-                )
-                  .then(setCatalogue)
-                  .catch(error =>
-                    setNotice({
-                      kind: 'error',
-                      message:
-                        error instanceof Error
-                          ? error.message
-                          : 'Refresh failed.',
-                    }),
-                  )
-              }
-            >
-              <RefreshCw size={18} />
-            </ActionButton>
-          </div>
-
-          {/* Catalogue filters */}
-          <div className="pos-filter-row">
-            <div className="pos-segments">
-              <ActionButton
-                type="button"
-                aria-pressed={!inStockOnly}
-                className={
-                  !inStockOnly
-                    ? 'selected'
-                    : ''
-                }
-                onClick={() =>
-                  setInStockOnly(false)
-                }
-              >
-                All fragrances
-              </ActionButton>
-
-              <ActionButton
-                type="button"
-                aria-pressed={inStockOnly}
-                className={
-                  inStockOnly
-                    ? 'selected'
-                    : ''
-                }
-                onClick={() =>
-                  setInStockOnly(true)
-                }
-              >
-                In stock
-              </ActionButton>
-            </div>
-
-            <div className="pos-view-choices" role="group" aria-label="Catalogue display format">
-              <ActionButton type="button" onClick={() => chooseView('grid')}
-                aria-pressed={catalogueView === 'grid'} title="Product grid">
-                <LayoutGrid size={16} aria-hidden="true" /> Grid
-              </ActionButton>
-              <ActionButton type="button" onClick={() => chooseView('table')}
-                aria-pressed={catalogueView === 'table'} title="Product table">
-                <List size={16} aria-hidden="true" /> Table
-              </ActionButton>
-            </div>
-          </div>
-
-          {/* Live product grid */}
-          {filtered.length ? (
-            catalogueView === 'grid' ? (
-            <div className="pos-products">
-              {filtered.map(product => {
-                const qty =
-                  cart.find(
-                    row =>
-                      row.product.id ===
-                      product.id,
-                  )?.quantity || 0;
-
-                const cannotAdd =
-                  locked ||
-                  product.available <= qty;
-
-                return (
-                  <article
-                    className="pos-product"
-                    key={product.id}
-                  >
-                    <ProductPhoto
-                      product={product}
-                    />
-
-                    <div className="pos-product-info">
-                      <p className="pos-product-brand">
-                        {product.brand ||
-                          'GOLDEN ROSE'}
-                      </p>
-
-                      <h3>
-                        {product.name}
-                      </h3>
-
-                      <p className="pos-product-detail">
-                        {product.sizeMl
-                          ? product.sizeMl +
-                            ' ml'
-                          : 'Perfume'}
-                        {' · '}
-                        {product.sku ||
-                          'No SKU'}
-                      </p>
-
-                      <div className="pos-product-price">
-                        <b>
-                          {money(
-                            product.priceMinor,
-                          )}
-                        </b>
-
-                        <small
-                          className={
-                            product.available
-                              ? 'pos-instock'
-                              : 'pos-outstock'
-                          }
-                        >
-                          {product.available
-                            ? product.available +
-                              ' in stock'
-                            : 'Out of stock'}
-                        </small>
-                      </div>
-
-                      <ActionButton
-                        type="button"
-                        disabled={cannotAdd}
-                        onClick={() =>
-                          add(product)
-                        }
-                      >
-                        <Plus size={16} />
-                        Add to sale
-                      </ActionButton>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-            ) : (
-              <div className="pos-product-table-wrap">
-                <table className="pos-product-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Product / SKU</th>
-                      <th scope="col">Barcode</th>
-                      <th scope="col">Size</th>
-                      <th scope="col">Available</th>
-                      <th scope="col">Price</th>
-                      <th scope="col"><span className="pos-sr-only">Add item</span></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map(product => {
-                      const qty = cart.find(row => row.product.id === product.id)?.quantity || 0;
-                      const cannotAdd = locked || product.available <= qty;
-                      return (
-                        <tr key={product.id}>
-                          <td>
-                            <div className="pos-table-product">
-                              <ProductPhoto product={product} />
-                              <span><strong>{product.name}</strong><small>{product.brand || 'Golden Rose'} · {product.sku || 'No SKU'}</small></span>
-                            </div>
-                          </td>
-                          <td className="pos-table-code">{product.barcode || '—'}</td>
-                          <td>{product.sizeMl ? product.sizeMl + ' ml' : '—'}</td>
-                          <td><span className={product.available > 0 ? 'pos-instock' : 'pos-outstock'}>
-                            {product.available > 0 ? product.available : '0 available'}
-                          </span></td>
-                          <td className="pos-table-price">{money(product.priceMinor)}</td>
-                          <td><ActionButton type="button" className="pos-table-add"
-                            disabled={cannotAdd} onClick={() => add(product)}
-                            aria-label={'Add ' + product.name + ' to sale'}>
-                            <Plus size={15} aria-hidden="true" /> Add
-                          </ActionButton></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )
-          ) : (
-            <div className="pos-empty">
-              <Package size={32} />
-
-              <h3>
-                {search
-                  ? 'No matching fragrances'
-                  : 'The product catalogue is empty'}
-              </h3>
-
-              <p>
-                {search
-                  ? 'Try a different fragrance name or barcode.'
-                  : 'Import your products in Data Management, then receive stock at the selected store.'}
-              </p>
-
-              {!search && (
-                <Link href="/workspace/migration">
-                  Open Data Management
-                  <ArrowRight size={15} />
-                </Link>
-              )}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {catalogue.hasMore && (
-            <ActionButton
-              type="button"
-              className="pos-more"
-              pending={loadingMore} pendingLabel="Loading…" disabled={loadingMore}
-              onClick={more}
-            >
-              {loadingMore
-                ? 'Loading…'
-                : 'Load more fragrances'}
-
-              <ArrowRight size={15} />
-            </ActionButton>
-          )}
-
-          <p className="pos-catalogue-foot">
-            Stock is location-specific. Zero available may mean stock has not been counted.
-            Product availability is verified again when the sale is completed.
-          </p>
         </section>
 
-        {/* Right: checkout basket */}
-        <aside
-          className={
-            'pos-cart ' +
-            (showMobileCart
-              ? 'pos-cart-open'
-              : '')
-          }
-          aria-label="Current sale"
-        >
-          <header className="pos-cart-heading">
-            <div>
-              <p className="pos-eyebrow">
-                COUNTER CHECKOUT
-              </p>
+        {!locationId && (
+          <div className="pos-setup-alert">
+            <AlertCircle size={19} />
 
-              <h2>
-                Current sale
-              </h2>
-            </div>
-
-            <span className="pos-counter">
-              {cart.reduce(
-                (count, row) =>
-                  count + row.quantity,
-                0,
-              )}{' '}
-              items
+            <span>
+              <b>No selling location configured</b>
+              <small>
+                Create an active location in Inventory
+                before recording sales.
+              </small>
             </span>
-          </header>
 
-          <div className="pos-basket-tools" role="group" aria-label="Unsaved sale actions">
-            <ActionButton type="button" disabled={locked || !cart.length} onClick={holdSale}>
-              <PauseCircle size={15} aria-hidden="true" /> Hold
+            <Link href="/workspace/inventory">
+              Open inventory
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        )}
+
+        {pending && (
+          <div className="pos-pending">
+            <AlertCircle size={19} />
+
+            <span>
+              <b>
+                Previous transaction not yet confirmed
+              </b>
+
+              <small>
+                Recover the same reference. Starting
+                another transaction could duplicate the
+                sale.
+              </small>
+            </span>
+
+            <ActionButton
+              type="button"
+              className="pos-primary"
+              disabled={busy}
+              onClick={() => {
+                setCheckoutOpen(true);
+              }}
+            >
+              Recover payment
             </ActionButton>
-            <ActionButton type="button" disabled={locked || !heldSale} onClick={recallSale}>
-              <RotateCcw size={15} aria-hidden="true" /> Recall{heldSale ? ' (1)' : ''}
-            </ActionButton>
-            <ActionButton type="button" disabled={locked || !cart.length} onClick={clearSale}>
-              <Trash2 size={15} aria-hidden="true" /> Clear
+
+            <ActionButton
+              type="button"
+              className="pos-text-button"
+              disabled={busy}
+              onClick={releasePending}
+            >
+              Discard after checking
             </ActionButton>
           </div>
-          {heldSale && <p className="pos-held-note" role="status">
-            One local basket is on hold. It does not reserve stock.
-          </p>}
-          {/* Basket products */}
-          <div className="pos-cart-contents">
-            {cart.length ? (
-              cart.map(row => (
-                <div
-                  className="pos-cart-item"
-                  key={row.product.id}
+        )}
+
+        <div className="pos-columns">
+          <section
+            className="pos-catalogue"
+            aria-labelledby="pos-catalogue-title"
+          >
+            <div className="pos-section-title">
+              <div>
+                <p className="pos-eyebrow">
+                  GOLDEN ROSE COLLECTION
+                </p>
+
+                <h2 id="pos-catalogue-title">
+                  Find a fragrance
+                </h2>
+              </div>
+
+              <span className="pos-counter">
+                {catalogue.items.length} shown
+              </span>
+            </div>
+
+            <div className="pos-search-row">
+              <label className="pos-search">
+                <Search size={19} />
+
+                <input
+                  type="search"
+                  ref={searchInputRef}
+                  value={search}
+                  onChange={(event) =>
+                    setSearch(event.target.value)
+                  }
+                  onKeyDown={findBarcode}
+                  placeholder="Search name, SKU or scan barcode"
+                  aria-label="Search products or scan barcode"
+                  disabled={!locationId}
+                />
+
+                {searching ? (
+                  <small>Searching…</small>
+                ) : (
+                  <ScanBarcode size={19} />
+                )}
+              </label>
+
+              <ActionButton
+                type="button"
+                className="pos-secondary pos-refresh"
+                aria-label="Refresh catalogue"
+                disabled={searching}
+                onClick={() =>
+                  void refreshCatalogue()
+                }
+              >
+                <RefreshCw size={18} />
+              </ActionButton>
+            </div>
+
+            <div className="pos-filter-row">
+              <div className="pos-segments">
+                <ActionButton
+                  type="button"
+                  className={!inStockOnly ? 'selected' : ''}
+                  aria-pressed={!inStockOnly}
+                  onClick={() => setInStockOnly(false)}
                 >
-                  <ProductPhoto
-                    product={row.product}
-                  />
+                  All fragrances
+                </ActionButton>
 
-                  <div className="pos-cart-item-main">
-                    <div className="pos-cart-item-top">
-                      <span>
-                        <b>
-                          {row.product.name}
-                        </b>
+                <ActionButton
+                  type="button"
+                  className={inStockOnly ? 'selected' : ''}
+                  aria-pressed={inStockOnly}
+                  onClick={() => setInStockOnly(true)}
+                >
+                  In stock
+                </ActionButton>
+              </div>
 
-                        <small>
-                          {row.product.sizeMl
-                            ? row.product.sizeMl +
-                              ' ml · '
-                            : ''}
-                          {row.product.sku ||
-                            'Perfume'}
-                        </small>
-                      </span>
+              <div
+                className="pos-view-choices"
+                role="group"
+                aria-label="Catalogue display format"
+              >
+                <ActionButton
+                  type="button"
+                  onClick={() => chooseView('table')}
+                  aria-pressed={
+                    catalogueView === 'table'
+                  }
+                >
+                  <List size={16} />
+                  Table
+                </ActionButton>
 
-                      <ActionButton
-                        type="button"
-                        aria-label={
-                          'Remove ' +
-                          row.product.name
-                        }
-                        disabled={locked}
-                        onClick={() =>
-                          setCart(items =>
-                            items.filter(
-                              item =>
-                                item.product.id !==
-                                row.product.id,
-                            ),
-                          )
-                        }
-                      >
-                        <Trash2 size={16} />
-                      </ActionButton>
-                    </div>
+                <ActionButton
+                  type="button"
+                  onClick={() => chooseView('grid')}
+                  aria-pressed={
+                    catalogueView === 'grid'
+                  }
+                >
+                  <LayoutGrid size={16} />
+                  Grid
+                </ActionButton>
+              </div>
+            </div>
 
-                    <div className="pos-cart-item-bottom">
-                      <div className="pos-quantity">
-                        <ActionButton
-                          type="button"
-                          aria-label="Decrease quantity"
-                          disabled={locked}
-                          onClick={() =>
-                            quantity(
-                              row.product.id,
-                              -1,
-                            )
-                          }
-                        >
-                          <Minus size={14} />
-                        </ActionButton>
+            {filtered.length > 0 ? (
+              catalogueView === 'table' ? (
+                <div className="pos-product-table-wrap">
+                  <table className="pos-product-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">
+                          Product / SKU
+                        </th>
+                        <th scope="col">
+                          Barcode
+                        </th>
+                        <th scope="col">
+                          Available
+                        </th>
+                        <th scope="col">
+                          Price
+                        </th>
+                        <th scope="col">
+                          <span className="pos-sr-only">
+                            Add item
+                          </span>
+                        </th>
+                      </tr>
+                    </thead>
 
-                        <b>
-                          {row.quantity}
-                        </b>
+                    <tbody>
+                      {filtered.map((product) => {
+                        const selected =
+                          cart.find(
+                            (row) =>
+                              row.product.id === product.id,
+                          )?.quantity || 0;
 
-                        <ActionButton
-                          type="button"
-                          aria-label="Increase quantity"
-                          disabled={
-                            locked ||
-                            row.quantity >=
-                              Math.min(
-                                row.product.available,
-                                MAX_PER_LINE,
-                              )
-                          }
-                          onClick={() =>
-                            quantity(
-                              row.product.id,
-                              1,
-                            )
-                          }
-                        >
-                          <Plus size={14} />
-                        </ActionButton>
-                      </div>
+                        const cannotAdd =
+                          locked ||
+                          checkoutOpen ||
+                          product.available <= selected;
 
-                      <strong>
-                        {money(
-                          row.quantity *
-                            row.product.priceMinor,
-                        )}
-                      </strong>
-                    </div>
-                  </div>
+                        return (
+                          <tr key={product.id}>
+                            <td>
+                              <div className="pos-table-product">
+                                <ProductPhoto
+                                  product={product}
+                                />
+
+                                <span>
+                                  <strong>
+                                    {product.name}
+                                  </strong>
+
+                                  <small>
+                                    {product.brand ||
+                                      'Golden Rose'}
+                                    {' · '}
+                                    {product.sizeMl
+                                      ? product.sizeMl + ' ml'
+                                      : 'Fragrance'}
+                                    {' · '}
+                                    {product.sku || 'No SKU'}
+                                  </small>
+                                </span>
+                              </div>
+                            </td>
+
+                            <td className="pos-table-code">
+                              {product.barcode || '—'}
+                            </td>
+
+                            <td>
+                              <span
+                                className={
+                                  product.available > 0
+                                    ? 'pos-instock'
+                                    : 'pos-outstock'
+                                }
+                              >
+                                {product.available} available
+                              </span>
+                            </td>
+
+                            <td className="pos-table-price">
+                              {money(product.priceMinor)}
+                            </td>
+
+                            <td>
+                              <ActionButton
+                                type="button"
+                                className="pos-table-add"
+                                disabled={cannotAdd}
+                                onClick={() => add(product)}
+                                aria-label={
+                                  'Add ' +
+                                  product.name +
+                                  ' to sale'
+                                }
+                              >
+                                <Plus size={15} />
+                                Add
+                              </ActionButton>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              ))
+              ) : (
+                <div className="pos-products">
+                  {filtered.map((product) => {
+                    const selected =
+                      cart.find(
+                        (row) =>
+                          row.product.id === product.id,
+                      )?.quantity || 0;
+
+                    const cannotAdd =
+                      locked ||
+                      checkoutOpen ||
+                      product.available <= selected;
+
+                    return (
+                      <article
+                        className="pos-product"
+                        key={product.id}
+                      >
+                        <ProductPhoto product={product} />
+
+                        <div className="pos-product-info">
+                          <p className="pos-product-brand">
+                            {product.brand || 'GOLDEN ROSE'}
+                          </p>
+
+                          <h3>{product.name}</h3>
+
+                          <p className="pos-product-detail">
+                            {product.sizeMl
+                              ? product.sizeMl + ' ml'
+                              : 'Fragrance'}
+                            {' · '}
+                            {product.sku || 'No SKU'}
+                          </p>
+
+                          <div className="pos-product-price">
+                            <b>
+                              {money(product.priceMinor)}
+                            </b>
+
+                            <small
+                              className={
+                                product.available > 0
+                                  ? 'pos-instock'
+                                  : 'pos-outstock'
+                              }
+                            >
+                              {product.available} in stock
+                            </small>
+                          </div>
+
+                          <ActionButton
+                            type="button"
+                            disabled={cannotAdd}
+                            onClick={() => add(product)}
+                          >
+                            <Plus size={16} />
+                            Add to sale
+                          </ActionButton>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )
             ) : (
-              <div className="pos-cart-empty">
-                <ShoppingBag size={33} />
+              <div className="pos-empty">
+                <Package size={32} />
 
                 <h3>
-                  Ready for your first item
+                  {search
+                    ? 'No matching fragrances'
+                    : 'The product catalogue is empty'}
                 </h3>
 
                 <p>
-                  Scan a barcode or add a
-                  fragrance from the
-                  collection to begin.
+                  {search
+                    ? 'Try another fragrance name, SKU or barcode.'
+                    : 'Import products through Data Management and receive stock into the selected store.'}
                 </p>
+
+                {!search && (
+                  <Link href="/workspace/migration">
+                    Open Data Management
+                    <ArrowRight size={15} />
+                  </Link>
+                )}
               </div>
             )}
-          </div>
 
-          {/* Totals and payment */}
-          <div className="pos-checkout">
-            <div className="pos-summary-row">
-              <span>Subtotal</span>
+            {catalogue.hasMore && (
+              <ActionButton
+                type="button"
+                className="pos-more"
+                disabled={loadingMore}
+                pending={loadingMore}
+                pendingLabel="Loading…"
+                onClick={() => void more()}
+              >
+                Load more fragrances
+                <ArrowRight size={15} />
+              </ActionButton>
+            )}
 
-              <strong>
-                {money(subtotal)}
-              </strong>
+            <p className="pos-catalogue-foot">
+              Stock belongs to the selected location.
+              Prices and quantities are verified again
+              during checkout.
+            </p>
+          </section>
+
+          <aside
+            className={
+              'pos-cart' +
+              (showMobileCart
+                ? ' pos-cart-open'
+                : '')
+            }
+            aria-label="Current sale"
+          >
+            <header className="pos-cart-heading">
+              <div>
+                <p className="pos-eyebrow">
+                  CASH CUSTOMER
+                </p>
+
+                <h2>Current sale</h2>
+              </div>
+
+              <span className="pos-counter">
+                {itemCount}{' '}
+                {itemCount === 1 ? 'item' : 'items'}
+              </span>
+            </header>
+
+            <div
+              className="pos-basket-tools"
+              role="group"
+              aria-label="Unsaved sale actions"
+            >
+              <ActionButton
+                type="button"
+                disabled={locked || !cart.length}
+                onClick={holdSale}
+              >
+                <PauseCircle size={15} />
+                Hold
+              </ActionButton>
+
+              <ActionButton
+                type="button"
+                disabled={locked || !heldSale}
+                onClick={recallSale}
+              >
+                <RotateCcw size={15} />
+                Recall
+              </ActionButton>
+
+              <ActionButton
+                type="button"
+                disabled={locked || !cart.length}
+                onClick={clearSale}
+              >
+                <Trash2 size={15} />
+                Clear
+              </ActionButton>
             </div>
 
-            {/* Discount */}
-            <label className="pos-discount">
-              <span>
-                Discount
-                <small>
-                  Max {discountLimit}%
-                </small>
-              </span>
+            {heldSale && (
+              <p
+                className="pos-held-note"
+                role="status"
+              >
+                One basket is held locally.
+                No stock is reserved.
+              </p>
+            )}
 
-              <span className="pos-money-input">
-                <i>₦</i>
+            <div className="pos-cart-contents">
+              {cart.length > 0 ? (
+                cart.map((row) => (
+                  <article
+                    className="pos-cart-item"
+                    key={row.product.id}
+                  >
+                    <div className="pos-cart-item-main">
+                      <div className="pos-cart-item-top">
+                        <span>
+                          <b>{row.product.name}</b>
 
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={discount}
-                  disabled={
-                    locked || !cart.length
-                  }
-                  onChange={event =>
-                    setDiscount(
-                      event.target.value,
-                    )
-                  }
-                  aria-label="Discount amount in naira"
-                />
-              </span>
-            </label>
+                          <small>
+                            {row.product.sku ||
+                              'Fragrance'}
+                            {' · '}
+                            {money(row.product.priceMinor)}
+                            {' each'}
+                          </small>
+                        </span>
 
-            {!validDiscount &&
-              !!cart.length && (
+                        <ActionButton
+                          type="button"
+                          aria-label={
+                            'Remove ' + row.product.name
+                          }
+                          disabled={locked}
+                          onClick={() =>
+                            setCart((items) =>
+                              items.filter(
+                                (item) =>
+                                  item.product.id !==
+                                  row.product.id,
+                              ),
+                            )
+                          }
+                        >
+                          <X size={16} />
+                        </ActionButton>
+                      </div>
+
+                      <div className="pos-cart-item-bottom">
+                        <div className="pos-quantity">
+                          <ActionButton
+                            type="button"
+                            aria-label="Decrease quantity"
+                            disabled={locked}
+                            onClick={() =>
+                              quantity(row.product.id, -1)
+                            }
+                          >
+                            <Minus size={14} />
+                          </ActionButton>
+
+                          <b>{row.quantity}</b>
+
+                          <ActionButton
+                            type="button"
+                            aria-label="Increase quantity"
+                            disabled={
+                              locked ||
+                              row.quantity >=
+                                Math.min(
+                                  row.product.available,
+                                  MAX_PER_LINE,
+                                )
+                            }
+                            onClick={() =>
+                              quantity(row.product.id, 1)
+                            }
+                          >
+                            <Plus size={14} />
+                          </ActionButton>
+                        </div>
+
+                        <strong>
+                          {money(
+                            row.quantity *
+                              row.product.priceMinor,
+                          )}
+                        </strong>
+                      </div>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="pos-cart-empty">
+                  <ShoppingBag size={35} />
+
+                  <h3>No items yet</h3>
+
+                  <p>
+                    Scan a barcode or select a
+                    fragrance to begin this sale.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="pos-checkout">
+              <div className="pos-summary-row">
+                <span>Subtotal</span>
+                <strong>{money(subtotal)}</strong>
+              </div>
+
+              {discountMinor !== null &&
+                discountMinor > 0 && (
+                  <div className="pos-summary-row">
+                    <span>Discount</span>
+                    <strong>
+                      −{money(discountMinor)}
+                    </strong>
+                  </div>
+                )}
+
+              <div className="pos-summary-row pos-tax">
+                <span>Tax</span>
+                <span>Not configured</span>
+              </div>
+
+              <div className="pos-amount-due">
+                <span>TOTAL PAYABLE</span>
+                <strong>{money(total)}</strong>
+              </div>
+
+              {!validDiscount && cart.length > 0 && (
                 <p className="pos-field-error">
-                  Invalid discount or
-                  above your role limit.
+                  Review the discount amount before checkout.
                 </p>
               )}
 
-            <div className="pos-summary-row pos-tax">
-              <span>Tax</span>
-              <span>Not configured</span>
-            </div>
+              <ActionButton
+                type="button"
+                className="pos-primary pos-pay"
+                disabled={!canOpenCheckout}
+                onClick={openCheckout}
+              >
+                <span>
+                  <ReceiptText size={19} />
+                  Checkout
+                </span>
 
-            {/* Amount due */}
-            <div className="pos-amount-due">
-              <span>
-                AMOUNT DUE
-              </span>
+                <span>
+                  {money(total)}
+                  <ArrowRight size={18} />
+                </span>
+              </ActionButton>
 
-              <strong>
-                {money(total)}
-              </strong>
-
-              <small>
-                Server verifies the latest
-                price before recording.
-              </small>
-            </div>
-
-            {/* Payment methods */}
-            <div className="pos-payment">
-              <p className="pos-eyebrow">
-                PAYMENT METHOD
+              <p className="pos-register-shortcuts">
+                F2: Scan/search · Ctrl+Enter: Checkout
               </p>
 
-              <div className="pos-payment-options">
-                <span>
-                  <Banknote size={18} />
-                  Cash ✓
-                </span>
-
-                <span className="disabled">
-                  Transfer / card
-                  (not connected)
-                </span>
-              </div>
+              <p className="pos-safe">
+                <CheckCircle2 size={14} />
+                The sale is recorded only after
+                payment is confirmed.
+              </p>
             </div>
+          </aside>
+        </div>
 
-            {/* Cash tender */}
-            <label className="pos-cash-label">
-              Cash received
+        <ActionButton
+          type="button"
+          className="pos-mobile-cart-button"
+          aria-expanded={showMobileCart}
+          onClick={() =>
+            setShowMobileCart(
+              (current) => !current,
+            )
+          }
+        >
+          <ShoppingBag size={19} />
 
-              <span className="pos-money-input pos-cash-input">
-                <i>₦</i>
+          {showMobileCart
+            ? 'Browse fragrances'
+            : 'View current sale'}
 
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={cash}
-                  disabled={
-                    locked || !cart.length
-                  }
-                  onChange={event =>
-                    setCash(
-                      event.target.value,
-                    )
-                  }
-                  placeholder="0.00"
-                />
-              </span>
-            </label>
+          <strong>{money(total)}</strong>
+        </ActionButton>
 
-            <div className="pos-tender-pad" role="group" aria-label="Cash amount keypad">
-              {['7', '8', '9', '⌫', '4', '5', '6', 'C', '1', '2', '3', '.', '00', '0'].map(key => (
-                <ActionButton type="button" key={key} onClick={() => enterCashKey(key)}
-                  disabled={locked || !cart.length} aria-label={key === '⌫' ? 'Backspace' : key === 'C' ? 'Clear cash amount' : key}>
-                  {key}
-                </ActionButton>
-              ))}
-            </div>
-            <div className="pos-shortcuts">
-              <ActionButton
-                type="button"
-                disabled={
-                  locked || !cart.length
-                }
-                onClick={() =>
-                  setCash(
-                    (total / 100).toFixed(2),
-                  )
-                }
-              >
-                Exact cash
-              </ActionButton>
+        <PosCheckoutModal
+          open={checkoutOpen}
+          lines={cart.map((row) => ({
+            id: row.product.id,
+            name: row.product.name,
+            sku: row.product.sku,
+            quantity: row.quantity,
+            unitPriceMinor: row.product.priceMinor,
+          }))}
+          customerName="Cash customer"
+          subtotalMinor={subtotal}
+          discountMinor={discountMinor ?? 0}
+          discountNaira={discount}
+          discountLimitPercent={discountLimit}
+          validDiscount={validDiscount}
+          onDiscountChange={setDiscount}
+          totalMinor={total}
+          taxMinor={null}
+          cashNaira={cash}
+          cashMinor={cashMinor}
+          onCashChange={setCash}
+          pendingReference={
+            pending?.idempotencyKey ?? null
+          }
+          busy={busy}
+          onClose={() => {
+            if (!busy) setCheckoutOpen(false);
+          }}
+          onConfirmCash={() =>
+            pay(pending ?? undefined)
+          }
+        />
 
-              <ActionButton
-                type="button"
-                onClick={() =>
-                  setCalculatorOpen(true)
-                }
-              >
-                <Calculator size={14} />
-                Calculator
-              </ActionButton>
-            </div>
+        {calculatorOpen && (
+          <CalculatorDialog
+            close={() => setCalculatorOpen(false)}
+            onUseValue={setCash}
+          />
+        )}
 
-            {/* Change */}
-            <div className="pos-summary-row pos-change">
-              <span>
-                Change to return
-              </span>
-
-              <strong>
-                {change === null
-                  ? '—'
-                  : money(change)}
-              </strong>
-            </div>
-
-            {cashMinor !== null &&
-              cashMinor < total && (
-                <p className="pos-field-error">
-                  Cash received is less
-                  than the total.
-                </p>
-              )}
-
-            {/* Complete sale */}
-            <ActionButton
-              type="button"
-              className="pos-primary pos-pay"
-              disabled={!canPay}
-              onClick={() => pay()}
-            >
-              <ReceiptText size={18} />
-
-              {busy
-                ? 'Recording sale…'
-                : 'Complete cash sale'}
-
-              <ArrowRight size={17} />
-            </ActionButton>
-
-            <p className="pos-register-shortcuts">F2: scan/search · Ctrl+Enter: complete eligible cash sale</p>
-            <p className="pos-safe">
-              <CheckCircle2 size={14} />
-              A confirmed sale creates
-              one receipt and deducts
-              stock atomically.
-            </p>
-          </div>
-        </aside>
+        {receipt && (
+          <ReceiptDialog
+            receipt={receipt}
+            close={() => setReceipt(null)}
+          />
+        )}
       </div>
-
-      {/* Mobile checkout */}
-      <ActionButton
-        type="button"
-        className="pos-mobile-cart-button"
-        aria-expanded={showMobileCart}
-        onClick={() =>
-          setShowMobileCart(
-            value => !value,
-          )
-        }
-      >
-        <ShoppingBag size={19} />
-
-        {showMobileCart
-          ? 'Browse fragrances'
-          : 'View current sale'}
-
-        <strong>
-          {money(total)}
-        </strong>
-      </ActionButton>
-
-      {/* Calculator */}
-      {calculatorOpen && (
-        <CalculatorDialog
-          close={() =>
-            setCalculatorOpen(false)
-          }
-          onUseValue={setCash}
-        />
-      )}
-
-      {/* Confirmed receipt */}
-      {receipt && (
-        <ReceiptDialog
-          receipt={receipt}
-          close={() =>
-            setReceipt(null)
-          }
-        />
-      )}
-    </div></ActionScope>
+    </ActionScope>
   );
 }

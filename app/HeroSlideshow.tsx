@@ -9,6 +9,7 @@ import {
 
 import Image from 'next/image';
 import Link from 'next/link';
+import HomeMotion from './HomeMotion';
 
 import {
   ArrowDown,
@@ -218,8 +219,10 @@ export default function HeroSlideshow() {
       aria-label="Golden Rose fragrance slideshow"
       aria-roledescription="carousel"
     >
-      <div className="gr-container gr-hero__layout">
+      {/* Activates IntersectionObserver motion only where CSS view timelines are unavailable. */}
+      <HomeMotion />
 
+      <div className="gr-container gr-hero__layout">
         {/* Animated campaign text */}
 
         <div className="gr-hero__copy">
