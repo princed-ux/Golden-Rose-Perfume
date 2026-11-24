@@ -1,0 +1,11 @@
+/* Preserve all legacy editorial page functionality while a single shared
+   customer header takes over on Home, Shop and About.
+   Scope carefully: no effects on POS, workspace, product details or checkout. */
+.gr-public-header-bridge + .gr-home > .gr-announcement,
+.gr-public-header-bridge + .gr-home > .gr-header,
+.gr-public-header-bridge + .gr-about > .gr-about__announcement,
+.gr-public-header-bridge + .gr-about > .gr-about__header,
+.gr-public-header-bridge + .gr-shop > .gr-shop__announcement,
+.gr-public-header-bridge + .gr-shop > .gr-shop__header {display:none!important}
+/* Avoid accidental extra spacing from this integration wrapper. */
+.gr-public-header-bridge {display:contents}

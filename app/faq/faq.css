@@ -1,0 +1,17 @@
+.gr-faq-compact__intro {padding:45px 0 40px;max-width:810px}
+.gr-faq-compact__intro h1 {margin:14px 0;font-size:clamp(37px,5.5vw,62px);font-weight:690;line-height:1.1;letter-spacing:-.05em}
+.gr-faq-compact__intro p {max-width:620px;color:var(--help-muted);font-size:14px;line-height:1.9}
+.gr-faq-compact__count {display:inline-block;margin-top:20px;color:var(--help-rose);font-size:12px;font-weight:700}
+.gr-faq-compact__topics {display:flex;flex-wrap:wrap;gap:10px;padding-bottom:55px}
+.gr-faq-compact__topics a {display:inline-flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:11px 17px;border:1px solid var(--help-line);border-radius:9px;background:var(--help-white);color:var(--help-ink);font-size:12px;font-weight:700;text-decoration:none}
+.gr-faq-compact__topics a:hover {border-color:var(--help-rose);color:var(--help-rose)}
+.gr-faq-compact__questions {display:grid;gap:55px}
+.gr-faq-compact__group {scroll-margin-top:120px}
+.gr-faq-compact__group h2 {margin:0 0 20px;font-size:clamp(24px,3vw,34px);font-weight:650;letter-spacing:-.04em}
+.gr-faq-compact__group .gr-help__accordion {max-width:950px}
+.gr-faq-compact__contact {display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:75px;padding:29px 0;border-top:1px solid var(--help-line);border-bottom:1px solid var(--help-line)}
+.gr-faq-compact__contact h2 {margin:0 0 6px;font-size:25px;letter-spacing:-.035em}
+.gr-faq-compact__contact p {margin:0;color:var(--help-muted);font-size:13px;line-height:1.8}
+.gr-faq-compact__contact>a {display:inline-flex;min-height:45px;align-items:center;gap:11px;flex-shrink:0;padding:11px 17px;border-radius:8px;background:#332332;color:#fff!important;font-size:12px;font-weight:750;text-decoration:none}
+.gr-faq-compact__contact>a:hover {background:#963b59}
+@media (max-width:600px) {.gr-faq-compact__intro {padding:27px 0 30px}.gr-faq-compact__topics {padding-bottom:35px}.gr-faq-compact__questions {gap:45px}.gr-faq-compact__contact {align-items:flex-start;flex-direction:column;margin-top:53px}}

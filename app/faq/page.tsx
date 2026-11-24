@@ -1,199 +1,142 @@
-
 import type { Metadata } from 'next';
-import Image from 'next/image';
-import Link from 'next/link';
-import {
-  ArrowRight,
-  ArrowUpRight,
-  ChevronRight,
-  CircleHelp,
-  MessageCircle,
-  Plus,
-} from 'lucide-react';
 import type { ReactNode } from 'react';
+import Link from 'next/link';
+import { ArrowRight, ChevronRight, Plus } from 'lucide-react';
 
 import { PublicHelpLayout } from '@/src/components/public-help-layout';
-import { getWhatsAppNumber } from '@/src/lib/customer/bag';
+import './faq.css';
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions',
-  description: 'Answers to common questions about Golden Rose Perfume, fragrances, WhatsApp orders, and delivery.',
+  title: 'Help & FAQ',
+  description: 'Answers to common questions about Golden Rose Perfume, orders, payment, delivery and returns.',
 };
 
-const PHOTO = '/assets/products/telegram-selected/gr-e0a11f5027ba.jpg';
-
 type Question = { question: string; answer: ReactNode };
-type QuestionGroup = { id: string; label: string; description: string; questions: Question[] };
+type QuestionGroup = { id: string; label: string; questions: Question[] };
 
 const groups: QuestionGroup[] = [
   {
     id: 'shopping',
-    label: 'Discovering fragrances',
-    description: 'Finding a fragrance that feels right for you.',
+    label: 'Products & fragrances',
     questions: [
       {
         question: 'How do I find a perfume on Golden Rose?',
-        answer: <>Visit the <Link href="/shop">fragrance collection</Link>, search by name, or use the available category and price filters. Only products currently published in the catalogue appear in the shop.</>,
+        answer: <>Visit the <Link href="/shop">fragrance collection</Link>, search by name or use the available category and price filters. The shop displays products currently published in the catalogue.</>,
       },
       {
         question: 'Where can I see a fragrance description?',
-        answer: <>Open a perfume from the <Link href="/shop">shop</Link>. Its detail page shows the catalogue description, available variants, prices, and any product photographs the boutique has uploaded. If a description is missing, ask the boutique for more details before buying.</>,
+        answer: <>Open a fragrance from the <Link href="/shop">shop</Link> to see its listed description, available variants and any photographs that the boutique has uploaded. If details are missing, contact the team before purchasing.</>,
       },
       {
         question: 'How do I choose a bottle size?',
-        answer: 'Each fragrance detail page lists the sizes and variants supplied by the boutique. Select the variant and quantity you want before adding it to your shopping bag.',
+        answer: 'A fragrance detail page displays the sizes and variants listed by Golden Rose. Choose an available variant and quantity before adding it to your shopping bag.',
       },
       {
         question: 'Are all products shown on the website in stock?',
-        answer: 'The website shows published catalogue products, but a listing is not a guarantee of immediate physical stock. The Golden Rose team confirms availability before an order is completed.',
+        answer: 'A published product listing does not guarantee physical stock. Golden Rose confirms availability before completing an order.',
       },
     ],
   },
   {
     id: 'ordering',
-    label: 'Ordering & payment',
-    description: 'What happens after you choose your fragrances.',
+    label: 'Orders & payment',
     questions: [
       {
         question: 'How do I place an order?',
-        answer: <>Add your preferred variants to the <Link href="/cart">shopping bag</Link>, review the items, then continue to <Link href="/checkout">WhatsApp checkout</Link>. Enter your contact details, prepare the order message, open WhatsApp, review it, and send it to the boutique. Preparing the message alone does not submit an order.</>,
+        answer: <>Add fragrances to your <Link href="/cart">shopping bag</Link>, review the items, and proceed to <Link href="/checkout">checkout</Link>. The current flow prepares a WhatsApp order message, which you must review and send to Golden Rose. Preparing a message alone does not submit an order.</>,
       },
       {
         question: 'Can I pay directly on the website?',
-        answer: 'The current online ordering flow does not collect a card or bank payment on the website. It creates a WhatsApp enquiry. Golden Rose confirms the order, final charges, and payment arrangements directly with you.',
+        answer: 'The current customer checkout prepares a WhatsApp enquiry rather than collecting card or bank payments on the website. Golden Rose confirms the order and payment arrangements directly with you.',
       },
       {
         question: 'Is the price in my bag the final amount?',
-        answer: 'Your shopping bag displays an estimated item total using current catalogue prices. The boutique confirms the final item prices and any applicable delivery costs before you pay.',
+        answer: 'The bag shows an estimated item total from the listed catalogue prices. Golden Rose confirms any final charges and applicable delivery costs before payment.',
       },
       {
         question: 'Do I need an account to browse or prepare an order?',
-        answer: 'No. You can explore the collection and use the shopping bag without signing in. An account can also help you manage saved fragrances and customer preferences.',
+        answer: 'No. You can browse the collection and prepare a shopping bag without signing in.',
       },
     ],
   },
   {
     id: 'delivery',
     label: 'Delivery & after-sales',
-    description: 'Confirm the details that matter before your purchase.',
     questions: [
       {
         question: 'Where does Golden Rose deliver?',
-        answer: <>Delivery destinations and arrangements are confirmed by the boutique for each enquiry. Please <Link href="/contact">contact Golden Rose</Link> with your location before assuming delivery is available.</>,
+        answer: <>Available delivery destinations are confirmed with the boutique for each enquiry. Please <Link href="/contact">contact Golden Rose</Link> with your location first.</>,
       },
       {
         question: 'How much does delivery cost, and how long will it take?',
-        answer: 'Delivery costs and timing are not fixed on this website. The boutique will discuss the destination, applicable charges, and expected arrangements with you before confirming the order.',
+        answer: 'Delivery cost and timing depend on the destination and arrangements for your order. Golden Rose will confirm these before payment.',
       },
       {
         question: 'How can I change or cancel an enquiry?',
-        answer: 'Reply in the original WhatsApp conversation as soon as possible. Whether an order can be changed or cancelled depends on the stage of confirmation and fulfilment.',
+        answer: 'Reply in your original order conversation as soon as possible. Any changes or cancellations depend on the order stage and arrangements already made.',
       },
       {
         question: 'What if I want to return a perfume or request a refund?',
-        answer: <>Please <Link href="/contact">contact the boutique</Link> with your purchase details before returning anything. Golden Rose will explain the applicable terms for your order. This website does not currently provide an automatic refund or return request service.</>,
+        answer: <>Please <Link href="/contact">contact Golden Rose</Link> with your purchase details before returning an item. The team will clarify the applicable terms for your order.</>,
       },
       {
         question: 'Can I track an order on the website?',
-        answer: 'There is no live online delivery-tracking service in the current WhatsApp checkout flow. Ask the boutique for updates in your order conversation.',
+        answer: 'The current WhatsApp checkout does not include live website delivery tracking. Please ask the boutique for updates in your order conversation.',
       },
     ],
   },
 ];
 
 export default function FAQPage() {
-  const whatsapp = getWhatsAppNumber();
-  const questionCount = groups.reduce((total, group) => total + group.questions.length, 0);
+  const count = groups.reduce((total, group) => total + group.questions.length, 0);
 
   return (
     <PublicHelpLayout>
-      <div className="gr-help__container">
+      <div className="gr-help__container gr-faq-compact">
         <nav className="gr-help__breadcrumbs" aria-label="Breadcrumb">
           <Link href="/">Home</Link>
           <ChevronRight size={14} aria-hidden="true" />
-          <span aria-current="page">Frequently asked questions</span>
+          <span aria-current="page">Help & FAQ</span>
         </nav>
 
-        <section className="gr-help__hero gr-help__hero--faq" aria-labelledby="gr-faq-title">
-          <div className="gr-help__hero-copy">
-            <span className="gr-help__eyebrow">HERE TO HELP YOU DISCOVER</span>
-            <h1 id="gr-faq-title">Every detail <em>matters.</em></h1>
-            <p>Answers about choosing a fragrance, preparing your order, payments, delivery enquiries, and after-sales support.</p>
-            <div className="gr-help__hero-actions">
-              <a href="#faq-questions" className="gr-help__button gr-help__button--dark">
-                Explore {questionCount} answers
-                <ArrowRight size={17} aria-hidden="true" />
-              </a>
-              <Link href="/contact" className="gr-help__text-link">
-                Contact us <ArrowUpRight size={16} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-          <div className="gr-help__hero-photo">
-            <Image
-              src={PHOTO}
-              fill
-              preload
-              sizes="(max-width: 800px) 100vw, 45vw"
-              alt="Golden Rose fragrance editorial photography"
-              className="gr-help__hero-image"
-            />
-            <span className="gr-help__photo-caption">QUESTIONS · ANSWERED WITH CARE</span>
-          </div>
-        </section>
+        <header className="gr-faq-compact__intro">
+          <span className="gr-help__eyebrow">CUSTOMER SUPPORT</span>
+          <h1>Help & frequently asked questions</h1>
+          <p>Find clear answers about our perfumes, ordering, payment, delivery and after-sales enquiries.</p>
+          <span className="gr-faq-compact__count">{count} questions answered</span>
+        </header>
 
-        <section id="faq-questions" className="gr-help__faq" aria-labelledby="faq-questions-heading">
-          <div className="gr-help__section-heading">
-            <span className="gr-help__eyebrow">THE DETAILS, MADE SIMPLE</span>
-            <h2 id="faq-questions-heading">Good questions. <em>Clear answers.</em></h2>
-            <p>Choose a topic below or open any question to read the answer.</p>
-          </div>
+        <nav className="gr-faq-compact__topics" aria-label="FAQ topics">
+          {groups.map(group => (
+            <a href={`#${group.id}`} key={group.id}>{group.label}<ArrowRight size={15} aria-hidden="true" /></a>
+          ))}
+        </nav>
 
-          <nav className="gr-help__faq-nav" aria-label="Frequently asked question topics">
-            {groups.map(group => <a href={`#${group.id}`} key={group.id}>{group.label}<ArrowRight size={15} aria-hidden="true" /></a>)}
-          </nav>
-
-          {groups.map((group, index) => (
-            <section className="gr-help__faq-group" key={group.id} id={group.id} aria-labelledby={`${group.id}-title`}>
-              <div className="gr-help__faq-group-heading">
-                <span className="gr-help__group-number">{String(index + 1).padStart(2, '0')}</span>
-                <h3 id={`${group.id}-title`}>{group.label}</h3>
-                <p>{group.description}</p>
-              </div>
+        <div className="gr-faq-compact__questions">
+          {groups.map(group => (
+            <section className="gr-faq-compact__group" key={group.id} id={group.id} aria-labelledby={`${group.id}-title`}>
+              <h2 id={`${group.id}-title`}>{group.label}</h2>
               <div className="gr-help__accordion">
-                {group.questions.map(({ question, answer }) => (
-                  <details className="gr-help__question" key={question}>
+                {group.questions.map(item => (
+                  <details className="gr-help__question" key={item.question}>
                     <summary>
-                      <span>{question}</span>
+                      <span>{item.question}</span>
                       <Plus className="gr-help__question-icon" size={19} aria-hidden="true" />
                     </summary>
-                    <div className="gr-help__answer">{answer}</div>
+                    <div className="gr-help__answer">{item.answer}</div>
                   </details>
                 ))}
               </div>
             </section>
           ))}
-        </section>
+        </div>
 
-        <section className="gr-help__endcap" aria-labelledby="faq-end-title">
-          <span className="gr-help__endcap-icon"><CircleHelp size={23} aria-hidden="true" /></span>
+        <section className="gr-faq-compact__contact" aria-labelledby="more-help-title">
           <div>
-            <span className="gr-help__eyebrow">MORE QUESTIONS?</span>
-            <h2 id="faq-end-title">We're happy to help you find the right answer.</h2>
-            <p>Ask about a fragrance or discuss an order directly with the Golden Rose team.</p>
+            <h2 id="more-help-title">Still need help?</h2>
+            <p>Send Golden Rose a message about your fragrance or order.</p>
           </div>
-          {whatsapp ? (
-            <a className="gr-help__button gr-help__button--light"
-              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent('Hello Golden Rose Perfume, I have a question about your fragrances or ordering process.')}`}
-              target="_blank" rel="noopener noreferrer">
-              <MessageCircle size={17} aria-hidden="true" /> Chat on WhatsApp
-              <ArrowUpRight size={17} aria-hidden="true" />
-            </a>
-          ) : (
-            <Link className="gr-help__button gr-help__button--light" href="/contact">
-              Contact options <ArrowRight size={17} aria-hidden="true" />
-            </Link>
-          )}
+          <Link href="/contact">Contact us <ArrowRight size={17} aria-hidden="true" /></Link>
         </section>
       </div>
     </PublicHelpLayout>

@@ -1,21 +1,71 @@
+'use client';
 
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  ArrowRight,
-  Menu,
-  Search,
-  ShoppingBag,
-  UserRound,
-} from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ArrowRight, Menu, Search, ShoppingBag, UserRound } from 'lucide-react';
 
 import './site-header.css';
 
+type NavItem = { href: string; label: string };
+
+/** Single source of truth for the public website's main navigation. */
+const NAV_ITEMS: readonly NavItem[] = [
+  { href: '/', label: 'Discover' },
+  { href: '/shop', label: 'Shop all' },
+  { href: '/#categories', label: 'Categories' },
+  { href: '/about', label: 'Our story' },
+  { href: '/faq', label: 'Help & FAQ' },
+  { href: '/contact', label: 'Contact' },
+];
+
+function PublicNavigation({ mobile = false }: { mobile?: boolean }) {
+  const pathname = usePathname();
+
+  return (
+    <nav
+      aria-label={mobile ? 'Mobile customer navigation' : 'Customer site navigation'}
+      className={mobile ? 'gr-site-mobile__links' : 'gr-site-nav'}
+    >
+      {NAV_ITEMS.map(({ href, label }) => {
+        const active =
+          href === '/' ? pathname === '/' :
+          href.startsWith('/#') ? false :
+          pathname === href || (href === '/shop' && pathname.startsWith('/shop/'));
+
+        return (
+          <Link
+            key={href}
+            href={href}
+            aria-current={active ? 'page' : undefined}
+          >
+            {label}
+          </Link>
+        );
+      })}
+      {mobile && (
+        <>
+          <Link href="/account">Account</Link>
+          <Link href="/cart">Shopping bag</Link>
+        </>
+      )}
+    </nav>
+  );
+}
+
 /**
- * Customer-facing header shared by product details, cart, checkout,
- * Contact and FAQ pages. Search submits directly to the published shop.
+ * Reusable storefront header. Never include page-specific promotional copy here.
+ * Home, Shop, About, FAQ, Contact, Cart, Checkout and product details share it.
  */
 export function SiteHeader() {
+  const pathname = usePathname();
+  const mobileMenuRef = useRef<HTMLDetailsElement>(null);
+
+  useEffect(() => {
+    if (mobileMenuRef.current) mobileMenuRef.current.open = false;
+  }, [pathname]);
+
   return (
     <>
       <div className="gr-site-announcement">
@@ -43,13 +93,7 @@ export function SiteHeader() {
             </span>
           </Link>
 
-          <nav className="gr-site-nav" aria-label="Customer site navigation">
-            <Link href="/">Discover</Link>
-            <Link href="/shop">Shop all</Link>
-            <Link href="/#categories">Categories</Link>
-            <Link href="/about">Our story</Link>
-            <Link href="/faq">Help &amp; FAQ</Link>
-          </nav>
+          <PublicNavigation />
 
           <div className="gr-site-header__actions">
             <form action="/shop" method="get" className="gr-site-search" role="search" aria-label="Search fragrances">
@@ -65,7 +109,7 @@ export function SiteHeader() {
               <ShoppingBag size={20} strokeWidth={1.6} aria-hidden="true" />
             </Link>
 
-            <details className="gr-site-mobile">
+            <details className="gr-site-mobile" ref={mobileMenuRef}>
               <summary aria-label="Open navigation menu">
                 <Menu size={23} aria-hidden="true" />
               </summary>
@@ -80,17 +124,7 @@ export function SiteHeader() {
                     </button>
                   </div>
                 </form>
-                <nav aria-label="Mobile customer navigation">
-                  <Link href="/">Discover</Link>
-                  <Link href="/shop">Shop all</Link>
-                  <Link href="/#categories">Categories</Link>
-                  <Link href="/#gallery">Photo diary</Link>
-                  <Link href="/about">Our story</Link>
-                  <Link href="/faq">Help &amp; FAQ</Link>
-                  <Link href="/contact">Contact us</Link>
-                  <Link href="/account">Account</Link>
-                  <Link href="/cart">Shopping bag</Link>
-                </nav>
+                <PublicNavigation mobile />
               </div>
             </details>
           </div>

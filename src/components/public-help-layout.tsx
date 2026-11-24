@@ -1,19 +1,28 @@
-
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Flower2 } from 'lucide-react';
 
 import { SiteHeader } from '@/src/components/site-header';
-import { getWhatsAppNumber } from '@/src/lib/customer/bag';
+import { normalizeWhatsAppNumber } from '@/src/lib/customer/bag';
 
 import './public-help.css';
 
-export function PublicHelpLayout({
+async function getCopyrightYear() {
+  'use cache';
+  return new Date().getFullYear();
+}
+
+/** Shared structural layout for the customer Contact and FAQ pages. */
+export async function PublicHelpLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const whatsapp = getWhatsAppNumber();
+  // This support channel is independent from the WhatsApp checkout destination.
+  const contactWhatsApp = normalizeWhatsAppNumber(
+    process.env.NEXT_PUBLIC_GOLDEN_ROSE_CONTACT_WHATSAPP,
+  );
+  const copyrightYear = await getCopyrightYear();
 
   return (
     <>
@@ -42,27 +51,23 @@ export function PublicHelpLayout({
             </nav>
 
             <div className="gr-help__footer-contact">
-              <strong>Need a little guidance?</strong>
-              <p>Questions about a fragrance or an order? Reach out to our boutique.</p>
-              {whatsapp ? (
-                <a
-                  href={`https://wa.me/${whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+              <strong>Need more information?</strong>
+              <p>Contact the boutique about fragrance, orders or delivery.</p>
+              {contactWhatsApp ? (
+                <a href={`https://wa.me/${contactWhatsApp}`} target="_blank" rel="noopener noreferrer">
                   Chat on WhatsApp
                   <ArrowUpRight size={17} aria-hidden="true" />
                 </a>
               ) : (
                 <Link href="/contact">
-                  Contact options
+                  Contact us
                   <ArrowUpRight size={17} aria-hidden="true" />
                 </Link>
               )}
             </div>
           </div>
           <div className="gr-help__container gr-help__footer-bottom">
-            <span>© {new Date().getFullYear()} Golden Rose Perfume. All rights reserved.</span>
+            <span>© {copyrightYear} Golden Rose Perfume. All rights reserved.</span>
             <span>THE BEAUTY OF FRAGRANCE</span>
           </div>
         </footer>

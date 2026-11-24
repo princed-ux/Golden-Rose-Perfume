@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
@@ -8,6 +7,7 @@ import ThemeProvider, {
 
 import { Amara } from '@/src/components/amara';
 import { ActionNotificationHost } from '@/src/components/action-feedback';
+import { PublicHeaderBridge } from '@/src/components/public-header-bridge';
 import { getWhatsAppNumber } from '@/src/lib/customer/bag';
 import { getCustomer } from '@/src/lib/customer/session';
 
@@ -40,6 +40,9 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <ActionNotificationHost />
+          <Suspense fallback={null}>
+            <PublicHeaderBridge />
+          </Suspense>
           {children}
 
           <Suspense fallback={null}>
