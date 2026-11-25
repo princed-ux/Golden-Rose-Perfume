@@ -1,4 +1,3 @@
-
 /** Browser-safe Golden Rose POS payment rules.
  * All amounts are integer kobo.
  */
@@ -30,19 +29,8 @@ export type SalePayment = {
 };
 
 export const CASH_DENOMINATIONS = [
-  5,
-  10,
-  20,
-  50,
-  100,
-  200,
-  500,
-  1000,
-  2000,
-  5000,
-  10000,
-  20000,
-  50000,
+  5, 10, 20, 50, 100, 200, 500,
+  1000, 2000, 5000, 10000, 20000, 50000,
 ] as const;
 
 export const MAX_TENDER_MINOR = 9_999_999_999_999;
@@ -78,15 +66,15 @@ export function validReceivingAccount(
     return false;
   }
 
-  const a = value as Partial<ReceivingAccount>;
+  const account = value as Partial<ReceivingAccount>;
 
   return (
-    typeof a.bankName === 'string' &&
-    a.bankName.trim().length > 0 &&
-    typeof a.accountName === 'string' &&
-    a.accountName.trim().length > 0 &&
-    typeof a.accountNumber === 'string' &&
-    /^\d{10}$/.test(a.accountNumber)
+    typeof account.bankName === 'string' &&
+    account.bankName.trim().length > 0 &&
+    typeof account.accountName === 'string' &&
+    account.accountName.trim().length > 0 &&
+    typeof account.accountNumber === 'string' &&
+    /^\d{10}$/.test(account.accountNumber)
   );
 }
 
@@ -281,8 +269,7 @@ export function buildSalePayment(
 
   if (
     payments.transferMinor +
-      payments.cardMinor >
-      0 &&
+      payments.cardMinor > 0 &&
     !manualConfirmed
   ) {
     throw new Error(
@@ -290,8 +277,7 @@ export function buildSalePayment(
     );
   }
 
-  // Keep existing cash clients and pending
-  // transaction references backward-compatible.
+  // Preserve existing cash clients and pending references.
 
   if (result.method === 'cash' && !customer) {
     return {
@@ -307,8 +293,7 @@ export function buildSalePayment(
     customerName: customer,
     manualConfirmed:
       payments.transferMinor +
-        payments.cardMinor >
-      0,
+        payments.cardMinor > 0,
   };
 }
 
@@ -350,8 +335,7 @@ export function validSalePayment(
         value.tenderedMinor &&
       (
         value.payments.transferMinor +
-          value.payments.cardMinor ===
-          0 ||
+          value.payments.cardMinor === 0 ||
         value.manualConfirmed === true
       )
     );
@@ -399,13 +383,15 @@ export function receiptPaymentMatches(
     );
   }
 
-  const p = receipt.payments;
+  const payments = receipt.payments;
 
   return (
-    !!p &&
-    p.cashMinor === request.payments.cashMinor &&
-    p.transferMinor ===
+    !!payments &&
+    payments.cashMinor ===
+      request.payments.cashMinor &&
+    payments.transferMinor ===
       request.payments.transferMinor &&
-    p.cardMinor === request.payments.cardMinor
+    payments.cardMinor ===
+      request.payments.cardMinor
   );
 }

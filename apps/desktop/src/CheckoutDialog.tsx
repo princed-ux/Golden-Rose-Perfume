@@ -1,14 +1,33 @@
 import { useState } from "react";
+
 import {
   ArrowLeft,
   ArrowRight,
   Banknote,
   Building2,
   Check,
-  Copy,
 } from "lucide-react";
+
 import { Modal } from "./dialogs";
 import { money } from "./domain";
+
+import {
+  NonCashPaymentPanel,
+} from "../../../src/components/pos-noncash-payment";
+
+import {
+  CASH_DENOMINATIONS,
+  addCashDenomination,
+  buildSalePayment,
+  paymentMethodLabel,
+  validReceivingAccount,
+  type PaymentMethod,
+  type SalePayment,
+} from "../../../src/lib/golden-rose/pos-payments";
+
+import type {
+  CashSaleRequest,
+} from "../../../app/workspace/pos/types";
 
 export type ReceivingBankAccount = {
   bankName: string;
@@ -28,15 +47,21 @@ type Props = {
   tendered: number | null;
   change: number | null;
   pendingReference?: string;
+  pendingPayment?: CashSaleRequest | null;
+  paymentVersion?: number;
   busy: boolean;
   error: string;
   totalsError: string;
   close: () => void;
   back: () => void;
   next: () => void;
-  pay: () => void;
+  pay: (payment?: SalePayment) => Promise<boolean | void>;
   bankAccount?: ReceivingBankAccount | null;
 };
+
+/* =========================================================
+   GOLDEN ROSE PERFUME — DESKTOP CHECKOUT
+   ========================================================= */
 
 export function CheckoutDialog({
   step,
@@ -50,6 +75,8 @@ export function CheckoutDialog({
   tendered,
   change,
   pendingReference,
+  pendingPayment,
+  paymentVersion,
   busy,
   error,
   totalsError,
@@ -60,96 +87,248 @@ export function CheckoutDialog({
   bankAccount,
 }: Props) {
   const [method, setMethod] =
-    useState<"cash" | "transfer">("cash");
+    useState<PaymentMethod>("cash");
 
-  const [copied, setCopied] = useState(false);
+  const [customerName, setCustomerName] =
+    useState("");
 
-  const recovering = Boolean(pendingReference);
-  const cashSelected = recovering || method === "cash";
+  const [feedback, setFeedback] =
+    useState("");
+
+  const updatedPayments =
+    paymentVersion === 2;
+
+  const bankAvailable =
+    updatedPayments &&
+    validReceivingAccount(bankAccount);
+
+  const recovering =
+    Boolean(pendingReference);
+
+  const cashSelected =
+    recovering || method === "cash";
+
+  /*
+   * Recovery always uses the original persisted request.
+   * Do not calculate its amount from the current basket,
+   * because that basket may have changed after a restart.
+   */
+
+  const originalTotal =
+    pendingPayment
+      ? pendingPayment.items.reduce(
+          (sum, item) =>
+            sum +
+            item.quantity *
+              item.expectedPriceMinor,
+          0,
+        ) - pendingPayment.discountMinor
+      : total;
+
+  const displayedTotal =
+    recovering
+      ? originalTotal
+      : total;
+
+  const displayedTendered =
+    recovering && pendingPayment
+      ? pendingPayment.tenderedMinor
+      : tendered;
+
+  const displayedChange =
+    recovering && pendingPayment
+      ? pendingPayment.tenderedMinor -
+        originalTotal
+      : change;
+
+  const validTotal =
+    Number.isSafeInteger(total) &&
+    total > 0 &&
+    !totalsError;
 
   const canConfirmCash =
     !busy &&
-    (recovering ||
-      (!totalsError &&
+    (
+      recovering ||
+      (
+        validTotal &&
         tendered !== null &&
         tendered >= total &&
         tendered > 0 &&
-        change !== null));
+        change !== null
+      )
+    );
+
+  /* =======================================================
+     PAYMENT METHOD NAVIGATION
+     ======================================================= */
 
   function chooseCash() {
+    if (busy || !validTotal) {
+      return;
+    }
+
+    setFeedback("");
     setMethod("cash");
     next();
   }
 
   function chooseTransfer() {
-    setMethod("transfer");
+    if (
+      busy ||
+      !validTotal ||
+      !bankAvailable
+    ) {
+      return;
+    }
+
+    setFeedback("");
+    setMethod("bank_transfer");
     next();
   }
 
-  async function copyAccount() {
-    if (!bankAccount?.accountNumber) return;
+  function chooseOther(
+    selected: "card" | "split",
+  ) {
+    if (
+      busy ||
+      !validTotal ||
+      !updatedPayments
+    ) {
+      return;
+    }
+
+    setFeedback("");
+    setMethod(selected);
+    next();
+  }
+
+  /* =======================================================
+     CASH CONFIRMATION AND RECOVERY
+     ======================================================= */
+
+  async function submitCash() {
+    if (!canConfirmCash) {
+      return;
+    }
+
+    setFeedback("");
 
     try {
-      await navigator.clipboard.writeText(
-        bankAccount.accountNumber,
+      const payment = recovering
+        ? undefined
+        : buildSalePayment(
+            total,
+            {
+              cashMinor: tendered ?? 0,
+              transferMinor: 0,
+              cardMinor: 0,
+            },
+            updatedPayments
+              ? customerName
+              : "",
+            false,
+            null,
+          );
+
+      const result =
+        await pay(payment);
+
+      if (result === false) {
+        setFeedback(
+          "Sale not confirmed. Review the register message before retrying the same transaction.",
+        );
+      }
+
+    } catch (issue) {
+      setFeedback(
+        issue instanceof Error
+          ? issue.message
+          : "Payment could not be prepared.",
       );
-      setCopied(true);
-    } catch {
-      setCopied(false);
     }
   }
 
-  const nextCashAmount =
-    Math.ceil((total + 1) / 50_000) * 500;
+  const quickAmounts =
+    CASH_DENOMINATIONS;
 
-  const quickAmounts = Array.from(
-    new Set([
-      1000,
-      2000,
-      5000,
-      10000,
-      20000,
-      50000,
-      nextCashAmount,
-    ]),
-  )
-    .filter((amount) => amount > 0)
-    .sort((a, b) => a - b);
+  /* =======================================================
+     CHECKOUT INTERFACE
+     ======================================================= */
 
   return (
     <Modal
       title={
-        step === "confirm"
-          ? "Confirm sale"
-          : cashSelected
-            ? "Cash payment"
-            : "Bank transfer"
+        recovering
+          ? "Recover payment"
+          : step === "confirm"
+            ? "Confirm sale"
+            : method === "cash"
+              ? "Cash payment"
+              : paymentMethodLabel(method)
       }
       kicker={
-        step === "confirm"
-          ? "Step 1 of 2"
-          : recovering
-            ? "Transaction recovery"
+        recovering
+          ? "Transaction recovery"
+          : step === "confirm"
+            ? "Step 1 of 2"
             : "Step 2 of 2"
       }
       close={close}
       busy={busy}
       className="checkout-modal"
     >
-      {step === "confirm" ? (
+      {step === "confirm" && !recovering ? (
         <>
           <dl className="sale-review">
             <div>
-              <dt>Customer</dt>
-              <dd>Cash Customer</dd>
+              <dt>
+                Customer
+              </dt>
+
+              <dd>
+                <input
+                  aria-label="Customer name (optional)"
+                  placeholder="Walk-in customer"
+                  maxLength={120}
+                  value={customerName}
+                  autoComplete="off"
+                  disabled={
+                    busy ||
+                    !updatedPayments
+                  }
+                  onChange={event =>
+                    setCustomerName(
+                      event.target.value,
+                    )
+                  }
+                />
+              </dd>
             </div>
+
+            {!updatedPayments && (
+              <div>
+                <dt>
+                  Customer names
+                </dt>
+
+                <dd className="review-note">
+                  Available after payment migration
+                </dd>
+              </div>
+            )}
 
             <div>
               <dt>
                 Products ({count}{" "}
-                {count === 1 ? "unit" : "units"})
+                {count === 1
+                  ? "unit"
+                  : "units"})
               </dt>
-              <dd>{money(subtotal)}</dd>
+
+              <dd>
+                {money(subtotal)}
+              </dd>
             </div>
 
             <div>
@@ -158,12 +337,15 @@ export function CheckoutDialog({
                   Discount (₦)
                 </label>
               </dt>
+
               <dd>
                 <input
                   id="sale-discount"
                   value={discount}
-                  onChange={(event) =>
-                    setDiscount(event.target.value)
+                  onChange={event =>
+                    setDiscount(
+                      event.target.value,
+                    )
                   }
                   inputMode="decimal"
                   placeholder="0.00"
@@ -173,22 +355,33 @@ export function CheckoutDialog({
             </div>
 
             <div>
-              <dt>Sales tax</dt>
+              <dt>
+                Sales tax
+              </dt>
+
               <dd className="review-note">
                 Determined by the register
               </dd>
             </div>
 
             <div className="review-payable">
-              <dt>Amount payable</dt>
+              <dt>
+                Amount payable
+              </dt>
+
               <dd>
-                {totalsError ? "—" : money(total)}
+                {totalsError
+                  ? "—"
+                  : money(total)}
               </dd>
             </div>
           </dl>
 
           {totalsError && (
-            <p className="notice error" role="alert">
+            <p
+              className="notice error"
+              role="alert"
+            >
               {totalsError}
             </p>
           )}
@@ -206,29 +399,73 @@ export function CheckoutDialog({
               type="button"
               className="cash-method"
               onClick={chooseCash}
-              disabled={busy || Boolean(totalsError)}
+              disabled={
+                busy ||
+                !validTotal
+              }
             >
               <Banknote size={17} />
+
               Cash payment
+
               <ArrowRight size={15} />
             </button>
 
             <button
               type="button"
               onClick={chooseTransfer}
-              disabled={busy || Boolean(totalsError)}
+              disabled={
+                busy ||
+                !validTotal ||
+                !bankAvailable
+              }
+              title={
+                bankAvailable
+                  ? "Record confirmed transfer"
+                  : "Owner receiving account required"
+              }
             >
               <Building2 size={17} />
+
               Bank transfer
+
               <ArrowRight size={15} />
             </button>
 
+            <button
+              type="button"
+              disabled={
+                busy ||
+                !validTotal ||
+                !updatedPayments
+              }
+              title="Record an approved physical card terminal payment"
+              onClick={() =>
+                chooseOther("card")
+              }
+            >
+              POS terminal
+            </button>
+
+            <button
+              type="button"
+              disabled={
+                busy ||
+                !validTotal ||
+                !updatedPayments
+              }
+              onClick={() =>
+                chooseOther("split")
+              }
+            >
+              Split payment
+            </button>
+
             {[
-              "POS terminal",
               "Credit payment",
               "Cheque",
               "Web payment",
-            ].map((name) => (
+            ].map(name => (
               <button
                 key={name}
                 type="button"
@@ -240,6 +477,15 @@ export function CheckoutDialog({
             ))}
           </div>
 
+          {(error || feedback) && (
+            <p
+              className="notice error"
+              role="alert"
+            >
+              {error || feedback}
+            </p>
+          )}
+
           <footer className="modal-actions">
             <button
               type="button"
@@ -250,27 +496,47 @@ export function CheckoutDialog({
             </button>
           </footer>
         </>
+
       ) : cashSelected ? (
         <form
-          onSubmit={(event) => {
+          onSubmit={event => {
             event.preventDefault();
-            if (canConfirmCash) pay();
+
+            if (canConfirmCash) {
+              void submitCash();
+            }
           }}
-          onKeyDown={(event) => {
+          onKeyDown={event => {
             if (
               event.ctrlKey &&
               event.key === "Enter"
             ) {
               event.preventDefault();
 
-              if (canConfirmCash) pay();
+              if (canConfirmCash) {
+                void submitCash();
+              }
             }
           }}
         >
           <fieldset disabled={busy}>
             <div className="payment-due">
-              <span>Amount payable</span>
-              <strong>{money(total)}</strong>
+              <span>
+                {recovering
+                  ? "Saved payment · " +
+                    (
+                      pendingPayment
+                        ? paymentMethodLabel(
+                            pendingPayment.method,
+                          )
+                        : "Recovery"
+                    )
+                  : "Amount payable"}
+              </span>
+
+              <strong>
+                {money(displayedTotal)}
+              </strong>
             </div>
 
             {!recovering && (
@@ -284,7 +550,7 @@ export function CheckoutDialog({
                   role="group"
                   aria-label="Quick cash amounts"
                 >
-                  {quickAmounts.map((amount) => (
+                  {quickAmounts.map(amount => (
                     <button
                       key={amount}
                       type="button"
@@ -294,7 +560,12 @@ export function CheckoutDialog({
                           : ""
                       }
                       onClick={() =>
-                        setCash(String(amount))
+                        setCash(
+                          addCashDenomination(
+                            cash,
+                            amount,
+                          ),
+                        )
                       }
                     >
                       {money(amount * 100)}
@@ -314,7 +585,9 @@ export function CheckoutDialog({
 
                   <button
                     type="button"
-                    onClick={() => setCash("")}
+                    onClick={() =>
+                      setCash("")
+                    }
                   >
                     Clear
                   </button>
@@ -322,6 +595,7 @@ export function CheckoutDialog({
 
                 <label>
                   Cash received (₦)
+
                   <input
                     autoFocus
                     className="cash-amount-input"
@@ -329,8 +603,10 @@ export function CheckoutDialog({
                     inputMode="decimal"
                     autoComplete="off"
                     value={cash}
-                    onChange={(event) =>
-                      setCash(event.target.value)
+                    onChange={event =>
+                      setCash(
+                        event.target.value,
+                      )
                     }
                     placeholder="Enter amount given"
                     required
@@ -339,29 +615,112 @@ export function CheckoutDialog({
               </>
             )}
 
+            {recovering && pendingPayment && (
+              <dl className="sale-review">
+                <div>
+                  <dt>
+                    Customer
+                  </dt>
+
+                  <dd>
+                    {pendingPayment.customerName ||
+                      "Walk-in customer"}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Payment method
+                  </dt>
+
+                  <dd>
+                    {paymentMethodLabel(
+                      pendingPayment.method,
+                    )}
+                  </dd>
+                </div>
+
+                {pendingPayment.payments && (
+                  <>
+                    <div>
+                      <dt>
+                        Cash received
+                      </dt>
+
+                      <dd>
+                        {money(
+                          pendingPayment.payments.cashMinor,
+                        )}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>
+                        Bank transfer
+                      </dt>
+
+                      <dd>
+                        {money(
+                          pendingPayment.payments.transferMinor,
+                        )}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>
+                        Card / POS terminal
+                      </dt>
+
+                      <dd>
+                        {money(
+                          pendingPayment.payments.cardMinor,
+                        )}
+                      </dd>
+                    </div>
+                  </>
+                )}
+              </dl>
+            )}
+
             <div className="payment-totals">
               <div>
-                <span>Total due</span>
-                <strong>{money(total)}</strong>
-              </div>
+                <span>
+                  Total due
+                </span>
 
-              <div>
-                <span>Cash received</span>
                 <strong>
-                  {tendered === null
-                    ? "—"
-                    : money(tendered)}
+                  {money(displayedTotal)}
                 </strong>
               </div>
 
               <div>
                 <span>
-                  Change to give customer
+                  {recovering
+                    ? "Original tendered amount"
+                    : "Cash received"}
                 </span>
+
                 <strong>
-                  {change === null
+                  {displayedTendered === null
                     ? "—"
-                    : money(change)}
+                    : money(displayedTendered)}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  {recovering
+                    ? "Original calculated change"
+                    : "Change to give customer"}
+                </span>
+
+                <strong>
+                  {
+                    displayedChange === null ||
+                    displayedChange < 0
+                      ? "—"
+                      : money(displayedChange)
+                  }
                 </strong>
               </div>
             </div>
@@ -373,35 +732,46 @@ export function CheckoutDialog({
                   className="field-error"
                   role="alert"
                 >
-                  Cash received is below the amount
-                  due. Enter enough cash to continue.
+                  Cash received is below the amount due.
+                  Enter enough cash to continue.
                 </p>
               )}
 
             {recovering && (
               <p className="notice pending">
-                A previous payment confirmation
-                was interrupted. Retry with the
-                same transaction reference.
+                A previous payment confirmation was interrupted.
+                Retry with the same transaction reference.
+                Do not collect the payment or issue change again.
+
                 <small className="code">
                   {pendingReference}
                 </small>
               </p>
             )}
 
-            {error && (
-              <p className="notice error" role="alert">
-                {error}
+            {(error || feedback) && (
+              <p
+                className="notice error"
+                role="alert"
+              >
+                {error || feedback}
               </p>
             )}
 
             <footer className="modal-actions">
               <button
                 type="button"
-                onClick={recovering ? close : back}
+                onClick={
+                  recovering
+                    ? close
+                    : back
+                }
               >
                 <ArrowLeft size={15} />
-                {recovering ? "Close" : "Back"}
+
+                {recovering
+                  ? "Close"
+                  : "Back"}
               </button>
 
               <button
@@ -424,86 +794,31 @@ export function CheckoutDialog({
             </footer>
           </fieldset>
         </form>
+
       ) : (
-        <div>
-          <div className="payment-due">
-            <span>Amount to transfer</span>
-            <strong>{money(total)}</strong>
-          </div>
-
-          {bankAccount?.bankName &&
-          bankAccount.accountName &&
-          bankAccount.accountNumber ? (
-            <>
-              <p className="notice pending">
-                Ask the customer to transfer the
-                exact amount to the store's
-                verified receiving account.
-              </p>
-
-              <dl className="sale-review">
-                <div>
-                  <dt>Bank</dt>
-                  <dd>{bankAccount.bankName}</dd>
-                </div>
-
-                <div>
-                  <dt>Account name</dt>
-                  <dd>{bankAccount.accountName}</dd>
-                </div>
-
-                <div>
-                  <dt>Account number</dt>
-                  <dd>{bankAccount.accountNumber}</dd>
-                </div>
-              </dl>
-
-              <button
-                type="button"
-                onClick={() => void copyAccount()}
-              >
-                <Copy size={15} />
-                {copied
-                  ? "Account number copied"
-                  : "Copy account number"}
-              </button>
-            </>
-          ) : (
-            <p
-              className="notice pending"
-              role="status"
-            >
-              The store's receiving bank account
-              has not been connected to the
-              desktop application yet.
-            </p>
-          )}
-
-          <p className="notice pending">
-            Transfer verification is not yet
-            integrated. Do not mark this sale
-            paid or release goods based only on
-            a transfer screenshot.
-          </p>
-
-          <footer className="modal-actions">
-            <button
-              type="button"
-              onClick={back}
-            >
-              <ArrowLeft size={15} />
-              Back
-            </button>
-
-            <button
-              className="primary"
-              type="button"
-              disabled
-            >
-              Awaiting payment integration
-            </button>
-          </footer>
-        </div>
+        <NonCashPaymentPanel
+          key={
+            method +
+            ":" +
+            total +
+            ":" +
+            (
+              bankAccount?.accountNumber ??
+              ""
+            )
+          }
+          mode={method}
+          totalMinor={total}
+          receivingAccount={bankAccount}
+          customerName={customerName}
+          busy={busy}
+          error={error || feedback}
+          onBack={() => {
+            setFeedback("");
+            back();
+          }}
+          onConfirm={pay}
+        />
       )}
     </Modal>
   );

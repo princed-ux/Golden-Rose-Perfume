@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
@@ -14,7 +13,7 @@ import './pos.css';
 export const metadata: Metadata = {
   title: 'Point of Sale | Golden Rose Perfume',
   description:
-    'Secure in-store selling with barcode lookup, location-aware inventory, cash checkout and verified receipts.',
+    'Secure in-store selling with barcode lookup, location-aware inventory, multiple payment methods and verified receipts.',
 };
 
 /**
@@ -27,6 +26,7 @@ export const metadata: Metadata = {
  * These styles are local to the POS route. They allow the page
  * layout to be updated without replacing other application files.
  */
+
 const routeStyles = String.raw`
 /* ==========================================
    GOLDEN ROSE — COMPACT CASHIER WORKSPACE
@@ -581,6 +581,7 @@ const routeStyles = String.raw`
  * Accessible loading state while staff authorization
  * and the initial catalogue are being resolved.
  */
+
 function LoadingRegister() {
   return (
     <div
@@ -601,6 +602,7 @@ function LoadingRegister() {
  * The existing register is responsible for client-side
  * interactions. Authorization is not moved to the browser.
  */
+
 export default function PointOfSalePage() {
   return (
     <div className="gr-pos-route">
@@ -619,8 +621,12 @@ export default function PointOfSalePage() {
  * Authorize the member of staff and obtain the initial
  * catalogue using the existing server-side implementation.
  */
+
 async function AuthorizedRegister() {
-  const { role } = await requireStaff();
+  const {
+    role,
+    userId,
+  } = await requireStaff();
 
   if (!canViewModule(role, 'pos')) {
     notFound();
@@ -631,6 +637,7 @@ async function AuthorizedRegister() {
     locations: [],
     selectedLocationId: null,
     hasMore: false,
+    receivingAccount: null,
   };
 
   let loadError: string | null = null;
@@ -654,6 +661,7 @@ async function AuthorizedRegister() {
    * Multiple or unselected locations retain their
    * visible selector to protect stock accuracy.
    */
+
   const selectedSingleStore =
     initial.locations.length === 1 &&
     initial.selectedLocationId ===
@@ -668,9 +676,11 @@ async function AuthorizedRegister() {
       }
     >
       <PosRegister
+        key={userId}
         initial={initial}
         loadError={loadError}
         role={role}
+        staffId={userId}
       />
     </div>
   );

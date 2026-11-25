@@ -1,3 +1,9 @@
+import type {
+  SalePayment,
+  ReceivingAccount,
+  PaymentMethod,
+  PaymentBreakdown,
+} from '@/src/lib/golden-rose/pos-payments';
 
 /** Data contract returned by the live Golden Rose pos-register Edge Function. */
 export interface StoreLocation {
@@ -8,16 +14,16 @@ export interface StoreLocation {
 }
 
 export interface PosProduct {
-  id: string; // variant ID: the item actually sold
+  id: string;
   productId: string;
   name: string;
   brand: string | null;
   sku: string | null;
   barcode: string | null;
   sizeMl: number | null;
-  priceMinor: number; // integer kobo, never floating-point naira
+  priceMinor: number;
   currency: 'NGN';
-  available: number; // per selected physical store
+  available: number;
   imagePath: string | null;
 }
 
@@ -26,6 +32,8 @@ export interface PosCatalogue {
   locations: StoreLocation[];
   selectedLocationId: string | null;
   hasMore: boolean;
+  paymentVersion?: number;
+  receivingAccount?: ReceivingAccount | null;
 }
 
 export interface CashSaleLine {
@@ -34,10 +42,10 @@ export interface CashSaleLine {
   expectedPriceMinor: number;
 }
 
-export interface CashSaleRequest {
+/** Legacy type name retained for existing saved transaction references. */
+export interface CashSaleRequest extends SalePayment {
   idempotencyKey: string;
   locationId: string;
-  method: 'cash';
   items: CashSaleLine[];
   discountMinor: number;
   tenderedMinor: number;
@@ -61,7 +69,10 @@ export interface PosReceipt {
   locationName: string;
   cashierId: string;
   currency: 'NGN';
-  method: 'cash';
+  method: PaymentMethod;
+  customerName?: string | null;
+  payments?: PaymentBreakdown;
+  manualConfirmed?: boolean;
   subtotalMinor: number;
   discountMinor: number;
   taxMinor: number;

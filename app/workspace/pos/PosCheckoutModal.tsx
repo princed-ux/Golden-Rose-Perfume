@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -14,7 +13,6 @@ import {
   Banknote,
   Building2,
   CheckCircle2,
-  Copy,
   CreditCard,
   ReceiptText,
   ShieldCheck,
@@ -23,6 +21,27 @@ import {
 } from 'lucide-react';
 
 import './pos-checkout-modal.css';
+
+import {
+  NonCashPaymentPanel,
+} from '@/src/components/pos-noncash-payment';
+
+import {
+  CASH_DENOMINATIONS,
+  addCashDenomination,
+  buildSalePayment,
+  paymentMethodLabel,
+  validReceivingAccount,
+  type SalePayment,
+} from '@/src/lib/golden-rose/pos-payments';
+
+import type {
+  CashSaleRequest,
+} from './types';
+
+/* =========================================================
+   CHECKOUT CONTRACTS
+   ========================================================= */
 
 export type PosCheckoutLine = {
   id: string;
@@ -38,7 +57,12 @@ export type PosReceivingAccount = {
   accountNumber: string;
 };
 
-type Step = 'review' | 'cash' | 'bank';
+type Step =
+  | 'review'
+  | 'cash'
+  | 'bank'
+  | 'card'
+  | 'split';
 
 export type PosCheckoutModalProps = {
   open: boolean;
@@ -56,57 +80,62 @@ export type PosCheckoutModalProps = {
   cashMinor: number | null;
   onCashChange: (value: string) => void;
   pendingReference?: string | null;
+  pendingPayment?: CashSaleRequest | null;
+  paymentVersion?: number;
   receivingAccount?: PosReceivingAccount | null;
   busy: boolean;
   onClose: () => void;
-  onConfirmCash: () => Promise<boolean>;
+  onConfirmCash: (
+    payment?: SalePayment,
+  ) => Promise<boolean>;
 };
 
-const currency = new Intl.NumberFormat('en-NG', {
-  style: 'currency',
-  currency: 'NGN',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+const currency = new Intl.NumberFormat(
+  'en-NG',
+  {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  },
+);
 
-function money(minor: number): string {
+function money(
+  minor: number,
+): string {
   return currency.format(minor / 100);
 }
 
-const denominationNaira = [
-  50,
-  100,
-  200,
-  500,
-  1000,
-  2000,
-  5000,
-  10000,
-  20000,
-];
+/* =========================================================
+   CHECKOUT SESSION LIFECYCLE
 
-function addAmount(
-  current: string,
-  amountNaira: number,
-): string {
-  const cleaned = current.trim().replaceAll(',', '');
+   The interactive session exists only while checkout is open.
 
-  const existing =
-    /^\d+(?:\.\d{1,2})?$/.test(cleaned)
-      ? Math.round(Number(cleaned) * 100)
-      : 0;
+   Closing the dialog unmounts its internal state, ensuring that
+   the next customer starts with a fresh payment method and name.
 
-  const result = existing + amountNaira * 100;
+   No synchronous state-reset effect is required.
+   ========================================================= */
 
-  return Number.isSafeInteger(result)
-    ? (result / 100).toFixed(2)
-    : current;
+export function PosCheckoutModal(
+  props: PosCheckoutModalProps,
+) {
+  if (!props.open) {
+    return null;
+  }
+
+  return (
+    <CheckoutSession {...props} />
+  );
 }
 
-export function PosCheckoutModal({
-  open,
+/* =========================================================
+   ACTIVE CHECKOUT SESSION
+   ========================================================= */
+
+function CheckoutSession({
   lines,
-  customerName = 'Cash customer',
+  customerName = '',
   subtotalMinor,
   discountMinor,
   discountNaira,
@@ -119,20 +148,53 @@ export function PosCheckoutModal({
   cashMinor,
   onCashChange,
   pendingReference,
+  pendingPayment,
+  paymentVersion,
   receivingAccount,
   busy,
   onClose,
   onConfirmCash,
 }: PosCheckoutModalProps) {
-  const [step, setStep] = useState<Step>('review');
-  const [feedback, setFeedback] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [selectedStep, setSelectedStep] =
+    useState<Step>('review');
 
-  const panelRef = useRef<HTMLElement>(null);
-  const openerRef = useRef<Element | null>(null);
+  const [feedback, setFeedback] =
+    useState('');
+
+  const [buyerName, setBuyerName] =
+    useState(customerName);
+
+  const updatedPayments =
+    paymentVersion === 2;
+
+  const bankAvailable =
+    updatedPayments &&
+    validReceivingAccount(receivingAccount);
+
+  const panelRef =
+    useRef<HTMLElement>(null);
+
+  const openerRef =
+    useRef<Element | null>(null);
+
+  const recovery =
+    Boolean(pendingReference);
+
+  /*
+   * An interrupted payment takes priority over the
+   * locally selected payment step.
+   *
+   * Recovery does not need an effect to change state.
+   */
+
+  const step: Step =
+    recovery
+      ? 'cash'
+      : selectedStep;
 
   const totalItems = lines.reduce(
-    (sum, line) => sum + line.quantity,
+    (sum, line) =>
+      sum + line.quantity,
     0,
   );
 
@@ -140,43 +202,69 @@ export function PosCheckoutModal({
     cashMinor !== null &&
     cashMinor >= totalMinor;
 
-  const recovery = Boolean(pendingReference);
-
   const changeMinor =
     cashMinor === null
       ? null
-      : Math.max(0, cashMinor - totalMinor);
+      : Math.max(
+          0,
+          cashMinor - totalMinor,
+        );
 
-  const outstandingMinor = Math.max(
-    0,
-    totalMinor - (cashMinor ?? 0),
-  );
+  const outstandingMinor =
+    Math.max(
+      0,
+      totalMinor - (cashMinor ?? 0),
+    );
+
+  const validTotal =
+    validDiscount &&
+    Number.isSafeInteger(totalMinor) &&
+    totalMinor > 0;
 
   const canSubmit =
     !busy &&
     (
       recovery ||
       (
-        validDiscount &&
-        totalMinor > 0 &&
+        validTotal &&
         cashCanPay
       )
     );
 
-  useEffect(() => {
-    if (!open) return;
+  const savedTotalMinor =
+    pendingPayment
+      ? pendingPayment.items.reduce(
+          (sum, item) =>
+            sum +
+            item.quantity *
+              item.expectedPriceMinor,
+          0,
+        ) - pendingPayment.discountMinor
+      : null;
 
-    openerRef.current = document.activeElement;
+  /* =======================================================
+     MODAL SCROLL AND FOCUS MANAGEMENT
+
+     These effects synchronize with browser APIs only.
+     They do not synchronously reset React state.
+     ======================================================= */
+
+  useEffect(() => {
+    openerRef.current =
+      document.activeElement;
 
     const previousOverflow =
       document.body.style.overflow;
 
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow =
+      'hidden';
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.body.style.overflow =
+        previousOverflow;
 
-      const opener = openerRef.current;
+      const opener =
+        openerRef.current;
 
       if (
         opener instanceof HTMLElement &&
@@ -185,105 +273,198 @@ export function PosCheckoutModal({
         opener.focus();
       }
     };
-  }, [open]);
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
+    const frame =
+      requestAnimationFrame(() => {
+        const first =
+          panelRef.current?.querySelector<HTMLElement>(
+            step === 'cash' && !recovery
+              ? '.gr-checkout-cash-input'
+              : 'button:not(:disabled), input:not(:disabled)',
+          );
 
-    setStep(pendingReference ? 'cash' : 'review');
-    setFeedback('');
-    setCopied(false);
-  }, [open, pendingReference]);
+        (
+          first ??
+          panelRef.current
+        )?.focus();
+      });
+
+    return () =>
+      cancelAnimationFrame(frame);
+
+  }, [
+    step,
+    recovery,
+  ]);
+
+  /* =======================================================
+     ACCESSIBLE KEYBOARD NAVIGATION
+     ======================================================= */
 
   useEffect(() => {
-    if (!open) return;
-
-    const frame = requestAnimationFrame(() => {
-      const first =
-        panelRef.current?.querySelector<HTMLElement>(
-          step === 'cash'
-            ? '.gr-checkout-cash-input'
-            : 'button:not(:disabled), input:not(:disabled)',
-        );
-
-      (first ?? panelRef.current)?.focus();
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, [open, step]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    function onKey(event: globalThis.KeyboardEvent) {
-      if (event.key === 'Escape' && !busy) {
+    function onKey(
+      event: globalThis.KeyboardEvent,
+    ) {
+      if (
+        event.key === 'Escape' &&
+        !busy
+      ) {
         event.preventDefault();
         onClose();
       }
 
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab') {
+        return;
+      }
 
       const controls = Array.from(
         panelRef.current?.querySelectorAll<HTMLElement>(
           'button:not(:disabled), input:not(:disabled), select:not(:disabled), [href], [tabindex]:not([tabindex="-1"])',
         ) ?? [],
       ).filter(
-        (node) =>
+        node =>
           node.getClientRects().length > 0,
       );
 
-      const first = controls[0];
-      const last = controls[controls.length - 1];
+      const first =
+        controls[0];
+
+      const last =
+        controls[controls.length - 1];
 
       if (!first || !last) {
         event.preventDefault();
+
         panelRef.current?.focus();
+
+      } else if (
+        !panelRef.current?.contains(
+          document.activeElement,
+        )
+      ) {
+        event.preventDefault();
+
+        (
+          event.shiftKey
+            ? last
+            : first
+        ).focus();
+
       } else if (
         event.shiftKey &&
         document.activeElement === first
       ) {
         event.preventDefault();
+
         last.focus();
+
       } else if (
         !event.shiftKey &&
         document.activeElement === last
       ) {
         event.preventDefault();
+
         first.focus();
       }
     }
 
-    document.addEventListener('keydown', onKey);
+    document.addEventListener(
+      'keydown',
+      onKey,
+    );
 
     return () => {
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener(
+        'keydown',
+        onKey,
+      );
     };
-  }, [open, busy, onClose]);
 
-  if (!open) return null;
+  }, [
+    busy,
+    onClose,
+  ]);
 
-  function goTo(next: Step) {
-    if (busy) return;
+  /* =======================================================
+     CHECKOUT STEP NAVIGATION
+     ======================================================= */
+
+  function goTo(
+    next: Step,
+  ) {
+    if (busy || recovery) {
+      return;
+    }
+
+    if (
+      next !== 'review' &&
+      !validTotal
+    ) {
+      return;
+    }
+
+    if (
+      next === 'bank' &&
+      !bankAvailable
+    ) {
+      return;
+    }
+
+    if (
+      (
+        next === 'card' ||
+        next === 'split'
+      ) &&
+      !updatedPayments
+    ) {
+      return;
+    }
 
     setFeedback('');
-    setCopied(false);
-    setStep(next);
+
+    setSelectedStep(next);
   }
+
+  /* =======================================================
+     CASH PAYMENT CONFIRMATION
+     ======================================================= */
 
   async function confirmCash(
     event: FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      return;
+    }
 
     setFeedback('');
 
     try {
-      const confirmed = await onConfirmCash();
+      const payment = recovery
+        ? undefined
+        : buildSalePayment(
+            totalMinor,
+            {
+              cashMinor: cashMinor ?? 0,
+              transferMinor: 0,
+              cardMinor: 0,
+            },
+            updatedPayments
+              ? buyerName
+              : '',
+            false,
+            null,
+          );
+
+      const confirmed =
+        await onConfirmCash(payment);
 
       if (confirmed) {
         onClose();
+
       } else {
         setFeedback(
           'The transaction is not confirmed. Check the register message. If the request may have reached the server, retry the same transaction reference.',
@@ -298,34 +479,17 @@ export function PosCheckoutModal({
     }
   }
 
-  async function copyAccount() {
-    if (!receivingAccount?.accountNumber) {
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(
-        receivingAccount.accountNumber,
-      );
-
-      setCopied(true);
-
-      setFeedback(
-        'Account number copied. Payment still requires independent verification.',
-      );
-    } catch {
-      setFeedback(
-        'Copy the account number manually. Payment has not been confirmed.',
-      );
-    }
-  }
+  /* =======================================================
+     CHECKOUT INTERFACE
+     ======================================================= */
 
   return (
     <div
       className="gr-checkout-backdrop"
-      onMouseDown={(event) => {
+      onMouseDown={event => {
         if (
-          event.target === event.currentTarget &&
+          event.target ===
+            event.currentTarget &&
           !busy
         ) {
           onClose();
@@ -349,19 +513,27 @@ export function PosCheckoutModal({
             </span>
 
             <h2 id="gr-checkout-title">
-              {step === 'review'
-                ? 'Confirm sale'
-                : step === 'cash'
-                  ? 'Cash payment'
-                  : 'Bank transfer'}
+              {recovery
+                ? 'Recover payment'
+                : step === 'review'
+                  ? 'Confirm sale'
+                  : step === 'cash'
+                    ? 'Cash payment'
+                    : step === 'bank'
+                      ? 'Bank transfer'
+                      : step === 'card'
+                        ? 'Card / POS terminal'
+                        : 'Split payment'}
             </h2>
 
             <p id="gr-checkout-subtitle">
-              {step === 'review'
-                ? 'Review the sale and select a payment method.'
-                : step === 'cash'
-                  ? 'Enter the cash received and verify the change.'
-                  : 'Display receiving details. Do not release goods before verification.'}
+              {recovery
+                ? 'Recover the original transaction without collecting payment again.'
+                : step === 'review'
+                  ? 'Review the sale and select a payment method.'
+                  : step === 'cash'
+                    ? 'Enter the cash received and verify the change.'
+                    : 'Record only independently confirmed payments. No gateway is called.'}
             </p>
           </div>
 
@@ -386,19 +558,55 @@ export function PosCheckoutModal({
 
           <span
             className={
-              step !== 'review' ? 'active' : ''
+              step !== 'review'
+                ? 'active'
+                : ''
             }
           >
             2 <b>Payment details</b>
           </span>
         </div>
 
+        {/* =================================================
+            STEP ONE: REVIEW THE CURRENT SALE
+            ================================================= */}
+
         {step === 'review' ? (
           <div className="gr-checkout-scroll">
             <div className="gr-checkout-customer">
               <div>
-                <span>SELL TO</span>
-                <strong>{customerName}</strong>
+                <span>
+                  SELL TO
+                </span>
+
+                <label htmlFor="gr-checkout-customer-name">
+                  Customer name (optional)
+                </label>
+
+                <input
+                  id="gr-checkout-customer-name"
+                  type="text"
+                  value={buyerName}
+                  maxLength={120}
+                  placeholder="Walk-in customer"
+                  disabled={
+                    busy ||
+                    !updatedPayments
+                  }
+                  autoComplete="off"
+                  onChange={event =>
+                    setBuyerName(
+                      event.target.value,
+                    )
+                  }
+                />
+
+                {!updatedPayments && (
+                  <small>
+                    Customer names become available
+                    after the payment migration.
+                  </small>
+                )}
               </div>
 
               <span className="gr-checkout-count">
@@ -413,13 +621,15 @@ export function PosCheckoutModal({
               className="gr-checkout-lines"
               aria-label="Sale items"
             >
-              {lines.map((line) => (
+              {lines.map(line => (
                 <div
                   className="gr-checkout-line"
                   key={line.id}
                 >
                   <div>
-                    <strong>{line.name}</strong>
+                    <strong>
+                      {line.name}
+                    </strong>
 
                     <small>
                       {line.sku || 'Perfume'}
@@ -442,8 +652,13 @@ export function PosCheckoutModal({
 
             <dl className="gr-checkout-breakdown">
               <div>
-                <dt>Total sales</dt>
-                <dd>{money(subtotalMinor)}</dd>
+                <dt>
+                  Total sales
+                </dt>
+
+                <dd>
+                  {money(subtotalMinor)}
+                </dd>
               </div>
 
               <div className="gr-checkout-discount-row">
@@ -468,12 +683,15 @@ export function PosCheckoutModal({
                       inputMode="decimal"
                       autoComplete="off"
                       value={discountNaira}
-                      onChange={(event) =>
+                      onChange={event =>
                         onDiscountChange(
                           event.target.value,
                         )
                       }
-                      disabled={busy || recovery}
+                      disabled={
+                        busy ||
+                        recovery
+                      }
                     />
                   </span>
 
@@ -498,7 +716,9 @@ export function PosCheckoutModal({
               )}
 
               <div>
-                <dt>Sales tax</dt>
+                <dt>
+                  Sales tax
+                </dt>
 
                 <dd>
                   {taxMinor === null
@@ -508,12 +728,19 @@ export function PosCheckoutModal({
               </div>
 
               <div className="gr-checkout-due">
-                <dt>Amount payable</dt>
-                <dd>{money(totalMinor)}</dd>
+                <dt>
+                  Amount payable
+                </dt>
+
+                <dd>
+                  {money(totalMinor)}
+                </dd>
               </div>
 
               <div>
-                <dt>Outstanding</dt>
+                <dt>
+                  Outstanding
+                </dt>
 
                 <dd className="gr-checkout-outstanding">
                   {money(totalMinor)}
@@ -522,11 +749,12 @@ export function PosCheckoutModal({
             </dl>
 
             <div className="gr-checkout-methods-heading">
-              <h3>Choose payment method</h3>
+              <h3>
+                Choose payment method
+              </h3>
 
               <small>
-                Only connected methods can complete
-                a sale
+                Only available methods can complete a sale
               </small>
             </div>
 
@@ -535,13 +763,18 @@ export function PosCheckoutModal({
                 type="button"
                 disabled={
                   busy ||
-                  !validDiscount ||
-                  totalMinor <= 0
+                  !validTotal
                 }
-                onClick={() => goTo('cash')}
+                onClick={() =>
+                  goTo('cash')
+                }
               >
                 <Banknote size={19} />
-                <span>Cash payment</span>
+
+                <span>
+                  Cash payment
+                </span>
+
                 <ArrowRight size={16} />
               </button>
 
@@ -549,24 +782,70 @@ export function PosCheckoutModal({
                 type="button"
                 disabled={
                   busy ||
-                  !validDiscount ||
-                  totalMinor <= 0
+                  !validTotal ||
+                  !bankAvailable
                 }
-                onClick={() => goTo('bank')}
+                title={
+                  bankAvailable
+                    ? 'Record a confirmed transfer'
+                    : 'Owner receiving account required'
+                }
+                onClick={() =>
+                  goTo('bank')
+                }
               >
                 <Building2 size={19} />
-                <span>Bank payment</span>
+
+                <span>
+                  Bank payment
+                </span>
+
                 <ArrowRight size={16} />
               </button>
 
               <button
                 type="button"
-                disabled
-                title="POS terminal payment is not integrated"
+                disabled={
+                  busy ||
+                  !validTotal ||
+                  !updatedPayments
+                }
+                onClick={() =>
+                  goTo('card')
+                }
+                title="Record payment from a physical card terminal"
               >
                 <CreditCard size={18} />
-                <span>POS terminal</span>
-                <small>Not connected</small>
+
+                <span>
+                  POS terminal
+                </span>
+
+                <small>
+                  {updatedPayments
+                    ? 'Manual confirmation'
+                    : 'Payment update required'}
+                </small>
+              </button>
+
+              <button
+                type="button"
+                disabled={
+                  busy ||
+                  !validTotal ||
+                  !updatedPayments
+                }
+                onClick={() =>
+                  goTo('split')
+                }
+              >
+                <WalletCards size={18} />
+
+                <span>
+                  Split payment
+                </span>
+
+                <ArrowRight size={16} />
               </button>
 
               <button
@@ -575,8 +854,14 @@ export function PosCheckoutModal({
                 title="Credit sales are not integrated"
               >
                 <WalletCards size={18} />
-                <span>Credit payment</span>
-                <small>Not connected</small>
+
+                <span>
+                  Credit payment
+                </span>
+
+                <small>
+                  Not connected
+                </small>
               </button>
 
               <button
@@ -585,8 +870,14 @@ export function PosCheckoutModal({
                 title="Cheque payment is not integrated"
               >
                 <ReceiptText size={18} />
-                <span>Cheque</span>
-                <small>Not connected</small>
+
+                <span>
+                  Cheque
+                </span>
+
+                <small>
+                  Not connected
+                </small>
               </button>
 
               <button
@@ -595,15 +886,26 @@ export function PosCheckoutModal({
                 title="Web payment is not integrated"
               >
                 <CreditCard size={18} />
-                <span>Web payment</span>
-                <small>Not connected</small>
+
+                <span>
+                  Web payment
+                </span>
+
+                <small>
+                  Not connected
+                </small>
               </button>
             </div>
           </div>
+
+        /* =================================================
+           STEP TWO: CASH OR TRANSACTION RECOVERY
+           ================================================= */
+
         ) : step === 'cash' ? (
           <form
             className="gr-checkout-scroll"
-            onSubmit={(event) =>
+            onSubmit={event =>
               void confirmCash(event)
             }
           >
@@ -613,126 +915,270 @@ export function PosCheckoutModal({
                 role="status"
               >
                 Transaction confirmation is pending.
-                Retry the same reference; do not
-                create another sale.
+                Retry the same reference. Do not
+                collect payment or issue change again.
 
-                <code>{pendingReference}</code>
+                <code>
+                  {pendingReference}
+                </code>
               </p>
             )}
 
-            <div className="gr-checkout-large-total">
-              <span>Amount payable</span>
-              <strong>{money(totalMinor)}</strong>
-            </div>
+            {recovery ? (
+              <>
+                <div className="gr-checkout-large-total">
+                  <span>
+                    Saved payment ·{' '}
 
-            <label
-              className="gr-checkout-field-label"
-              htmlFor="gr-checkout-cash"
-            >
-              Cash received (₦)
-            </label>
+                    {pendingPayment
+                      ? paymentMethodLabel(
+                          pendingPayment.method,
+                        )
+                      : 'Transaction recovery'}
+                  </span>
 
-            <div className="gr-checkout-cash-field">
-              <span>₦</span>
+                  <strong>
+                    {savedTotalMinor === null
+                      ? 'Retry saved reference'
+                      : money(savedTotalMinor)}
+                  </strong>
 
-              <input
-                id="gr-checkout-cash"
-                className="gr-checkout-cash-input"
-                type="text"
-                inputMode="decimal"
-                autoComplete="off"
-                placeholder="0.00"
-                value={cashNaira}
-                onChange={(event) =>
-                  onCashChange(event.target.value)
-                }
-                disabled={busy || recovery}
-              />
+                  {pendingPayment && (
+                    <small>
+                      Customer:{' '}
 
-              <button
-                type="button"
-                onClick={() =>
-                  onCashChange(
-                    (totalMinor / 100).toFixed(2),
-                  )
-                }
-                disabled={busy || recovery}
-              >
-                Exact
-              </button>
-            </div>
-
-            <div
-              className="gr-checkout-denominations"
-              role="group"
-              aria-label="Add cash denominations"
-            >
-              {denominationNaira.map((value) => (
-                <button
-                  type="button"
-                  key={value}
-                  disabled={busy || recovery}
-                  onClick={() =>
-                    onCashChange(
-                      addAmount(cashNaira, value),
-                    )
-                  }
-                >
-                  {new Intl.NumberFormat('en-NG').format(
-                    value,
+                      {pendingPayment.customerName ||
+                        'Walk-in customer'}
+                    </small>
                   )}
-                </button>
-              ))}
+                </div>
 
-              <button
-                type="button"
-                disabled={busy || recovery}
-                onClick={() => onCashChange('')}
-                className="gr-checkout-clear"
-              >
-                Clear
-              </button>
-            </div>
+                {pendingPayment && (
+                  <dl className="gr-checkout-cash-results">
+                    <div>
+                      <dt>
+                        Original tendered amount
+                      </dt>
 
-            <dl className="gr-checkout-cash-results">
-              <div>
-                <dt>Amount payable</dt>
-                <dd>{money(totalMinor)}</dd>
-              </div>
+                      <dd>
+                        {money(
+                          pendingPayment.tenderedMinor,
+                        )}
+                      </dd>
+                    </div>
 
-              <div>
-                <dt>Cash received</dt>
+                    {pendingPayment.payments && (
+                      <>
+                        <div>
+                          <dt>
+                            Cash received
+                          </dt>
 
-                <dd>
-                  {cashMinor === null
-                    ? '—'
-                    : money(cashMinor)}
-                </dd>
-              </div>
+                          <dd>
+                            {money(
+                              pendingPayment.payments.cashMinor,
+                            )}
+                          </dd>
+                        </div>
 
-              <div className="gr-checkout-change">
-                <dt>Change to return</dt>
+                        <div>
+                          <dt>
+                            Bank transfer
+                          </dt>
 
-                <dd>
-                  {changeMinor === null
-                    ? '—'
-                    : money(changeMinor)}
-                </dd>
-              </div>
+                          <dd>
+                            {money(
+                              pendingPayment.payments.transferMinor,
+                            )}
+                          </dd>
+                        </div>
 
-              {cashMinor !== null &&
-                cashMinor < totalMinor && (
-                  <div className="gr-checkout-shortfall">
-                    <dt>Still outstanding</dt>
+                        <div>
+                          <dt>
+                            Card / POS terminal
+                          </dt>
+
+                          <dd>
+                            {money(
+                              pendingPayment.payments.cardMinor,
+                            )}
+                          </dd>
+                        </div>
+                      </>
+                    )}
+
+                    {savedTotalMinor !== null && (
+                      <div>
+                        <dt>
+                          Original calculated change
+                        </dt>
+
+                        <dd>
+                          {money(
+                            pendingPayment.tenderedMinor -
+                              savedTotalMinor,
+                          )}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
+              </>
+
+            ) : (
+              <>
+                <div className="gr-checkout-large-total">
+                  <span>
+                    Amount payable
+                  </span>
+
+                  <strong>
+                    {money(totalMinor)}
+                  </strong>
+                </div>
+
+                <label
+                  className="gr-checkout-field-label"
+                  htmlFor="gr-checkout-cash"
+                >
+                  Cash received (₦)
+                </label>
+
+                <div className="gr-checkout-cash-field">
+                  <span>₦</span>
+
+                  <input
+                    id="gr-checkout-cash"
+                    className="gr-checkout-cash-input"
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    placeholder="0.00"
+                    value={cashNaira}
+                    onChange={event =>
+                      onCashChange(
+                        event.target.value,
+                      )
+                    }
+                    disabled={
+                      busy ||
+                      recovery
+                    }
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onCashChange(
+                        (totalMinor / 100).toFixed(2),
+                      )
+                    }
+                    disabled={
+                      busy ||
+                      recovery
+                    }
+                  >
+                    Exact
+                  </button>
+                </div>
+
+                <div
+                  className="gr-checkout-denominations"
+                  role="group"
+                  aria-label="Add cash denominations"
+                >
+                  {CASH_DENOMINATIONS.map(value => (
+                    <button
+                      type="button"
+                      key={value}
+                      disabled={
+                        busy ||
+                        recovery
+                      }
+                      onClick={() =>
+                        onCashChange(
+                          addCashDenomination(
+                            cashNaira,
+                            value,
+                          ),
+                        )
+                      }
+                    >
+                      {new Intl.NumberFormat(
+                        'en-NG',
+                      ).format(value)}
+                    </button>
+                  ))}
+
+                  <button
+                    type="button"
+                    disabled={
+                      busy ||
+                      recovery
+                    }
+                    onClick={() =>
+                      onCashChange('')
+                    }
+                    className="gr-checkout-clear"
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <dl className="gr-checkout-cash-results">
+                  <div>
+                    <dt>
+                      Amount payable
+                    </dt>
+
                     <dd>
-                      {money(outstandingMinor)}
+                      {money(totalMinor)}
                     </dd>
                   </div>
-                )}
-            </dl>
+
+                  <div>
+                    <dt>
+                      Cash received
+                    </dt>
+
+                    <dd>
+                      {cashMinor === null
+                        ? '—'
+                        : money(cashMinor)}
+                    </dd>
+                  </div>
+
+                  <div className="gr-checkout-change">
+                    <dt>
+                      Change to return
+                    </dt>
+
+                    <dd>
+                      {changeMinor === null
+                        ? '—'
+                        : money(changeMinor)}
+                    </dd>
+                  </div>
+
+                  {cashMinor !== null &&
+                    cashMinor < totalMinor && (
+                      <div className="gr-checkout-shortfall">
+                        <dt>
+                          Still outstanding
+                        </dt>
+
+                        <dd>
+                          {money(outstandingMinor)}
+                        </dd>
+                      </div>
+                    )}
+                </dl>
+              </>
+            )}
 
             <p className="gr-checkout-note">
               <ShieldCheck size={15} />
+
               Only a server-confirmed sale creates
               a receipt and deducts inventory.
             </p>
@@ -750,11 +1196,20 @@ export function PosCheckoutModal({
               <button
                 type="button"
                 className="gr-checkout-back"
-                disabled={busy || recovery}
-                onClick={() => goTo('review')}
+                disabled={busy}
+                onClick={() => {
+                  if (recovery) {
+                    onClose();
+                  } else {
+                    goTo('review');
+                  }
+                }}
               >
                 <ArrowLeft size={17} />
-                Back
+
+                {recovery
+                  ? 'Close'
+                  : 'Back'}
               </button>
 
               <button
@@ -772,86 +1227,48 @@ export function PosCheckoutModal({
               </button>
             </footer>
           </form>
+
+        /* =================================================
+           STEP TWO: BANK, CARD AND SPLIT PAYMENT
+           ================================================= */
+
         ) : (
           <div className="gr-checkout-scroll">
-            <div className="gr-checkout-large-total">
-              <span>Amount to transfer</span>
-              <strong>{money(totalMinor)}</strong>
-            </div>
+            <NonCashPaymentPanel
+              key={
+                step +
+                ':' +
+                totalMinor +
+                ':' +
+                (
+                  receivingAccount?.accountNumber ??
+                  ''
+                )
+              }
+              mode={
+                step === 'bank'
+                  ? 'bank_transfer'
+                  : step
+              }
+              totalMinor={totalMinor}
+              receivingAccount={receivingAccount}
+              customerName={buyerName}
+              busy={busy}
+              error={feedback}
+              onBack={() =>
+                goTo('review')
+              }
+              onConfirm={async payment => {
+                const confirmed =
+                  await onConfirmCash(payment);
 
-            {receivingAccount ? (
-              <div className="gr-checkout-bank">
-                <span>STORE RECEIVING ACCOUNT</span>
+                if (confirmed) {
+                  onClose();
+                }
 
-                <strong>
-                  {receivingAccount.bankName}
-                </strong>
-
-                <p>
-                  {receivingAccount.accountName}
-                </p>
-
-                <div>
-                  <code>
-                    {receivingAccount.accountNumber}
-                  </code>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void copyAccount()
-                    }
-                  >
-                    <Copy size={16} />
-
-                    {copied
-                      ? 'Copied'
-                      : 'Copy'}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <p className="gr-checkout-warning">
-                The owner has not connected a
-                verified receiving account to
-                this register.
-              </p>
-            )}
-
-            <p className="gr-checkout-warning">
-              Transfer confirmation is not integrated.
-              A bank screenshot or customer claim
-              is insufficient to mark this sale paid.
-            </p>
-
-            {feedback && (
-              <p
-                role="status"
-                className="gr-checkout-note"
-              >
-                {feedback}
-              </p>
-            )}
-
-            <footer className="gr-checkout-footer">
-              <button
-                type="button"
-                className="gr-checkout-back"
-                disabled={busy}
-                onClick={() => goTo('review')}
-              >
-                <ArrowLeft size={17} />
-                Back
-              </button>
-
-              <button
-                type="button"
-                className="gr-checkout-submit"
-                disabled
-              >
-                Awaiting payment integration
-              </button>
-            </footer>
+                return confirmed;
+              }}
+            />
           </div>
         )}
       </section>

@@ -1,12 +1,11 @@
-
 import './about.css';
 
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+
 import {
   ArrowDownRight,
-  ArrowRight,
   ArrowUpRight,
   Flower2,
   Heart,
@@ -94,18 +93,37 @@ function AboutHeader() {
             <Link href="/">Discover</Link>
             <Link href="/shop">Shop all</Link>
             <Link href="/#categories">Categories</Link>
-            <Link href="/about" aria-current="page">
+
+            <Link
+              href="/about"
+              aria-current="page"
+            >
               Our story
             </Link>
+
+            <Link href="/contact">Contact</Link>
+            <Link href="/faq">Help &amp; FAQ</Link>
           </nav>
 
           <div className="gr-about__actions">
-            <Link href="/account" aria-label="My account">
-              <UserRound size={20} strokeWidth={1.6} />
+            <Link
+              href="/account"
+              aria-label="My account"
+            >
+              <UserRound
+                size={20}
+                strokeWidth={1.6}
+              />
             </Link>
 
-            <Link href="/cart" aria-label="Shopping bag">
-              <ShoppingBag size={20} strokeWidth={1.6} />
+            <Link
+              href="/cart"
+              aria-label="Shopping bag"
+            >
+              <ShoppingBag
+                size={20}
+                strokeWidth={1.6}
+              />
             </Link>
 
             <details className="gr-about__mobile-menu">
@@ -116,12 +134,20 @@ function AboutHeader() {
               <nav aria-label="Mobile navigation">
                 <Link href="/">Discover</Link>
                 <Link href="/shop">Shop all</Link>
+
                 <Link href="/#categories">
                   Categories
                 </Link>
-                <Link href="/about" aria-current="page">
+
+                <Link
+                  href="/about"
+                  aria-current="page"
+                >
                   Our story
                 </Link>
+
+                <Link href="/contact">Contact</Link>
+                <Link href="/faq">Help &amp; FAQ</Link>
                 <Link href="/account">My account</Link>
                 <Link href="/cart">Shopping bag</Link>
               </nav>
@@ -200,8 +226,14 @@ function AboutFooter() {
 
         <nav aria-label="Footer navigation">
           <Link href="/">Home</Link>
-          <Link href="/shop">Shop all fragrances</Link>
+
+          <Link href="/shop">
+            Shop all fragrances
+          </Link>
+
           <Link href="/about">Our story</Link>
+          <Link href="/contact">Contact us</Link>
+          <Link href="/faq">Help &amp; FAQ</Link>
           <Link href="/cart">Shopping bag</Link>
         </nav>
 
@@ -220,6 +252,7 @@ function AboutFooter() {
               rel="noopener noreferrer"
             >
               Chat on WhatsApp
+
               <ArrowUpRight
                 size={15}
                 aria-hidden="true"
@@ -242,6 +275,7 @@ function AboutFooter() {
 
 async function CopyrightYear() {
   'use cache';
+
   return new Date().getFullYear();
 }
 

@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { randomUUID } from 'node:crypto';
@@ -230,7 +229,7 @@ async function PackagedOrdersContent({
 
         <p className="text-xs text-[#806d78]">
           Search the catalogue before filling the purchase
-          form to see the product's configured packaging.
+          form to see the product&apos;s configured packaging.
           Up to 25 matching SKUs are listed at once.
         </p>
 

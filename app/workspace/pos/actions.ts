@@ -1,29 +1,55 @@
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { getStaffAccess } from '@/src/lib/golden-rose/staff';
 import { getSupabaseConfig } from '@/src/lib/supabase/config';
-import type { CashSaleRequest, PosCatalogue, PosReceipt } from './types';
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const POS_ROLES = new Set(['owner', 'manager', 'cashier']);
+import type {
+  CashSaleRequest,
+  PosCatalogue,
+  PosReceipt,
+} from './types';
+
+import {
+  validSalePayment,
+  validReceivingAccount,
+  receiptPaymentMatches,
+} from '@/src/lib/golden-rose/pos-payments';
+
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const POS_ROLES = new Set([
+  'owner',
+  'manager',
+  'cashier',
+]);
 
 async function requireRegisterToken(): Promise<string> {
   const staff = await getStaffAccess();
 
   if ('reason' in staff) {
     if (staff.reason === 'unavailable') {
-      throw new Error('Staff access could not be checked. Check your connection and try again.');
+      throw new Error(
+        'Staff access could not be checked. Check your connection and try again.',
+      );
     }
+
     if (staff.reason === 'denied') {
-      throw new Error('Your account is not authorized to operate the register.');
+      throw new Error(
+        'Your account is not authorized to operate the register.',
+      );
     }
-    throw new Error('Your staff session expired. Sign in again.');
+
+    throw new Error(
+      'Your staff session expired. Sign in again.',
+    );
   }
 
   if (!POS_ROLES.has(staff.role)) {
-    throw new Error('Your account is not authorized to operate the register.');
+    throw new Error(
+      'Your account is not authorized to operate the register.',
+    );
   }
 
   return staff.token;
@@ -38,14 +64,22 @@ async function callRegister<T>(
   search?: URLSearchParams,
   body?: object,
 ): Promise<T> {
-  const { url, publishableKey } = getSupabaseConfig();
-  const endpoint = new URL('/functions/v1/pos-register', url);
+  const {
+    url,
+    publishableKey,
+  } = getSupabaseConfig();
+
+  const endpoint = new URL(
+    '/functions/v1/pos-register',
+    url,
+  );
 
   if (search) {
     endpoint.search = search.toString();
   }
 
   let response: Response;
+
   const unavailable = body
     ? 'Register confirmation unavailable. Retry the same transaction reference.'
     : 'The register catalogue is temporarily unavailable. Check your connection and try again.';
@@ -57,31 +91,56 @@ async function callRegister<T>(
         apikey: publishableKey,
         authorization: `Bearer ${token}`,
         accept: 'application/json',
-        ...(body ? { 'content-type': 'application/json' } : {}),
+
+        ...(body
+          ? {
+              'content-type': 'application/json',
+            }
+          : {}),
       },
-      body: body ? JSON.stringify(body) : undefined,
+
+      body: body
+        ? JSON.stringify(body)
+        : undefined,
+
       cache: 'no-store',
       redirect: 'error',
       signal: AbortSignal.timeout(15_000),
     });
   } catch {
-    // A sale may have committed even if the response was lost.
+    // A sale may have committed even if
+    // the response was lost.
     throw new Error(unavailable);
   }
 
   if (response.status === 401) {
-    throw new Error('Session expired. Sign in again.');
+    throw new Error(
+      'Session expired. Sign in again.',
+    );
   }
 
   if (response.status === 403) {
-    throw new Error('Your staff role cannot perform this operation.');
+    throw new Error(
+      'Your staff role cannot perform this operation.',
+    );
   }
 
-  const data = await response.json().catch(() => null) as { ok?: boolean; error?: unknown } | null;
+  const data = await response
+    .json()
+    .catch(() => null) as {
+      ok?: boolean;
+      error?: unknown;
+    } | null;
 
   if (!response.ok || data?.ok !== true) {
-    if (!response.ok && response.status < 500 && typeof data?.error === 'string') {
-      throw new Error(data.error.slice(0, 220));
+    if (
+      !response.ok &&
+      response.status < 500 &&
+      typeof data?.error === 'string'
+    ) {
+      throw new Error(
+        data.error.slice(0, 220),
+      );
     }
 
     throw new Error(unavailable);
@@ -92,7 +151,8 @@ async function callRegister<T>(
 
 /**
  * Live catalogue search.
- * Products are filtered server-side, allowing large imports.
+ * Products are filtered server-side,
+ * allowing large imports.
  * Prices and stock come from the selected store location.
  */
 export async function loadPosCatalogue(
@@ -102,12 +162,23 @@ export async function loadPosCatalogue(
 ): Promise<PosCatalogue> {
   const token = await requireRegisterToken();
 
-  if (locationId !== null && !UUID.test(locationId)) {
-    throw new Error('Invalid selling location.');
+  if (
+    locationId !== null &&
+    !UUID.test(locationId)
+  ) {
+    throw new Error(
+      'Invalid selling location.',
+    );
   }
 
-  if (!Number.isSafeInteger(offset) || offset < 0 || offset > 1_000_000) {
-    throw new Error('Invalid catalogue offset.');
+  if (
+    !Number.isSafeInteger(offset) ||
+    offset < 0 ||
+    offset > 1_000_000
+  ) {
+    throw new Error(
+      'Invalid catalogue offset.',
+    );
   }
 
   const params = new URLSearchParams({
@@ -120,25 +191,45 @@ export async function loadPosCatalogue(
     params.set('locationId', locationId);
   }
 
-  const data = await callRegister<PosCatalogue & { ok: true }>(
-    token,
-    params,
-  );
+  const data = await callRegister<
+    PosCatalogue & { ok: true }
+  >(token, params);
 
-  if (!Array.isArray(data.items) || !Array.isArray(data.locations)) {
-    throw new Error('The live catalogue returned an unexpected response.');
+  if (
+    !Array.isArray(data.items) ||
+    !Array.isArray(data.locations)
+  ) {
+    throw new Error(
+      'The live catalogue returned an unexpected response.',
+    );
   }
 
   return {
     items: data.items,
     locations: data.locations,
-    selectedLocationId: data.selectedLocationId ?? null,
-    hasMore: Boolean(data.hasMore),
+
+    selectedLocationId:
+      data.selectedLocationId ?? null,
+
+    hasMore:
+      Boolean(data.hasMore),
+
+    paymentVersion:
+      data.paymentVersion === 2
+        ? 2
+        : undefined,
+
+    receivingAccount:
+      validReceivingAccount(
+        data.receivingAccount,
+      )
+        ? data.receivingAccount
+        : null,
   };
 }
 
 /**
- * Records a completed cash sale.
+ * Records a completed sale with a validated payment allocation.
  *
  * The database revalidates current prices and stock,
  * then creates the sale, stock movements, and receipt
@@ -148,12 +239,12 @@ export async function completeCashSale(
   request: CashSaleRequest,
 ): Promise<PosReceipt> {
   const token = await requireRegisterToken();
+
   const items = request.items;
 
   if (
     !UUID.test(request.idempotencyKey) ||
     !UUID.test(request.locationId) ||
-    request.method !== 'cash' ||
     !Array.isArray(items) ||
     items.length < 1 ||
     items.length > 40 ||
@@ -161,18 +252,37 @@ export async function completeCashSale(
     request.discountMinor < 0 ||
     !Number.isSafeInteger(request.tenderedMinor) ||
     request.tenderedMinor <= 0 ||
+
     items.some(
       item =>
         !UUID.test(item.variantId) ||
         !Number.isInteger(item.quantity) ||
         item.quantity < 1 ||
         item.quantity > 100 ||
-        !Number.isSafeInteger(item.expectedPriceMinor) ||
+        !Number.isSafeInteger(
+          item.expectedPriceMinor,
+        ) ||
         item.expectedPriceMinor <= 0,
     ) ||
-    new Set(items.map(item => item.variantId)).size !== items.length
+
+    new Set(
+      items.map(item => item.variantId),
+    ).size !== items.length ||
+
+    !validSalePayment(
+      request,
+      items.reduce(
+        (sum, item) =>
+          sum +
+          item.quantity *
+            item.expectedPriceMinor,
+        0,
+      ) - request.discountMinor,
+    )
   ) {
-    throw new Error('Invalid items or cash amounts. Review the sale.');
+    throw new Error(
+      'Invalid items or payment amounts. Review the sale.',
+    );
   }
 
   const data = await callRegister<{
@@ -190,13 +300,57 @@ export async function completeCashSale(
   if (
     !data.receipt ||
     !UUID.test(data.receipt.saleId) ||
-    !Array.isArray(data.receipt.items)
+    !Array.isArray(data.receipt.items) ||
+
+    data.receipt.locationId !==
+      request.locationId ||
+
+    data.receipt.discountMinor !==
+      request.discountMinor ||
+
+    data.receipt.totalMinor !==
+      items.reduce(
+        (sum, item) =>
+          sum +
+          item.quantity *
+            item.expectedPriceMinor,
+        0,
+      ) - request.discountMinor ||
+
+    data.receipt.items.length !==
+      request.items.length ||
+
+    !request.items.every(
+      item =>
+        data.receipt.items.some(
+          line =>
+            line.variantId ===
+              item.variantId &&
+
+            line.quantity ===
+              item.quantity &&
+
+            line.unitPriceMinor ===
+              item.expectedPriceMinor &&
+
+            line.lineTotalMinor ===
+              item.quantity *
+                item.expectedPriceMinor,
+        ),
+    ) ||
+
+    !receiptPaymentMatches(
+      data.receipt,
+      request,
+    )
   ) {
     throw new Error(
       'Receipt confirmation unavailable. Retry the SAME transaction.',
     );
   }
 
+  revalidatePath('/workspace');
+  revalidatePath('/workspace/reports');
   revalidatePath('/workspace/pos');
   revalidatePath('/workspace/inventory');
   revalidatePath('/workspace/orders');

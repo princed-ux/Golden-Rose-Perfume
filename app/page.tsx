@@ -1,10 +1,10 @@
-
 import './page.css';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { connection } from 'next/server';
+
 import {
   ArrowRight,
   ArrowUpRight,
@@ -62,7 +62,9 @@ const gallery = [
   'gr-df9e62164acb.jpg',
   'gr-16709d9ab321.jpg',
   'gr-5b1d011620cc.jpg',
-].map((name) => `${MEDIA}/${name}`);
+].map(
+  name => `${MEDIA}/${name}`,
+);
 
 /*
  * Only genuine catalogue product slugs belong here.
@@ -70,24 +72,33 @@ const gallery = [
  */
 
 const FEATURED_PRODUCT_SLUGS: string[] = [];
+
 const PRODUCT_LIMIT = 8;
 
 /* =====================================================
    CATALOGUE HELPERS
 ===================================================== */
 
-function productLink(product: CatalogProduct) {
+function productLink(
+  product: CatalogProduct,
+) {
   return `/shop/${encodeURIComponent(
     product.slug || product.id,
   )}`;
 }
 
-function priceLabel(product: CatalogProduct): string {
+function priceLabel(
+  product: CatalogProduct,
+): string {
   const variants = product.variants.filter(
     (variant): variant is CatalogVariant =>
-      Number.isSafeInteger(variant.priceMinor) &&
+      Number.isSafeInteger(
+        variant.priceMinor,
+      ) &&
       variant.priceMinor >= 0 &&
-      /^[A-Z]{3}$/.test(variant.currency),
+      /^[A-Z]{3}$/.test(
+        variant.currency,
+      ),
   );
 
   if (!variants.length) {
@@ -95,18 +106,26 @@ function priceLabel(product: CatalogProduct): string {
   }
 
   // Do not compare prices across different currencies.
-  const currency = variants[0].currency;
 
-  const comparable = variants.filter(
-    (variant) => variant.currency === currency,
-  );
+  const currency =
+    variants[0].currency;
 
-  const cheapest = comparable.reduce(
-    (minimum, variant) =>
-      variant.priceMinor < minimum.priceMinor
-        ? variant
-        : minimum,
-  );
+  const comparable =
+    variants.filter(
+      variant =>
+        variant.currency === currency,
+    );
+
+  const cheapest =
+    comparable.reduce(
+      (minimum, variant) =>
+        variant.priceMinor <
+        minimum.priceMinor
+
+          ? variant
+
+          : minimum,
+    );
 
   try {
     const price = formatPrice(
@@ -117,32 +136,53 @@ function priceLabel(product: CatalogProduct): string {
     return comparable.length > 1
       ? `From ${price}`
       : price;
+
   } catch {
     return 'Price unavailable';
   }
 }
 
-async function selectedProducts(): Promise<CatalogProduct[]> {
+/* =====================================================
+   MANUALLY FEATURED PRODUCTS
+===================================================== */
+
+async function selectedProducts(): Promise<
+  CatalogProduct[]
+> {
   const slugs = [
     ...new Set(
       FEATURED_PRODUCT_SLUGS
-        .map((slug) => slug.trim())
+        .map(
+          slug => slug.trim(),
+        )
         .filter(Boolean),
     ),
-  ].slice(0, PRODUCT_LIMIT);
+  ].slice(
+    0,
+    PRODUCT_LIMIT,
+  );
 
   if (!slugs.length) {
     return [];
   }
 
-  const remaining = new Set(slugs);
-  const matching = new Map<string, CatalogProduct>();
+  const remaining =
+    new Set(slugs);
+
+  const matching =
+    new Map<string, CatalogProduct>();
 
   for await (const batch of catalogPages()) {
     for (const item of batch) {
       if (remaining.has(item.slug)) {
-        matching.set(item.slug, item);
-        remaining.delete(item.slug);
+        matching.set(
+          item.slug,
+          item,
+        );
+
+        remaining.delete(
+          item.slug,
+        );
       }
     }
 
@@ -151,10 +191,11 @@ async function selectedProducts(): Promise<CatalogProduct[]> {
     }
   }
 
-  return slugs.flatMap((slug) =>
-    matching.has(slug)
-      ? [matching.get(slug)!]
-      : [],
+  return slugs.flatMap(
+    slug =>
+      matching.has(slug)
+        ? [matching.get(slug)!]
+        : [],
   );
 }
 
@@ -166,13 +207,17 @@ function Header() {
   return (
     <>
       <div className="gr-announcement">
-        <span>GOLDEN ROSE PERFUME</span>
+        <span>
+          GOLDEN ROSE PERFUME
+        </span>
 
         <span className="gr-announcement__star">
           ✳
         </span>
 
-        <span>THE BEAUTY OF FRAGRANCE</span>
+        <span>
+          THE BEAUTY OF FRAGRANCE
+        </span>
       </div>
 
       <header className="gr-header">
@@ -195,8 +240,13 @@ function Header() {
             </span>
 
             <span className="gr-brand__name">
-              <strong>Golden Rose</strong>
-              <small>PERFUME</small>
+              <strong>
+                Golden Rose
+              </strong>
+
+              <small>
+                PERFUME
+              </small>
             </span>
           </Link>
 
@@ -204,13 +254,31 @@ function Header() {
             className="gr-nav"
             aria-label="Main navigation"
           >
-            <Link href="/">Discover</Link>
-            <Link href="/shop">Shop all</Link>
+            <Link
+              href="/"
+              aria-current="page"
+            >
+              Discover
+            </Link>
+
+            <Link href="/shop">
+              Shop all
+            </Link>
+
             <Link href="/#categories">
               Categories
             </Link>
+
             <Link href="/about">
               Our story
+            </Link>
+
+            <Link href="/contact">
+              Contact
+            </Link>
+
+            <Link href="/faq">
+              Help &amp; FAQ
             </Link>
           </nav>
 
@@ -298,20 +366,38 @@ function Header() {
                 </form>
 
                 <nav aria-label="Mobile navigation">
-                  <Link href="/">Discover</Link>
-                  <Link href="/shop">Shop all</Link>
+                  <Link href="/">
+                    Discover
+                  </Link>
+
+                  <Link href="/shop">
+                    Shop all
+                  </Link>
+
                   <Link href="/#categories">
                     Categories
                   </Link>
+
                   <Link href="/#gallery">
                     Gallery
                   </Link>
+
                   <Link href="/about">
                     Our story
                   </Link>
+
+                  <Link href="/contact">
+                    Contact
+                  </Link>
+
+                  <Link href="/faq">
+                    Help &amp; FAQ
+                  </Link>
+
                   <Link href="/account">
                     Account
                   </Link>
+
                   <Link href="/cart">
                     Shopping bag
                   </Link>
@@ -367,7 +453,9 @@ function ProductCard({
             'Fragrance'}
         </p>
 
-        <h3>{product.name}</h3>
+        <h3>
+          {product.name}
+        </h3>
 
         <div className="gr-product-card__bottom">
           <strong>
@@ -382,6 +470,10 @@ function ProductCard({
     </Link>
   );
 }
+
+/* =====================================================
+   HORIZONTAL PRODUCT COLLECTION
+===================================================== */
 
 function ProductRow({
   eyebrow,
@@ -407,9 +499,13 @@ function ProductRow({
               {eyebrow}
             </span>
 
-            <h2>{title}</h2>
+            <h2>
+              {title}
+            </h2>
 
-            <p>{caption}</p>
+            <p>
+              {caption}
+            </p>
           </div>
 
           <Link
@@ -417,6 +513,7 @@ function ProductRow({
             className="gr-text-link gr-scene gr-scene--right"
           >
             View all
+
             <ArrowUpRight size={18} />
           </Link>
         </div>
@@ -425,7 +522,7 @@ function ProductRow({
           variant="products"
           label={title}
         >
-          {products.map((product) => (
+          {products.map(product => (
             <ProductCard
               product={product}
               key={product.id}
@@ -463,7 +560,8 @@ function Categories({
             </span>
 
             <h2>
-              Follow your <em>curiosity.</em>
+              Follow your{' '}
+              <em>curiosity.</em>
             </h2>
 
             <p>
@@ -477,6 +575,7 @@ function Categories({
             className="gr-text-link"
           >
             All fragrances
+
             <ArrowUpRight size={18} />
           </Link>
         </div>
@@ -508,10 +607,13 @@ function Categories({
                   <ArrowUpRight size={19} />
                 </span>
 
-                <strong>{category}</strong>
+                <strong>
+                  {category}
+                </strong>
 
                 <span className="gr-category-card__bottom">
                   Explore
+
                   <ArrowRight size={15} />
                 </span>
               </Link>
@@ -523,26 +625,49 @@ function Categories({
 }
 
 /* =====================================================
-   LIVE CATALOGUE
+   LIVE CATALOGUE DATA CONTRACT
 ===================================================== */
 
-async function LiveCatalogue() {
-  await connection();
+type HomepageCatalogue = {
+  featured: CatalogProduct[];
+  recent: CatalogProduct[];
+  products: CatalogProduct[];
+  categories: string[];
+};
 
+/* =====================================================
+   LOAD HOMEPAGE CATALOGUE
+
+   This function handles data only.
+
+   Separating data retrieval from JSX rendering prevents
+   the react-hooks/error-boundaries lint violation.
+===================================================== */
+
+async function loadHomepageCatalogue(): Promise<
+  HomepageCatalogue | null
+> {
   try {
-    const [catalogue, featured] =
-      await Promise.all([
-        getCatalogPage(0, 24),
-        selectedProducts(),
-      ]);
+    const [
+      catalogue,
+      featured,
+    ] = await Promise.all([
+      getCatalogPage(0, 24),
+      selectedProducts(),
+    ]);
 
-    const featuredIds = new Set(
-      featured.map((item) => item.id),
-    );
+    const featuredIds =
+      new Set(
+        featured.map(
+          item => item.id,
+        ),
+      );
 
-    const recent = catalogue.newArrivals.filter(
-      (item) => !featuredIds.has(item.id),
-    );
+    const recent =
+      catalogue.newArrivals.filter(
+        item =>
+          !featuredIds.has(item.id),
+      );
 
     const products = (
       recent.length
@@ -550,99 +675,162 @@ async function LiveCatalogue() {
         : catalogue.items
     )
       .filter(
-        (item) => !featuredIds.has(item.id),
+        item =>
+          !featuredIds.has(item.id),
       )
-      .slice(0, PRODUCT_LIMIT);
+      .slice(
+        0,
+        PRODUCT_LIMIT,
+      );
 
     const categories = [
       ...new Set(
         [
           ...catalogue.categories,
+
           ...catalogue.items.map(
-            (item) => item.category,
+            item => item.category,
           ),
         ]
           .filter(
             (item): item is string =>
               typeof item === 'string' &&
-              !!item.trim(),
+              Boolean(item.trim()),
           )
-          .map((item) => item.trim()),
+          .map(
+            item => item.trim(),
+          ),
       ),
-    ].sort((a, b) => a.localeCompare(b));
-
-    return (
-      <>
-        <ProductRow
-          eyebrow="CURATED FOR THE HOMEPAGE"
-          title="The Golden Rose edit."
-          caption="Real fragrances selected from the catalogue."
-          products={featured}
-        />
-
-        <ProductRow
-          eyebrow={
-            recent.length
-              ? 'RECENTLY ADDED'
-              : 'THE BOUTIQUE'
-          }
-          title={
-            recent.length
-              ? 'Fresh in the boutique.'
-              : 'Discover your next favourite.'
-          }
-          caption="Explore fragrances and their available variants."
-          products={products}
-        />
-
-        <Categories categories={categories} />
-
-        {!featured.length &&
-          !products.length && (
-            <div className="gr-container gr-catalogue-empty">
-              <h2>
-                Explore the full collection.
-              </h2>
-
-              <p>
-                Available products will appear
-                here once the catalogue loads.
-              </p>
-
-              <Link
-                href="/shop"
-                className="gr-button gr-button--dark"
-              >
-                Browse the shop
-                <ArrowUpRight size={17} />
-              </Link>
-            </div>
-          )}
-      </>
+    ].sort(
+      (left, right) =>
+        left.localeCompare(right),
     );
+
+    return {
+      featured,
+      recent,
+      products,
+      categories,
+    };
+
   } catch {
-    return (
-      <div className="gr-container gr-catalogue-empty">
-        <h2>
-          The collection is waiting.
-        </h2>
-
-        <p>
-          Homepage products are temporarily
-          unavailable. You can still try
-          browsing the shop.
-        </p>
-
-        <Link
-          href="/shop"
-          className="gr-button gr-button--dark"
-        >
-          Go to the shop
-          <ArrowUpRight size={17} />
-        </Link>
-      </div>
-    );
+    return null;
   }
+}
+
+/* =====================================================
+   CATALOGUE EMPTY AND UNAVAILABLE STATES
+===================================================== */
+
+function CatalogueUnavailable() {
+  return (
+    <div className="gr-container gr-catalogue-empty">
+      <h2>
+        The collection is waiting.
+      </h2>
+
+      <p>
+        Homepage products are temporarily
+        unavailable. You can still try
+        browsing the shop.
+      </p>
+
+      <Link
+        href="/shop"
+        className="gr-button gr-button--dark"
+      >
+        Go to the shop
+
+        <ArrowUpRight size={17} />
+      </Link>
+    </div>
+  );
+}
+
+function CatalogueEmpty() {
+  return (
+    <div className="gr-container gr-catalogue-empty">
+      <h2>
+        Explore the full collection.
+      </h2>
+
+      <p>
+        Available products will appear
+        here once the catalogue loads.
+      </p>
+
+      <Link
+        href="/shop"
+        className="gr-button gr-button--dark"
+      >
+        Browse the shop
+
+        <ArrowUpRight size={17} />
+      </Link>
+    </div>
+  );
+}
+
+/* =====================================================
+   LIVE CATALOGUE
+
+   React renders every component outside the data-fetching
+   try/catch block.
+
+   No error-boundary rule is disabled or suppressed.
+===================================================== */
+
+async function LiveCatalogue() {
+  await connection();
+
+  const data =
+    await loadHomepageCatalogue();
+
+  if (!data) {
+    return <CatalogueUnavailable />;
+  }
+
+  const {
+    featured,
+    recent,
+    products,
+    categories,
+  } = data;
+
+  return (
+    <>
+      <ProductRow
+        eyebrow="CURATED FOR THE HOMEPAGE"
+        title="The Golden Rose edit."
+        caption="Real fragrances selected from the catalogue."
+        products={featured}
+      />
+
+      <ProductRow
+        eyebrow={
+          recent.length
+            ? 'RECENTLY ADDED'
+            : 'THE BOUTIQUE'
+        }
+        title={
+          recent.length
+            ? 'Fresh in the boutique.'
+            : 'Discover your next favourite.'
+        }
+        caption="Explore fragrances and their available variants."
+        products={products}
+      />
+
+      <Categories
+        categories={categories}
+      />
+
+      {!featured.length &&
+        !products.length && (
+          <CatalogueEmpty />
+        )}
+    </>
+  );
 }
 
 /* =====================================================
@@ -682,12 +870,15 @@ function Editorial() {
 
             <h3>
               Find your next
+
               <br />
+
               favourite scent.
             </h3>
 
             <Link href="/shop">
               Explore fragrances
+
               <ArrowUpRight size={19} />
             </Link>
           </div>
@@ -714,6 +905,7 @@ function Editorial() {
 
             <Link href="/shop">
               Discover more
+
               <ArrowUpRight size={18} />
             </Link>
           </div>
@@ -741,7 +933,8 @@ function Gallery() {
             </span>
 
             <h2>
-              More to <em>discover.</em>
+              More to{' '}
+              <em>discover.</em>
             </h2>
 
             <p>
@@ -756,6 +949,7 @@ function Gallery() {
             className="gr-text-link gr-scene gr-scene--right"
           >
             Shop fragrances
+
             <ArrowUpRight size={18} />
           </Link>
         </div>
@@ -787,7 +981,9 @@ function Gallery() {
                     2,
                     '0',
                   )}
+
                   {' / '}
+
                   GOLDEN ROSE
                 </span>
 
@@ -809,7 +1005,8 @@ function Gallery() {
 ===================================================== */
 
 function Footer() {
-  const whatsapp = getWhatsAppNumber();
+  const whatsapp =
+    getWhatsAppNumber();
 
   return (
     <footer className="gr-footer">
@@ -837,7 +1034,9 @@ function Footer() {
           </div>
 
           <div className="gr-footer__links">
-            <h3>Explore</h3>
+            <h3>
+              Explore
+            </h3>
 
             <Link href="/shop">
               Shop all
@@ -857,7 +1056,9 @@ function Footer() {
           </div>
 
           <div className="gr-footer__links">
-            <h3>Your boutique</h3>
+            <h3>
+              Your boutique
+            </h3>
 
             <Link href="/account">
               Account
@@ -870,15 +1071,25 @@ function Footer() {
             <Link href="/checkout">
               Checkout
             </Link>
+
+            <Link href="/faq">
+              Help &amp; FAQ
+            </Link>
           </div>
 
           <div className="gr-footer__links">
-            <h3>Get in touch</h3>
+            <h3>
+              Get in touch
+            </h3>
 
             <p>
               Questions about a fragrance
               or an order?
             </p>
+
+            <Link href="/contact">
+              Contact us
+            </Link>
 
             {whatsapp && (
               <a
@@ -888,6 +1099,7 @@ function Footer() {
                 className="gr-footer__contact"
               >
                 Chat on WhatsApp
+
                 <ArrowUpRight size={16} />
               </a>
             )}
@@ -897,6 +1109,7 @@ function Footer() {
         <div className="gr-footer__bottom">
           <span>
             © <HomepageCopyrightYear />{' '}
+
             Golden Rose Perfume.
             All rights reserved.
           </span>
@@ -1020,7 +1233,9 @@ const motionCSS = `
   transform: scale(1.055);
 }
 
-/* New editorial section */
+/* =====================================================
+   EDITORIAL PHOTO SECTION
+===================================================== */
 
 .gr-home .gr-photo-mosaic {
   display: grid;
@@ -1077,7 +1292,9 @@ const motionCSS = `
   margin-top: 26px;
 }
 
-/* Minimal quick navigation */
+/* =====================================================
+   MINIMAL QUICK NAVIGATION
+===================================================== */
 
 .gr-home .gr-quicklinks {
   display: flex;
@@ -1105,13 +1322,16 @@ const motionCSS = `
   transform: translateY(-2px);
 }
 
-/* Directional entrance animations */
+/* =====================================================
+   DIRECTIONAL ENTRANCE ANIMATIONS
+===================================================== */
 
 @keyframes gr-enter-left {
   from {
     opacity: .25;
     transform: translate3d(-58px, 0, 0);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -1123,6 +1343,7 @@ const motionCSS = `
     opacity: .25;
     transform: translate3d(58px, 0, 0);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -1134,19 +1355,23 @@ const motionCSS = `
     opacity: .25;
     transform: translate3d(0, 40px, 0);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
 }
 
-/* Scroll-linked image depth */
+/* =====================================================
+   SCROLL-LINKED IMAGE DEPTH
+===================================================== */
 
 @keyframes gr-photo-drift {
   from {
     transform:
       scale(1.06) translate3d(0, -2%, 0);
   }
+
   to {
     transform:
       scale(1.06) translate3d(0, 2%, 0);
@@ -1182,7 +1407,7 @@ const motionCSS = `
     animation-name: gr-enter-up;
   }
 
-  /* Horizontal carousel items enter from the side */
+  /* Horizontal carousel items enter from the side. */
 
   .gr-home .gr-rail__item.gr-scene {
     animation-timeline: view(inline);
@@ -1197,7 +1422,9 @@ const motionCSS = `
   }
 }
 
-/* Responsive layout */
+/* =====================================================
+   RESPONSIVE LAYOUT
+===================================================== */
 
 @media (max-width: 920px) {
   .gr-home .gr-hero__layout {
@@ -1267,7 +1494,9 @@ const motionCSS = `
   }
 }
 
-/* Respect reduced-motion preferences */
+/* =====================================================
+   REDUCED-MOTION ACCESSIBILITY
+===================================================== */
 
 @media (prefers-reduced-motion: reduce) {
   .gr-home .gr-scene,
@@ -1296,16 +1525,23 @@ const motionCSS = `
 export default function HomePage() {
   return (
     <div className="gr-home">
-      <style>{motionCSS}</style>
+      <style>
+        {motionCSS}
+      </style>
 
       <Header />
 
       <main id="main-content">
-        {/* 01 — Existing animated hero */}
+
+        {/* =================================================
+            01 — EXISTING ANIMATED HERO
+            ================================================= */}
 
         <HeroSlideshow />
 
-        {/* 02 — Compact navigation */}
+        {/* =================================================
+            02 — COMPACT NAVIGATION
+            ================================================= */}
 
         <nav
           className="gr-quicklinks"
@@ -1313,21 +1549,26 @@ export default function HomePage() {
         >
           <a href="#fragrances">
             Fragrances
+
             <ArrowDown size={14} />
           </a>
 
           <a href="#categories">
             Categories
+
             <ArrowDown size={14} />
           </a>
 
           <a href="#gallery">
             Photo diary
+
             <ArrowDown size={14} />
           </a>
         </nav>
 
-        {/* 03 — Moving brand marquee */}
+        {/* =================================================
+            03 — MOVING BRAND MARQUEE
+            ================================================= */}
 
         <div
           className="gr-marquee"
@@ -1337,7 +1578,7 @@ export default function HomePage() {
             className="gr-marquee__track"
             aria-hidden="true"
           >
-            {[0, 1].map((copy) => (
+            {[0, 1].map(copy => (
               <div
                 className="gr-marquee__group"
                 key={copy}
@@ -1364,7 +1605,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 04 — Left/right animated introduction */}
+        {/* =================================================
+            04 — LEFT/RIGHT ANIMATED INTRODUCTION
+            ================================================= */}
 
         <section
           className="gr-intro gr-container"
@@ -1377,8 +1620,12 @@ export default function HomePage() {
 
             <h2 id="gr-intro-heading">
               A little fragrance.
+
               <br />
-              <em>A lot of personality.</em>
+
+              <em>
+                A lot of personality.
+              </em>
             </h2>
           </div>
 
@@ -1394,12 +1641,18 @@ export default function HomePage() {
               className="gr-text-link"
             >
               Explore the boutique
+
               <ArrowUpRight size={18} />
             </Link>
           </div>
         </section>
 
-        {/* 05 — Real catalogue carousels */}
+        {/* =================================================
+            05 — REAL CATALOGUE CAROUSELS
+
+            Dynamic catalogue data is loaded inside
+            a Suspense boundary.
+            ================================================= */}
 
         <div id="fragrances">
           <Suspense
@@ -1409,6 +1662,7 @@ export default function HomePage() {
                 role="status"
               >
                 <span className="gr-loading__indicator" />
+
                 <span>
                   Loading fragrances…
                 </span>
@@ -1419,15 +1673,21 @@ export default function HomePage() {
           </Suspense>
         </div>
 
-        {/* 06 — Asymmetric photo composition */}
+        {/* =================================================
+            06 — ASYMMETRIC PHOTO COMPOSITION
+            ================================================= */}
 
         <Editorial />
 
-        {/* 07 — Horizontal photography rail */}
+        {/* =================================================
+            07 — HORIZONTAL PHOTOGRAPHY RAIL
+            ================================================= */}
 
         <Gallery />
 
-        {/* 08 — Animated brand statement */}
+        {/* =================================================
+            08 — ANIMATED BRAND STATEMENT
+            ================================================= */}
 
         <section
           className="gr-statement"
@@ -1446,8 +1706,12 @@ export default function HomePage() {
 
             <h2>
               Some moments fade.
+
               <br />
-              <em>The feeling stays.</em>
+
+              <em>
+                The feeling stays.
+              </em>
             </h2>
 
             <p>
@@ -1457,7 +1721,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 09 — Shopping experience */}
+        {/* =================================================
+            09 — SHOPPING EXPERIENCE
+            ================================================= */}
 
         <section
           className="gr-experience"
@@ -1471,8 +1737,12 @@ export default function HomePage() {
 
               <h2 id="gr-experience-heading">
                 Discover. Choose.
+
                 <br />
-                <em>Make it yours.</em>
+
+                <em>
+                  Make it yours.
+                </em>
               </h2>
 
               <p>
@@ -1513,7 +1783,9 @@ export default function HomePage() {
                     key={number}
                   >
                     <div className="gr-experience__step-top">
-                      <span>{number}</span>
+                      <span>
+                        {number}
+                      </span>
 
                       <span className="gr-experience__step-icon">
                         <Icon
@@ -1523,9 +1795,13 @@ export default function HomePage() {
                       </span>
                     </div>
 
-                    <h3>{title}</h3>
+                    <h3>
+                      {title}
+                    </h3>
 
-                    <p>{text}</p>
+                    <p>
+                      {text}
+                    </p>
                   </article>
                 ),
               )}
@@ -1533,7 +1809,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 10 — New photo-and-copy feature */}
+        {/* =================================================
+            10 — PHOTO-AND-COPY FEATURE
+            ================================================= */}
 
         <section
           className="gr-photo-mosaic gr-container"
@@ -1555,13 +1833,17 @@ export default function HomePage() {
 
             <h2>
               Every detail.
+
               <br />
-              <em>Every feeling.</em>
+
+              <em>
+                Every feeling.
+              </em>
             </h2>
 
             <p>
               From everyday favourites to something
-              that surprises you, there's always
+              that surprises you, there&apos;s always
               more to discover.
             </p>
 
@@ -1570,12 +1852,15 @@ export default function HomePage() {
               className="gr-text-link"
             >
               Discover more
+
               <ArrowUpRight size={18} />
             </Link>
           </div>
         </section>
 
-        {/* 11 — Story with opposite-direction reveals */}
+        {/* =================================================
+            11 — STORY WITH OPPOSITE-DIRECTION REVEALS
+            ================================================= */}
 
         <section
           id="our-story"
@@ -1597,8 +1882,12 @@ export default function HomePage() {
 
             <h2>
               More than a scent.
+
               <br />
-              <em>It's a feeling.</em>
+
+              <em>
+                It&apos;s a feeling.
+              </em>
             </h2>
 
             <p>
@@ -1618,12 +1907,15 @@ export default function HomePage() {
               className="gr-text-link"
             >
               Explore Golden Rose
+
               <ArrowUpRight size={18} />
             </Link>
           </div>
         </section>
 
-        {/* 12 — Final campaign */}
+        {/* =================================================
+            12 — FINAL CAMPAIGN
+            ================================================= */}
 
         <section className="gr-final">
           <Image
@@ -1643,8 +1935,12 @@ export default function HomePage() {
 
             <h2>
               Ready for your
+
               <br />
-              <em>next favourite?</em>
+
+              <em>
+                next favourite?
+              </em>
             </h2>
 
             <p>
@@ -1656,6 +1952,7 @@ export default function HomePage() {
               className="gr-button gr-button--light"
             >
               Shop the collection
+
               <ArrowUpRight size={18} />
             </Link>
           </div>
@@ -1667,7 +1964,14 @@ export default function HomePage() {
   );
 }
 
+/* =====================================================
+   COPYRIGHT YEAR
+
+   Compatible with Next.js Cache Components.
+===================================================== */
+
 async function HomepageCopyrightYear() {
   'use cache';
+
   return new Date().getFullYear();
 }

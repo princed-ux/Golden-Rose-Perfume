@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import Link from 'next/link';
@@ -31,8 +30,7 @@ import {
 
 export const metadata: Metadata = {
   title: 'Reports & Analytics | Golden Rose Perfume',
-  description:
-    'Authorized financial and operational reporting.',
+  description: 'Authorized financial and operational reporting.',
 };
 
 type Location = {
@@ -60,6 +58,16 @@ type FinancialReport = {
   currency: string;
   timeZone: string;
   profitAvailable: boolean;
+
+  paymentBreakdown?: {
+    cashMinor: number;
+    transferMinor: number;
+    cardMinor: number;
+    splitTransactions: number;
+    cashTenderedMinor: number;
+    cashChangeMinor: number;
+    totalMinor: number;
+  } | null;
 
   sales: {
     transactions: number;
@@ -130,7 +138,7 @@ function lagosToday(): string {
   }).formatToParts(new Date());
 
   const part = (type: string) =>
-    parts.find((item) => item.type === type)?.value ?? '';
+    parts.find(item => item.type === type)?.value ?? '';
 
   return [
     part('year'),
@@ -141,6 +149,7 @@ function lagosToday(): string {
 
 function shiftDate(date: string, days: number): string {
   const value = new Date(`${date}T00:00:00.000Z`);
+
   value.setUTCDate(value.getUTCDate() + days);
 
   return value.toISOString().slice(0, 10);
@@ -198,10 +207,7 @@ export default function ReportsPage({
   return (
     <Suspense
       fallback={
-        <p
-          role="status"
-          className="p-6 text-sm text-[#765d6b]"
-        >
+        <p role="status" className="p-6 text-sm text-[#765d6b]">
           Loading financial reports…
         </p>
       }
@@ -229,8 +235,10 @@ async function AuthorizedReports({
   const invalidInput =
     (rawFrom !== '' && !validDate(rawFrom)) ||
     (rawTo !== '' && !validDate(rawTo)) ||
-    (locationId !== '' &&
-      !/^[0-9a-f-]{36}$/i.test(locationId));
+    (
+      locationId !== '' &&
+      !/^[0-9a-f-]{36}$/i.test(locationId)
+    );
 
   let report: FinancialReport | null = null;
   let errorMessage = '';
@@ -267,9 +275,8 @@ async function AuthorizedReports({
               ? 'The selected report filters are invalid.'
               : 'Financial records could not be loaded. Check the database connection and retry.';
       } else {
-        const result = response.data as
-          | FinancialReport
-          | null;
+        const result =
+          response.data as FinancialReport | null;
 
         if (
           result &&
@@ -334,7 +341,7 @@ async function AuthorizedReports({
 
   const largestSale = Math.max(
     0,
-    ...(report?.trend.map((item) => item.totalMinor) ?? []),
+    ...(report?.trend.map(item => item.totalMinor) ?? []),
   );
 
   return (
@@ -366,17 +373,14 @@ async function AuthorizedReports({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {presets.map((preset) => {
+          {presets.map(preset => {
             const query = new URLSearchParams({
               from: preset.from,
               to: preset.to,
             });
 
             if (report?.locationId) {
-              query.set(
-                'location',
-                report.locationId,
-              );
+              query.set('location', report.locationId);
             }
 
             return (
@@ -405,9 +409,11 @@ async function AuthorizedReports({
               required
               defaultValue={
                 report?.from ??
-                (validDate(rawFrom)
-                  ? rawFrom
-                  : shiftDate(today, -29))
+                (
+                  validDate(rawFrom)
+                    ? rawFrom
+                    : shiftDate(today, -29)
+                )
               }
               className={workspaceInput}
             />
@@ -442,7 +448,7 @@ async function AuthorizedReports({
                 </option>
               )}
 
-              {report?.locations.map((location) => (
+              {report?.locations.map(location => (
                 <option
                   key={location.id}
                   value={location.id}
@@ -518,54 +524,62 @@ async function AuthorizedReports({
 
             <MetricCard
               title="POS transactions"
-              value={report.sales.transactions.toLocaleString(
-                'en-NG',
-              )}
+              value={
+                report.sales.transactions.toLocaleString('en-NG')
+              }
               detail="Completed POS receipts in the selected period."
               icon={ShoppingBag}
             />
 
             <MetricCard
               title="Approved operating expenses"
-              value={formatPrice(
-                report.expenses.approvedMinor,
-              )}
+              value={
+                formatPrice(report.expenses.approvedMinor)
+              }
               detail="Approved and manually recorded-paid expenses. Pending expenses excluded."
               icon={ReceiptText}
             />
 
             <MetricCard
               title="Approved purchase commitments"
-              value={formatPrice(
-                report.purchasing.commitmentsMinor,
-              )}
+              value={
+                formatPrice(
+                  report.purchasing.commitmentsMinor,
+                )
+              }
               detail="Approved purchase orders, including partially or fully received orders. Not supplier payments."
               icon={ClipboardList}
             />
 
             <MetricCard
               title="Outstanding invoice balances"
-              value={formatPrice(
-                report.invoices.outstandingMinor,
-              )}
+              value={
+                formatPrice(
+                  report.invoices.outstandingMinor,
+                )
+              }
               detail="Current unpaid balances on invoices issued within the selected period."
               icon={FileText}
             />
 
             <MetricCard
               title="Issued invoices"
-              value={report.invoices.issuedCount.toLocaleString(
-                'en-NG',
-              )}
+              value={
+                report.invoices.issuedCount.toLocaleString(
+                  'en-NG',
+                )
+              }
               detail="Official issued invoice records. Not counted again as POS revenue."
               icon={FileText}
             />
 
             <MetricCard
               title="Goods received"
-              value={report.purchasing.receivedUnits.toLocaleString(
-                'en-NG',
-              )}
+              value={
+                report.purchasing.receivedUnits.toLocaleString(
+                  'en-NG',
+                )
+              }
               detail={`${report.purchasing.receipts} recorded purchase delivery event(s), counted in individual inventory units.`}
               icon={PackageCheck}
             />
@@ -578,6 +592,120 @@ async function AuthorizedReports({
             />
           </div>
 
+          {staff.role === 'owner' && (
+            report.paymentBreakdown &&
+            [
+              report.paymentBreakdown.cashMinor,
+              report.paymentBreakdown.transferMinor,
+              report.paymentBreakdown.cardMinor,
+              report.paymentBreakdown.cashTenderedMinor,
+              report.paymentBreakdown.cashChangeMinor,
+              report.paymentBreakdown.splitTransactions,
+              report.paymentBreakdown.totalMinor,
+            ].every(
+              value =>
+                Number.isSafeInteger(value) &&
+                value >= 0,
+            ) &&
+            report.paymentBreakdown.cashMinor +
+              report.paymentBreakdown.transferMinor +
+              report.paymentBreakdown.cardMinor ===
+              report.sales.totalMinor &&
+            report.paymentBreakdown.totalMinor ===
+              report.sales.totalMinor &&
+            report.paymentBreakdown.cashTenderedMinor -
+              report.paymentBreakdown.cashChangeMinor ===
+              report.paymentBreakdown.cashMinor
+              ? (
+                <WorkspacePanel className="grid gap-4">
+                  <SectionHeading>
+                    Payment method breakdown
+                  </SectionHeading>
+
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <MetricCard
+                      title="Net cash from sales"
+                      value={
+                        formatPrice(
+                          report.paymentBreakdown.cashMinor,
+                        )
+                      }
+                      detail="Cash received less change given."
+                      icon={WalletCards}
+                    />
+
+                    <MetricCard
+                      title="Bank transfers"
+                      value={
+                        formatPrice(
+                          report.paymentBreakdown.transferMinor,
+                        )
+                      }
+                      detail="Manually confirmed recorded transfers; not bank settlement evidence."
+                      icon={ReceiptText}
+                    />
+
+                    <MetricCard
+                      title="Physical card / POS terminal"
+                      value={
+                        formatPrice(
+                          report.paymentBreakdown.cardMinor,
+                        )
+                      }
+                      detail="Manually confirmed terminal payments; not settlement evidence."
+                      icon={ReceiptText}
+                    />
+
+                    <MetricCard
+                      title="Split transactions"
+                      value={
+                        report.paymentBreakdown.splitTransactions.toLocaleString(
+                          'en-NG',
+                        )
+                      }
+                      detail="Already included in the payment methods; do not add again."
+                      icon={ShoppingBag}
+                    />
+                  </div>
+
+                  <p className="text-sm">
+                    Cash tendered:{' '}
+                    {formatPrice(
+                      report.paymentBreakdown.cashTenderedMinor,
+                    )}
+
+                    {' · '}
+
+                    Change given:{' '}
+                    {formatPrice(
+                      report.paymentBreakdown.cashChangeMinor,
+                    )}
+
+                    {' · '}
+
+                    Net cash sales:{' '}
+                    {formatPrice(
+                      report.paymentBreakdown.cashMinor,
+                    )}
+                  </p>
+
+                  <p className="text-xs">
+                    This is a transaction ledger, not a physical till
+                    count or bank settlement reconciliation.
+                    Refunds are not deducted.
+                  </p>
+                </WorkspacePanel>
+              ) : (
+                <WorkspaceNotice
+                  title="Payment breakdown unavailable"
+                  tone="pending"
+                >
+                  The payment reporting migration must be installed
+                  and the allocation totals must reconcile with recorded sales.
+                </WorkspaceNotice>
+              )
+          )}
+
           <WorkspacePanel className="grid gap-5">
             <div>
               <SectionHeading>
@@ -587,19 +715,17 @@ async function AuthorizedReports({
               <p className="mt-1 text-sm text-[#806d78]">
                 Daily intervals for shorter periods;
                 monthly intervals for longer periods.
-                Only completed POS transactions are
-                included.
+                Only completed POS transactions are included.
               </p>
             </div>
 
             <div className="grid gap-2">
-              {report.trend.map((point) => {
+              {report.trend.map(point => {
                 const percentage =
                   largestSale > 0
                     ? Math.min(
                         100,
-                        (point.totalMinor / largestSale) *
-                          100,
+                        (point.totalMinor / largestSale) * 100,
                       )
                     : 0;
 
@@ -619,9 +745,7 @@ async function AuthorizedReports({
                     >
                       <div
                         className="h-full rounded-md bg-[#864c68]"
-                        style={{
-                          width: `${percentage}%`,
-                        }}
+                        style={{ width: `${percentage}%` }}
                       />
                     </div>
 
@@ -634,9 +758,8 @@ async function AuthorizedReports({
             </div>
 
             <p className="text-xs text-[#897680]">
-              Display values are based on stored POS
-              records; no illustrative chart points
-              have been generated.
+              Display values are based on stored POS records;
+              no illustrative chart points have been generated.
             </p>
           </WorkspacePanel>
 
@@ -672,10 +795,9 @@ async function AuthorizedReports({
                     <dt className="text-[#786370]">
                       {name}
                     </dt>
+
                     <dd className="font-semibold tabular-nums text-[#54213a]">
-                      {Number(value).toLocaleString(
-                        'en-NG',
-                      )}
+                      {Number(value).toLocaleString('en-NG')}
                     </dd>
                   </div>
                 ))}
@@ -716,6 +838,7 @@ async function AuthorizedReports({
                     <dt className="text-[#786370]">
                       {name}
                     </dt>
+
                     <dd className="font-semibold tabular-nums text-[#54213a]">
                       {formatPrice(Number(value))}
                     </dd>
@@ -739,9 +862,8 @@ async function AuthorizedReports({
 
             {report.storeSales.length === 0 ? (
               <p className="text-sm text-[#806d78]">
-                No completed POS transactions were
-                recorded in the selected locations
-                and period.
+                No completed POS transactions were recorded
+                in the selected locations and period.
               </p>
             ) : (
               <div className="overflow-x-auto">
@@ -751,9 +873,11 @@ async function AuthorizedReports({
                       <th className="py-3 font-semibold">
                         Location
                       </th>
+
                       <th className="py-3 text-right font-semibold">
                         Sales
                       </th>
+
                       <th className="py-3 text-right font-semibold">
                         Transactions
                       </th>
@@ -761,7 +885,7 @@ async function AuthorizedReports({
                   </thead>
 
                   <tbody>
-                    {report.storeSales.map((store) => (
+                    {report.storeSales.map(store => (
                       <tr
                         key={store.name}
                         className="border-b border-[#f0e6e1]"
@@ -769,9 +893,11 @@ async function AuthorizedReports({
                         <td className="py-3 text-[#54213a]">
                           {store.name}
                         </td>
+
                         <td className="py-3 text-right tabular-nums text-[#54213a]">
                           {formatPrice(store.totalMinor)}
                         </td>
+
                         <td className="py-3 text-right tabular-nums text-[#54213a]">
                           {store.transactions.toLocaleString(
                             'en-NG',
