@@ -21,15 +21,15 @@ export function CustomerHistory({customerId,storeId}:{customerId:string;storeId:
     finally {lock.current=false;setBusy(false);}
   }
   const data=result?.data;
-  return <section className="grid min-w-0 gap-3 border-t border-[#eee3dd] pt-3" aria-label="Linked customer documents">
+  return <section className="grid min-w-0 gap-3 border-t border-gr-border pt-3" aria-label="Linked customer documents">
     <ActionButton type="button" pending={busy} pendingLabel="Loading history…" className={workspaceSecondary} onClick={()=>load(data?.page ?? 0)}>
       {result ? 'Refresh linked history' : 'View invoices and linked purchases'}
     </ActionButton>
-    {result?.error && <p role="alert" className="text-sm text-[#8c2345]">{result.error}</p>}
+    {result?.error && <p role="alert" className="text-sm text-gr-danger">{result.error}</p>}
     {data && <>
-      <p className="text-xs text-[#76616c]">Register page {data.page+1}. Only documents with this customer ID are linked. Outstanding on this page: {money(data.outstandingMinor)}.</p>
+      <p className="text-xs text-gr-muted">Register page {data.page+1}. Only documents with this customer ID are linked. Outstanding on this page: {money(data.outstandingMinor)}.</p>
       {!data.documents.length && <p className="text-sm">No linked documents on this register page.</p>}
-      {data.documents.map(doc=><Link key={doc.id} className="grid gap-1 rounded-lg border border-[#eaded7] p-3 text-sm hover:bg-[#fff5e6]" href={'/workspace/invoices?documentId='+doc.id}>
+      {data.documents.map(doc=><Link key={doc.id} className="grid gap-1 rounded-lg border border-gr-border p-3 text-sm hover:bg-gr-accent-soft" href={'/workspace/invoices?documentId='+doc.id}>
         <strong className="break-all">{doc.kind==='invoice' ? invoiceNumber(doc.invoice_number) || 'Invoice draft' : quoteReference(doc.id)}</strong>
         <span>{billingStatus[doc.status]} · {money(doc.total_minor)}</span>
         {doc.state==='issued' && <span>Outstanding: {money(doc.balance_minor ?? 0)}</span>}
@@ -37,7 +37,7 @@ export function CustomerHistory({customerId,storeId}:{customerId:string;storeId:
       {data.receipts.map(receipt=><Link key={receipt.reference} className="text-sm underline" href={'/workspace/orders?'+new URLSearchParams({search:receipt.search,locationId:receipt.storeId})}>
         {receipt.reference} · {money(receipt.amountMinor)} · verified invoice allocation
       </Link>)}
-      <p className="text-xs text-[#76616c]">Unassigned POS sales are not matched by name. Invoice allocations do not add a second sale or payment.</p>
+      <p className="text-xs text-gr-muted">Unassigned POS sales are not matched by name. Invoice allocations do not add a second sale or payment.</p>
       <nav className="flex flex-wrap gap-2" aria-label="Customer history register pages">
         {data.page>0 && <ActionButton type="button" disabled={busy} className={workspaceSecondary} onClick={()=>load(data.page-1)}>Previous register page</ActionButton>}
         {data.more && <ActionButton type="button" disabled={busy} className={workspaceSecondary} onClick={()=>load(data.page+1)}>Next register page</ActionButton>}

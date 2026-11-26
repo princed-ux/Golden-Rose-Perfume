@@ -17,9 +17,9 @@
   display: grid;
   place-items: center;
   padding: 22px;
-  background: rgba(29, 10, 20, 0.64);
+  background: var(--gr-theme-scrim);
   backdrop-filter: blur(6px);
-  color: #3b1c2a;
+  color: var(--gr-theme-text);
   font: 14px/1.5 Arial, Helvetica, sans-serif;
 }
 
@@ -30,10 +30,10 @@
   max-height: min(92dvh, 900px);
   min-height: 0;
   overflow: hidden;
-  border: 1px solid #dbc2bf;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 18px;
   outline: none;
-  background: #fffdfb;
+  background: var(--gr-theme-surface);
   box-shadow: 0 35px 100px rgba(25, 5, 15, 0.42);
 }
 
@@ -52,7 +52,7 @@
 }
 
 .gr-checkout-panel :is(button, input):focus-visible {
-  outline: 3px solid #c69f63;
+  outline: 3px solid var(--gr-theme-gold);
   outline-offset: 2px;
 }
 
@@ -66,25 +66,25 @@
   justify-content: space-between;
   gap: 20px;
   padding: 26px 30px 20px;
-  border-bottom: 1px solid #f0e8e3;
+  border-bottom: 1px solid var(--gr-theme-border);
   background: linear-gradient(
     120deg,
-    #fffdfb,
-    #fcf4f0
+    var(--gr-theme-surface),
+    var(--gr-theme-surface)
   );
 }
 
 .gr-checkout-overline {
   display: block;
   margin-bottom: 5px;
-  color: #a4773f;
+  color: var(--gr-theme-gold);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.15em;
 }
 
 .gr-checkout-head h2 {
-  color: #4a1029;
+  color: var(--gr-theme-text);
   font: 400 clamp(
     27px,
     4vw,
@@ -94,7 +94,7 @@
 
 .gr-checkout-head p {
   margin-top: 7px;
-  color: #826c74;
+  color: var(--gr-theme-muted);
   font-size: 12px;
 }
 
@@ -103,17 +103,17 @@
   place-items: center;
   flex: 0 0 36px;
   height: 36px;
-  border: 1px solid #e7d9d9;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 10px;
-  background: #fff;
-  color: #5e2b40;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
 }
 
 .gr-checkout-progress {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: #f8f0ed;
-  border-bottom: 1px solid #efe1de;
+  background: var(--gr-theme-surface-alt);
+  border-bottom: 1px solid var(--gr-theme-border);
 }
 
 .gr-checkout-progress span {
@@ -122,14 +122,14 @@
   justify-content: center;
   gap: 9px;
   padding: 10px;
-  color: #9e8990;
+  color: var(--gr-theme-muted);
   font-size: 11px;
   font-weight: 700;
 }
 
 .gr-checkout-progress span.active {
-  color: #581d34;
-  background: #f2e2dd;
+  color: var(--gr-theme-text);
+  background: var(--gr-theme-surface-alt);
 }
 
 .gr-checkout-progress b {
@@ -140,7 +140,7 @@
   overflow: auto;
   min-height: 0;
   padding: 22px 30px 28px;
-  scrollbar-color: #d0b0b4 transparent;
+  scrollbar-color: var(--gr-theme-surface-alt) transparent;
 }
 
 .gr-checkout-customer {
@@ -157,23 +157,23 @@
 }
 
 .gr-checkout-customer > div span {
-  color: #ab7b47;
+  color: var(--gr-theme-gold);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.14em;
 }
 
 .gr-checkout-customer strong {
-  color: #481229;
+  color: var(--gr-theme-text);
   font-size: 17px;
 }
 
 .gr-checkout-count {
   padding: 6px 11px;
-  border: 1px solid #f0dfc7;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 20px;
-  color: #7a4b29;
-  background: #f8ede0;
+  color: var(--gr-theme-gold);
+  background: var(--gr-theme-surface-alt);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -181,7 +181,7 @@
 .gr-checkout-lines {
   max-height: 125px;
   overflow: auto;
-  border: 1px solid #eee2de;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 11px;
 }
 
@@ -194,7 +194,7 @@
 }
 
 .gr-checkout-line + .gr-checkout-line {
-  border-top: 1px solid #f2e9e6;
+  border-top: 1px solid var(--gr-theme-border);
 }
 
 .gr-checkout-line > div {
@@ -205,12 +205,12 @@
 
 .gr-checkout-line strong {
   overflow-wrap: anywhere;
-  color: #4b2b39;
+  color: var(--gr-theme-text);
   font-size: 12px;
 }
 
 .gr-checkout-line small {
-  color: #96828a;
+  color: var(--gr-theme-muted);
   font-size: 11px;
 }
 
@@ -231,16 +231,16 @@
   justify-content: space-between;
   gap: 16px;
   padding: 10px 2px;
-  border-bottom: 1px solid #f0e9e6;
+  border-bottom: 1px solid var(--gr-theme-border);
 }
 
 .gr-checkout-breakdown dt {
-  color: #6e5661;
+  color: var(--gr-theme-muted);
 }
 
 .gr-checkout-breakdown dd {
   margin: 0;
-  color: #47172d;
+  color: var(--gr-theme-text);
   font-weight: 700;
   text-align: right;
 }
@@ -250,7 +250,7 @@
 }
 
 .gr-checkout-discount-row dt small {
-  color: #a08d91;
+  color: var(--gr-theme-muted);
   font-size: 10px;
 }
 
@@ -266,13 +266,13 @@
   gap: 4px;
   width: 130px;
   padding: 3px 8px;
-  border: 1px solid #ead8d6;
+  border: 1px solid var(--gr-theme-control-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--gr-theme-surface);
 }
 
 .gr-checkout-moneyfield span {
-  color: #a47d43;
+  color: var(--gr-theme-gold);
   font-size: 13px;
 }
 
@@ -281,13 +281,13 @@
   min-width: 0;
   border: 0;
   outline: 0;
-  color: #47172d;
+  color: var(--gr-theme-text);
   background: transparent;
   text-align: right;
 }
 
 .gr-checkout-discount-value {
-  color: #7c5361;
+  color: var(--gr-theme-danger);
   font-size: 11px;
   white-space: nowrap;
 }
@@ -295,13 +295,13 @@
 .gr-checkout-breakdown > .gr-checkout-due {
   margin-top: 6px;
   padding: 13px 14px !important;
-  border: 1px solid #eed7d9 !important;
+  border: 1px solid var(--gr-theme-border) !important;
   border-radius: 10px;
-  background: #faeef0;
+  background: var(--gr-theme-surface-alt);
 }
 
 .gr-checkout-due dt {
-  color: #571d36;
+  color: var(--gr-theme-text);
   font-weight: 800;
 }
 
@@ -310,12 +310,12 @@
 }
 
 .gr-checkout-outstanding {
-  color: #9a3d46 !important;
+  color: var(--gr-theme-danger) !important;
 }
 
 .gr-checkout-inline-error {
   padding: 6px 2px;
-  color: #a13543;
+  color: var(--gr-theme-danger);
   font-size: 11px;
 }
 
@@ -328,13 +328,13 @@
 }
 
 .gr-checkout-methods-heading h3 {
-  color: #4a1029;
+  color: var(--gr-theme-text);
   font-size: 13px;
   font-weight: 800;
 }
 
 .gr-checkout-methods-heading small {
-  color: #a08a8d;
+  color: var(--gr-theme-muted);
   font-size: 10px;
 }
 
@@ -353,10 +353,10 @@
   gap: 8px;
   min-height: 62px;
   padding: 10px;
-  border: 1px solid #eadbdc;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 10px;
-  color: #57243a;
-  background: #fff;
+  color: var(--gr-theme-text);
+  background: var(--gr-theme-surface);
   text-align: left;
   font-size: 11px;
 }
@@ -364,15 +364,15 @@
 .gr-checkout-methods button:not(
   :disabled
 ) {
-  border-color: #ddc5bf;
-  background: #fff9f6;
+  border-color: var(--gr-theme-border);
+  background: var(--gr-theme-surface);
 }
 
 .gr-checkout-methods button:not(
   :disabled
 ):hover {
-  border-color: #b88e55;
-  background: #fdf5e9;
+  border-color: var(--gr-theme-control-border);
+  background: var(--gr-theme-surface-alt);
 }
 
 .gr-checkout-methods button > span {
@@ -381,7 +381,7 @@
 }
 
 .gr-checkout-methods button > small {
-  color: #a88f98;
+  color: var(--gr-theme-muted);
   font-size: 9px;
 }
 
@@ -393,12 +393,12 @@
   padding: 23px;
   margin-bottom: 20px;
   border-radius: 12px;
-  color: #fff5ef;
-  background: #4b142e;
+  color: var(--gr-theme-on-strong);
+  background: var(--gr-theme-strong);
 }
 
 .gr-checkout-large-total span {
-  color: #e3c3c9;
+  color: var(--gr-theme-on-strong);
   font-size: 12px;
 }
 
@@ -411,7 +411,7 @@
 .gr-checkout-field-label {
   display: block;
   margin: 4px 0 8px;
-  color: #553241;
+  color: var(--gr-theme-text);
   font-size: 12px;
   font-weight: 800;
 }
@@ -421,13 +421,13 @@
   align-items: center;
   gap: 9px;
   padding: 8px 10px 8px 17px;
-  border: 1px solid #dbbfc4;
+  border: 1px solid var(--gr-theme-control-border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--gr-theme-surface);
 }
 
 .gr-checkout-cash-field > span {
-  color: #a37a40;
+  color: var(--gr-theme-gold);
   font-size: 22px;
   font-weight: 700;
 }
@@ -438,17 +438,17 @@
   min-width: 0;
   border: none;
   outline: none;
-  color: #461529;
+  color: var(--gr-theme-text);
   font-size: 24px !important;
   font-weight: 700 !important;
 }
 
 .gr-checkout-cash-field > button {
   padding: 8px 12px;
-  border: 1px solid #e6d4c9;
+  border: 1px solid var(--gr-theme-control-border);
   border-radius: 7px;
-  color: #79512a;
-  background: #fbefdf;
+  color: var(--gr-theme-gold);
+  background: var(--gr-theme-accent-soft);
   font-size: 11px;
   font-weight: 800;
 }
@@ -466,28 +466,28 @@
 .gr-checkout-denominations button {
   min-height: 44px;
   padding: 7px 5px;
-  border: 1px solid #e8d8d3;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 8px;
-  color: #57273b;
-  background: #fbf4ef;
+  color: var(--gr-theme-text);
+  background: var(--gr-theme-surface);
   font-weight: 800;
 }
 
 .gr-checkout-denominations button:not(
   :disabled
 ):hover {
-  border-color: #ad8050;
-  background: #f5e2cd;
+  border-color: var(--gr-theme-control-border);
+  background: var(--gr-theme-accent-soft);
 }
 
 .gr-checkout-denominations .gr-checkout-clear {
-  color: #9f3c4b;
-  background: #fff0ef;
+  color: var(--gr-theme-danger);
+  background: var(--gr-theme-surface-alt);
 }
 
 .gr-checkout-cash-results {
   margin: 18px 0 0;
-  border-top: 1px solid #f0e5e0;
+  border-top: 1px solid var(--gr-theme-border);
 }
 
 .gr-checkout-cash-results div {
@@ -499,28 +499,28 @@
 }
 
 .gr-checkout-cash-results dt {
-  color: #7b6770;
+  color: var(--gr-theme-muted);
 }
 
 .gr-checkout-cash-results dd {
   margin: 0;
-  color: #4d2335;
+  color: var(--gr-theme-text);
   font-weight: 800;
 }
 
 .gr-checkout-cash-results .gr-checkout-change {
   padding: 12px;
   border-radius: 8px;
-  background: #eff7f0;
+  background: var(--gr-theme-success-bg);
 }
 
 .gr-checkout-change dd {
-  color: #21714b;
+  color: var(--gr-theme-success);
   font-size: 18px;
 }
 
 .gr-checkout-cash-results .gr-checkout-shortfall dd {
-  color: #b74d51;
+  color: var(--gr-theme-danger);
 }
 
 .gr-checkout-note {
@@ -528,7 +528,7 @@
   align-items: center;
   gap: 8px;
   margin-top: 15px !important;
-  color: #74636b;
+  color: var(--gr-theme-muted);
   font-size: 11px;
 }
 
@@ -536,10 +536,10 @@
 .gr-checkout-warning {
   margin: 12px 0 !important;
   padding: 12px;
-  border: 1px solid #f0cfcb;
+  border: 1px solid var(--gr-theme-danger-border);
   border-radius: 9px;
-  color: #843d3b;
-  background: #fff3ef;
+  color: var(--gr-theme-danger);
+  background: var(--gr-theme-surface);
   font-size: 12px;
 }
 
@@ -556,7 +556,7 @@
   gap: 14px;
   margin-top: 22px;
   padding-top: 18px;
-  border-top: 1px solid #f0e6e4;
+  border-top: 1px solid var(--gr-theme-border);
 }
 
 .gr-checkout-footer button {
@@ -572,46 +572,46 @@
 }
 
 .gr-checkout-back {
-  border: 1px solid #e5d5d4;
-  color: #694b57;
-  background: #fff;
+  border: 1px solid var(--gr-theme-border);
+  color: var(--gr-theme-muted);
+  background: var(--gr-theme-surface);
 }
 
 .gr-checkout-submit {
   flex: 1;
   max-width: 280px;
-  border: 1px solid #4b142e;
-  color: #fff;
-  background: #4b142e;
+  border: 1px solid var(--gr-theme-border);
+  color: var(--gr-theme-on-strong);
+  background: var(--gr-theme-strong);
 }
 
 .gr-checkout-submit:not(:disabled):hover {
-  background: #61213f;
+  background: var(--gr-theme-strong-hover);
 }
 
 .gr-checkout-bank {
   display: grid;
   gap: 9px;
   padding: 20px;
-  border: 1px solid #e1d4cc;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 12px;
-  background: #fbf6ef;
+  background: var(--gr-theme-surface);
 }
 
 .gr-checkout-bank > span {
-  color: #a9814d;
+  color: var(--gr-theme-gold);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.15em;
 }
 
 .gr-checkout-bank > strong {
-  color: #481a30;
+  color: var(--gr-theme-text);
   font-size: 18px;
 }
 
 .gr-checkout-bank > p {
-  color: #806d75;
+  color: var(--gr-theme-muted);
 }
 
 .gr-checkout-bank > div {
@@ -623,7 +623,7 @@
 
 .gr-checkout-bank code {
   overflow-wrap: anywhere;
-  color: #48162e;
+  color: var(--gr-theme-text);
   font-size: 18px;
   font-weight: 800;
 }
@@ -633,10 +633,10 @@
   align-items: center;
   gap: 5px;
   padding: 7px 10px;
-  border: 1px solid #e0c6ae;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 8px;
-  color: #7b522c;
-  background: #fff7e8;
+  color: var(--gr-theme-gold);
+  background: var(--gr-theme-surface);
 }
 
 @media (max-width: 700px) {

@@ -235,19 +235,19 @@ export function ProductImages({
 
   return (
     <section
-      className="grid min-w-0 gap-4 border-t border-[#eaded8] pt-5"
+      className="grid min-w-0 gap-4 border-t border-gr-border pt-5"
       aria-labelledby="gr-product-photo-heading"
     >
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h3
             id="gr-product-photo-heading"
-            className="m-0 font-serif text-xl text-[#4b1f38]"
+            className="m-0 font-serif text-xl text-gr-text"
           >
             Product photography
           </h3>
 
-          <p className="mt-1 text-sm text-[#796570]">
+          <p className="mt-1 text-sm text-gr-muted">
             Add up to eight photographs of this perfume.
             The first photograph is its storefront cover.
             Images appear in the customer shop when
@@ -265,7 +265,7 @@ export function ProductImages({
             }
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#e5d1c7] bg-white px-3 text-sm font-semibold text-[#54213a]"
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gr-border bg-gr-surface px-3 text-sm font-semibold text-gr-text"
           >
             View customer listing
 
@@ -290,9 +290,9 @@ export function ProductImages({
             return (
               <article
                 key={image.storagePath}
-                className="overflow-hidden rounded-xl border border-[#eaded8] bg-white"
+                className="overflow-hidden rounded-xl border border-gr-border bg-gr-surface"
               >
-                <div className="relative aspect-square bg-[#f7f1ee]">
+                <div className="relative aspect-square bg-gr-surface-alt">
                   {url ? (
                     <Image
                       src={url}
@@ -305,13 +305,13 @@ export function ProductImages({
                       className="object-contain"
                     />
                   ) : (
-                    <div className="grid h-full place-items-center text-xs text-[#796570]">
+                    <div className="grid h-full place-items-center text-xs text-gr-muted">
                       Photo unavailable
                     </div>
                   )}
 
                   {index === 0 && (
-                    <span className="absolute left-2 top-2 rounded-full bg-[#4b1f38] px-2 py-1 text-[10px] font-bold text-white">
+                    <span className="absolute left-2 top-2 rounded-full bg-gr-strong px-2 py-1 text-[10px] font-bold text-gr-on-strong">
                       Cover
                     </span>
                   )}
@@ -319,7 +319,7 @@ export function ProductImages({
 
                 <div className="flex items-center justify-between gap-2 p-2">
                   <span
-                    className="min-w-0 truncate text-xs text-[#796570]"
+                    className="min-w-0 truncate text-xs text-gr-muted"
                     title={
                       image.altText ||
                       productName
@@ -340,7 +340,7 @@ export function ProductImages({
                     aria-label={
                       `Remove photograph ${index + 1}`
                     }
-                    className="inline-grid size-9 flex-none place-items-center rounded-lg border border-[#eaded8] text-[#97465c] hover:bg-[#fff2f3] disabled:opacity-50"
+                    className="inline-grid size-9 flex-none place-items-center rounded-lg border border-gr-border text-gr-danger hover:bg-gr-surface-alt disabled:opacity-50"
                   >
                     <Trash2
                       size={15}
@@ -353,7 +353,7 @@ export function ProductImages({
           })}
         </div>
       ) : (
-        <p className="rounded-xl border border-dashed border-[#dac9c5] bg-[#fbf7f4] px-4 py-6 text-sm text-[#796570]">
+        <p className="rounded-xl border border-dashed border-gr-border bg-gr-surface px-4 py-6 text-sm text-gr-muted">
           This product does not have photographs
           yet. The customer shop will display
           the default product placeholder.
@@ -366,9 +366,9 @@ export function ProductImages({
             void upload(event)
           }
           aria-busy={busy}
-          className="grid gap-3 rounded-xl border border-[#eaded8] bg-[#fffdf9] p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
+          className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
         >
-          <label className="grid min-w-0 gap-2 text-xs font-semibold text-[#54213a]">
+          <label className="grid min-w-0 gap-2 text-xs font-semibold text-gr-text">
             Photograph (maximum 4 MB)
 
             <input
@@ -378,11 +378,11 @@ export function ProductImages({
               accept="image/jpeg,image/png,image/webp,image/avif"
               required
               disabled={busy}
-              className="w-full min-w-0 rounded-lg border border-[#eaded8] bg-white p-2 text-sm"
+              className="w-full min-w-0 rounded-lg border border-gr-border bg-gr-surface p-2 text-sm"
             />
           </label>
 
-          <label className="grid min-w-0 gap-2 text-xs font-semibold text-[#54213a]">
+          <label className="grid min-w-0 gap-2 text-xs font-semibold text-gr-text">
             Image description
 
             <input
@@ -395,14 +395,14 @@ export function ProductImages({
               maxLength={180}
               disabled={busy}
               placeholder="e.g. Front view of perfume bottle"
-              className="min-h-11 w-full min-w-0 rounded-lg border border-[#eaded8] bg-white px-3 text-sm"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-gr-border bg-gr-surface px-3 text-sm"
             />
           </label>
 
           <button
             type="submit"
             disabled={busy}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#54213a] px-4 text-sm font-bold text-white hover:bg-[#6b304b] disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-gr-strong-hover px-4 text-sm font-bold text-gr-on-strong hover:bg-gr-strong-hover disabled:opacity-50"
           >
             {busy ? (
               <LoaderCircle
@@ -427,7 +427,7 @@ export function ProductImages({
       {message && (
         <p
           role="status"
-          className="text-sm text-[#2d7149]"
+          className="text-sm text-gr-success"
         >
           {message}
         </p>
@@ -436,7 +436,7 @@ export function ProductImages({
       {error && (
         <p
           role="alert"
-          className="text-sm text-[#9f394f]"
+          className="text-sm text-gr-danger"
         >
           {error}
         </p>

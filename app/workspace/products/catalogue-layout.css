@@ -153,9 +153,9 @@
   gap: 0;
   overflow: hidden;
 
-  border: 1px solid #e9dadd;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 13px;
-  background: #fffefd;
+  background: var(--gr-theme-surface);
 
   box-shadow: 0 3px 14px #441c3009;
 
@@ -165,7 +165,7 @@
 }
 
 .catalogue-shell .catalogue-card:hover {
-  border-color: #d4b692;
+  border-color: var(--gr-theme-border);
   box-shadow: 0 8px 26px #441c3012;
 }
 
@@ -188,7 +188,7 @@
 
 .catalogue-shell .catalogue-card__identity h3 {
   margin-top: 10px;
-  color: #47152d;
+  color: var(--gr-theme-text);
   font-family: Georgia, serif;
   font-size: clamp(17px, 1.4vw, 20px);
   line-height: 1.3;
@@ -239,7 +239,7 @@
   min-width: 0;
   padding: 9px;
   border-radius: 8px;
-  background: #fcf8f3;
+  background: var(--gr-theme-surface);
 }
 
 .catalogue-shell .catalogue-card__quickstats span {
@@ -258,7 +258,7 @@
   flex: 1;
   min-width: 0;
   padding: 14px 18px;
-  border-top: 1px solid #f0e7e7;
+  border-top: 1px solid var(--gr-theme-border);
 }
 
 .catalogue-shell .catalogue-card__section-head {
@@ -284,7 +284,7 @@
 }
 
 .catalogue-shell .catalogue-variant__line strong {
-  color: #4b1b34;
+  color: var(--gr-theme-text);
   font-size: 11px;
 }
 
@@ -309,8 +309,8 @@
   gap: 10px;
   margin-top: auto;
   padding: 12px 18px;
-  border-top: 1px solid #f0e7e7;
-  background: #fffaf6;
+  border-top: 1px solid var(--gr-theme-border);
+  background: var(--gr-theme-surface);
 }
 
 .catalogue-shell .catalogue-footnote {

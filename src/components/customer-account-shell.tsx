@@ -14,95 +14,95 @@ import {
 } from 'lucide-react';
 
 import '@/app/account/dashboard/page.css';
-
 import './account-access.css';
-
-/* =========================================================
-   GOLDEN ROSE — CUSTOMER ACCOUNT NAVIGATION
-   ========================================================= */
 
 const navigation = [
   {
     id: 'overview',
     label: 'Overview',
+    mobileLabel: 'Home',
     href: '/account/dashboard',
     Icon: House,
   },
-
   {
     id: 'shop',
     label: 'Explore Perfumes',
-    href: '/shop',
+    mobileLabel: 'Perfumes',
+    href: '/account/shop',
     Icon: Search,
   },
-
   {
     id: 'bag',
     label: 'My Bag',
-    href: '/cart',
+    mobileLabel: 'My Bag',
+    href: '/account/shop?view=bag',
     Icon: ShoppingBag,
   },
-
   {
     id: 'wishlist',
     label: 'Saved Fragrances',
+    mobileLabel: 'Saved',
     href: '/account/wishlist',
     Icon: Heart,
   },
-
   {
     id: 'orders',
     label: 'My Orders',
+    mobileLabel: 'Orders',
     href: '/account/orders',
     Icon: Package,
   },
-
   {
     id: 'settings',
     label: 'Account Settings',
+    mobileLabel: 'Settings',
     href: '/account/settings',
     Icon: Settings2,
   },
 ] as const;
 
+type AccountSection =
+  (typeof navigation)[number]['id'];
+
 interface CustomerAccountShellProps {
-  active: (typeof navigation)[number]['id'];
-
+  active: AccountSection;
   name?: string;
-
   children: ReactNode;
 }
 
-/* =========================================================
-   FRAGRANCE SEARCH
+function Brand() {
+  return (
+    <Link
+      href="/account/dashboard"
+      className="grc-brand"
+      aria-label="Golden Rose customer dashboard"
+    >
+      <span className="grc-brand__logo">
+        <Image
+          src="/assets/brand/golden-rose-logo.png"
+          alt=""
+          width={54}
+          height={60}
+          className="grc-brand__image"
+        />
+      </span>
 
-   Uses the existing live catalogue search endpoint.
-   No sample or placeholder products are introduced.
-   ========================================================= */
+      <span className="grc-brand__name">
+        GOLDEN ROSE
+        <small>BEAUTY OF FRAGRANCE</small>
+      </span>
+    </Link>
+  );
+}
 
-function AccountSearch({
-  mobile = false,
-}: {
-  mobile?: boolean;
-}) {
-  const inputId = mobile
-    ? 'grc-mobile-fragrance-search'
-    : 'grc-desktop-fragrance-search';
-
+function AccountSearch() {
   return (
     <form
-      action="/shop"
+      action="/account/shop"
       method="get"
       role="search"
-      aria-label="Search fragrances"
-      className={
-        'grc-account-search ' +
-        (
-          mobile
-            ? 'grc-account-search--mobile'
-            : 'grc-account-search--desktop'
-        )
-      }
+      aria-label="Search fragrances in your account"
+      className="grc-account-search w-full! lg:max-w-[420px]"
     >
       <Search
         size={19}
@@ -111,16 +111,16 @@ function AccountSearch({
       />
 
       <label
-        htmlFor={inputId}
+        htmlFor="grc-fragrance-search"
         className="gr-access-sr-only"
       >
         Search fragrances
       </label>
 
       <input
-        id={inputId}
-        type="search"
+        id="grc-fragrance-search"
         name="q"
+        type="search"
         maxLength={120}
         placeholder="Search fragrances..."
         autoComplete="off"
@@ -128,7 +128,7 @@ function AccountSearch({
 
       <button
         type="submit"
-        aria-label="Search the catalogue"
+        aria-label="Search fragrances"
       >
         <ArrowRight
           size={18}
@@ -139,9 +139,60 @@ function AccountSearch({
   );
 }
 
-/* =========================================================
-   SHARED CUSTOMER WORKSPACE
-   ========================================================= */
+function MobileNavigation({
+  active,
+}: {
+  active: AccountSection;
+}) {
+  return (
+    <nav
+      aria-label="Mobile customer account navigation"
+      className="
+        grid grid-cols-3 gap-1.5
+        border-t border-[var(--gr-theme-border)]
+        px-3 py-3
+        sm:grid-cols-6 sm:gap-2
+        lg:hidden
+      "
+    >
+      {navigation.map(({
+        id,
+        mobileLabel,
+        href,
+        Icon,
+      }) => (
+        <Link
+          key={id}
+          href={href}
+          aria-current={
+            active === id ? 'page' : undefined
+          }
+          className={
+            'flex min-h-14 min-w-0 flex-col items-center ' +
+            'justify-center gap-1.5 rounded-lg border px-1 py-2 ' +
+            'text-center text-[11px] font-semibold leading-tight ' +
+            (
+              active === id
+                ? 'border-[var(--gr-theme-gold)] bg-[var(--gr-theme-surface-alt)] text-[var(--gr-theme-gold)]!'
+                : 'border-transparent text-[var(--gr-theme-text)] hover:bg-[var(--gr-theme-surface-alt)]'
+            )
+          }
+        >
+          <Icon
+            size={19}
+            strokeWidth={1.65}
+            aria-hidden="true"
+            className="shrink-0"
+          />
+
+          <span className="break-words">
+            {mobileLabel}
+          </span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
 
 export function CustomerAccountShell({
   active,
@@ -149,8 +200,7 @@ export function CustomerAccountShell({
   children,
 }: CustomerAccountShellProps) {
   const firstLetter =
-    name?.trim().charAt(0).toUpperCase() ||
-    'G';
+    name?.trim().charAt(0).toUpperCase() || 'G';
 
   return (
     <div className="grc-shell">
@@ -164,38 +214,11 @@ export function CustomerAccountShell({
 
       <div className="grc-layout">
 
-        {/* CUSTOMER SIDEBAR */}
+        {/* DESKTOP SIDEBAR ONLY */}
 
-        <aside className="grc-sidebar">
+        <aside className="grc-sidebar hidden! lg:flex!">
           <div className="grc-sidebar__content">
-
-            <Link
-              href="/"
-              className="grc-brand"
-              aria-label="Golden Rose Perfume homepage"
-            >
-              <span className="grc-brand__logo">
-                <Image
-                  src="/assets/brand/golden-rose-logo.png"
-                  alt=""
-                  width={54}
-                  height={60}
-                  className="grc-brand__image"
-                />
-              </span>
-
-              <span className="grc-brand__name">
-                GOLDEN ROSE
-
-                <small>
-                  BEAUTY OF FRAGRANCE
-                </small>
-              </span>
-            </Link>
-
-            {/* MOBILE SEARCH ABOVE ACCOUNT NAVIGATION */}
-
-            <AccountSearch mobile />
+            <Brand />
 
             <div className="grc-sidebar__heading">
               <h2>My Account</h2>
@@ -205,33 +228,31 @@ export function CustomerAccountShell({
               className="grc-sidebar__navigation"
               aria-label="Customer account navigation"
             >
-              {navigation.map(
-                ({
-                  id,
-                  label,
-                  href,
-                  Icon,
-                }) => (
-                  <Link
-                    key={id}
-                    href={href}
-                    className="grc-nav-item"
-                    aria-current={
-                      active === id
-                        ? 'page'
-                        : undefined
-                    }
-                  >
-                    <Icon
-                      size={18}
-                      strokeWidth={1.55}
-                      aria-hidden="true"
-                    />
+              {navigation.map(({
+                id,
+                label,
+                href,
+                Icon,
+              }) => (
+                <Link
+                  key={id}
+                  href={href}
+                  className="grc-nav-item"
+                  aria-current={
+                    active === id
+                      ? 'page'
+                      : undefined
+                  }
+                >
+                  <Icon
+                    size={18}
+                    strokeWidth={1.55}
+                    aria-hidden="true"
+                  />
 
-                    <span>{label}</span>
-                  </Link>
-                ),
-              )}
+                  <span>{label}</span>
+                </Link>
+              ))}
             </nav>
           </div>
 
@@ -242,79 +263,89 @@ export function CustomerAccountShell({
 
           <div className="grc-sidebar__footer">
             <span>GOLDEN ROSE</span>
-
-            <small>
-              Every scent tells a story.
-            </small>
+            <small>Every scent tells a story.</small>
           </div>
         </aside>
 
-        {/* MAIN CUSTOMER CONTENT */}
+        {/* CUSTOMER ACCOUNT CONTENT */}
 
         <div className="grc-main-column">
 
-          {/* ACCOUNT TOPBAR */}
+          <header className="grc-topbar max-lg:static!">
 
-          <header className="grc-topbar">
-            <div className="grc-topbar__inner">
+            {/* MOBILE BRAND AND ACCOUNT */}
 
-              {/* DESKTOP CATALOGUE SEARCH */}
+            <div className="flex min-w-0 items-center justify-between gap-3 px-4 pt-3 lg:hidden">
+              <Brand />
 
+              <Link
+                href="/account/settings"
+                className="grc-topbar__avatar shrink-0"
+                aria-label="Account settings"
+              >
+                <span>{firstLetter}</span>
+              </Link>
+            </div>
+
+            {/* SEARCH AND DESKTOP SHORTCUTS */}
+
+            <div className="flex min-w-0 flex-wrap items-center gap-4 px-4 py-3 lg:min-h-[78px] lg:flex-nowrap lg:px-8">
               <AccountSearch />
 
               <nav
-                className="grc-topbar__navigation"
-                aria-label="Store navigation"
+                className="ml-auto hidden shrink-0 items-center gap-5 lg:flex"
+                aria-label="Customer shopping shortcuts"
               >
-                <Link href="/shop">
+                <Link
+                  href="/account/shop"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold"
+                >
                   Explore Perfumes
                 </Link>
 
                 <Link
-                  href="/cart"
-                  className="grc-topbar__bag"
+                  href="/account/shop?view=bag"
+                  className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold"
                 >
                   <ShoppingBag
-                    size={18}
-                    strokeWidth={1.6}
+                    size={19}
                     aria-hidden="true"
                   />
 
-                  <span>My Bag</span>
+                  My Bag
                 </Link>
 
                 <Link
                   href="/account/settings"
                   className="grc-topbar__avatar"
-                  aria-label="Account Settings"
+                  aria-label="Account settings"
                 >
                   <span>{firstLetter}</span>
                 </Link>
               </nav>
             </div>
+
+            {/* VISIBLE MOBILE NAVIGATION */}
+
+            <MobileNavigation active={active} />
           </header>
 
-          {/* EXISTING PAGE CONTENT */}
+          {/* PAGE CONTENT */}
 
           <main
             id="customer-content"
-            className="grc-content"
+            className="grc-content min-w-0"
             tabIndex={-1}
           >
             {children}
           </main>
 
-          {/* FOOTER */}
-
           <footer className="grc-footer">
             <span>
-              © {new Date().getFullYear()}
-              {' '}Golden Rose Perfume
+              © {new Date().getFullYear()} Golden Rose Perfume
             </span>
 
-            <span>
-              Beauty of Fragrance
-            </span>
+            <span>Beauty of Fragrance</span>
           </footer>
         </div>
       </div>

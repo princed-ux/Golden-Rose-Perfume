@@ -48,7 +48,7 @@ export default function OdooSalesPage() {
   return (
     <Suspense
       fallback={
-        <p role="status" className="p-6 text-sm text-[#806b77]">
+        <p role="status" className="p-6 text-sm text-gr-muted">
           Verifying historical import access…
         </p>
       }

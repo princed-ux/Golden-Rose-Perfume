@@ -48,19 +48,19 @@ import {
 } from 'lucide-react';
 
 const primary =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#53203a] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3d1428] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b38a57] disabled:cursor-not-allowed disabled:opacity-40';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gr-strong px-4 py-2.5 text-sm font-semibold text-gr-on-strong transition hover:bg-gr-strong-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gr-gold disabled:cursor-not-allowed disabled:opacity-40';
 
 const secondary =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#e5d6cc] bg-white px-4 py-2.5 text-sm font-semibold text-[#5a2a42] transition hover:border-[#bf995e] hover:bg-[#fff9f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b38a57] disabled:cursor-not-allowed disabled:opacity-40';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gr-border bg-gr-surface px-4 py-2.5 text-sm font-semibold text-gr-gold transition hover:border-gr-gold hover:bg-gr-surface-alt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gr-gold disabled:cursor-not-allowed disabled:opacity-40';
 
 const control =
-  'min-h-11 w-full min-w-0 rounded-xl border border-[#e3d5cd] bg-white px-3.5 py-2.5 text-sm text-[#402332] shadow-sm outline-none placeholder:text-[#a3939b] focus:border-[#ac8a59] focus:ring-2 focus:ring-[#d6bb89]/40 disabled:bg-[#f7f1ed]';
+  'min-h-11 w-full min-w-0 rounded-xl border border-gr-border bg-gr-surface px-3.5 py-2.5 text-sm text-gr-gold shadow-sm outline-none placeholder:text-gr-muted focus:border-gr-gold focus:ring-2 focus:ring-gr-gold/40 disabled:bg-gr-surface-alt';
 
 const card =
-  'min-w-0 rounded-2xl border border-[#ecdfd9] bg-[#fffdfa] shadow-[0_7px_30px_rgba(72,23,45,0.04)]';
+  'min-w-0 rounded-2xl border border-gr-border bg-gr-surface shadow-[0_7px_30px_rgba(72,23,45,0.04)]';
 
 const label =
-  'grid min-w-0 gap-2 text-xs font-semibold text-[#6f5162]';
+  'grid min-w-0 gap-2 text-xs font-semibold text-gr-muted';
 
 const formatter = new Intl.NumberFormat('en-NG', {
   style: 'currency',
@@ -87,21 +87,21 @@ function TinyStat({
     <div className={card + ' p-4 sm:p-5'}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold text-[#79616c]">
+          <p className="text-xs font-semibold text-gr-muted">
             {label}
           </p>
 
-          <p className="mt-2 font-serif text-[2rem] leading-none text-[#4d1b35]">
+          <p className="mt-2 font-serif text-[2rem] leading-none text-gr-text">
             {value}
           </p>
         </div>
 
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f8eddb] text-[#a57736]">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
           <Icon size={19} aria-hidden="true" />
         </span>
       </div>
 
-      <p className="mt-3 text-xs leading-5 text-[#9b8790]">
+      <p className="mt-3 text-xs leading-5 text-gr-muted">
         {detail}
       </p>
     </div>
@@ -118,17 +118,17 @@ function SectionHeading({
   subtitle: string;
 }) {
   return (
-    <div className="flex items-start gap-3 border-b border-[#eee3de] pb-4">
-      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#f7eddf] text-xs font-bold text-[#987344]">
+    <div className="flex items-start gap-3 border-b border-gr-border pb-4">
+      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-xs font-bold text-gr-gold">
         {number}
       </span>
 
       <div className="min-w-0">
-        <h3 className="font-serif text-xl text-[#4d2036]">
+        <h3 className="font-serif text-xl text-gr-text">
           {title}
         </h3>
 
-        <p className="mt-1 text-xs leading-5 text-[#907b85]">
+        <p className="mt-1 text-xs leading-5 text-gr-muted">
           {subtitle}
         </p>
       </div>
@@ -151,16 +151,16 @@ function EmptyRegister({
         : 'documents';
 
   return (
-    <div className="grid justify-items-center gap-3 rounded-xl border border-dashed border-[#e7d8d0] bg-[#fffaf5] px-5 py-14 text-center">
-      <span className="grid size-16 place-items-center rounded-2xl bg-[#f7ead8] text-[#a1773c]">
+    <div className="grid justify-items-center gap-3 rounded-xl border border-dashed border-gr-border bg-gr-surface px-5 py-14 text-center">
+      <span className="grid size-16 place-items-center rounded-2xl bg-gr-surface-alt text-gr-gold">
         <FileText size={28} strokeWidth={1.5} aria-hidden="true" />
       </span>
 
-      <h3 className="font-serif text-[1.45rem] text-[#4e2038]">
+      <h3 className="font-serif text-[1.45rem] text-gr-text">
         No {kind} match this view
       </h3>
 
-      <p className="max-w-md text-sm leading-6 text-[#887480]">
+      <p className="max-w-md text-sm leading-6 text-gr-muted">
         Saved documents appear here after the server confirms them. Adjust the filters or prepare a new draft. No demonstration records are inserted.
       </p>
 
@@ -409,20 +409,20 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
 
   return (
     <ActionScope pending={busy}><div className="grid min-w-0 gap-6 pb-12">
-      <header className="relative overflow-hidden rounded-[22px] border border-[#5c2745] bg-[linear-gradient(119deg,#331023_0%,#52233e_62%,#795449_100%)] px-5 py-6 text-white shadow-[0_12px_35px_rgba(68,25,48,.13)] sm:p-8">
+      <header className="relative overflow-hidden rounded-[22px] border border-gr-border bg-linear-to-r from-gr-strong via-gr-strong to-gr-strong-hover px-5 py-6 text-gr-on-strong shadow-[0_12px_35px_rgba(68,25,48,.13)] sm:p-8">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-16 -top-20 size-72 rounded-full border border-[#e2c18a]/20"
+          className="pointer-events-none absolute -right-16 -top-20 size-72 rounded-full border border-gr-border/20"
         />
 
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute right-0 top-0 size-44 rounded-full border border-[#e2c18a]/15"
+          className="pointer-events-none absolute right-0 top-0 size-44 rounded-full border border-gr-border/15"
         />
 
         <div className="relative flex flex-wrap items-end justify-between gap-5">
           <div className="grid max-w-[640px] gap-2">
-            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#e4c48f]">
+            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-gr-media-accent">
               Operations / Financial documents
             </p>
 
@@ -430,7 +430,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
               Invoices &amp; Quotes
             </h1>
 
-            <p className="text-sm leading-6 text-[#f4e8ed]">
+            <p className="text-sm leading-6 text-gr-on-strong">
               Build beautifully presented customer quotations
               and invoice drafts, with accurate prices, discounts
               and printable A4 documents.
@@ -441,7 +441,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
             type="button"
             onClick={view === 'register' ? freshDraft : showRegister}
             disabled={busy}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#e9c78c] px-4 py-2.5 text-sm font-bold text-[#401d30] hover:bg-[#f3dcae] disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gr-button px-4 py-2.5 text-sm font-bold text-gr-text hover:bg-gr-accent-soft disabled:opacity-50"
           >
             {view !== 'register' ? (
               <ArrowLeft size={17} />
@@ -491,7 +491,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
 
       <div
         role="status"
-        className="flex min-w-0 items-start gap-3 rounded-xl border border-[#e8d7b8] bg-[#fff7e9] p-4 text-sm leading-6 text-[#75512d]"
+        className="flex min-w-0 items-start gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 text-sm leading-6 text-gr-gold"
       >
         <ShieldCheck
           className="mt-0.5 shrink-0"
@@ -508,8 +508,8 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
         </p>
       </div>
 
-      {message && <div role="alert" className="rounded-xl border border-[#ecc9bf] bg-[#fff4ec] p-4 text-sm text-[#773445]">{message}</div>}
-      {busy && <p role="status" className="text-sm text-[#6f5162]">Working on your billing request…</p>}
+      {message && <div role="alert" className="rounded-xl border border-gr-border bg-gr-surface p-4 text-sm text-gr-text">{message}</div>}
+      {busy && <p role="status" className="text-sm text-gr-muted">Working on your billing request…</p>}
 
       {view === 'saved' && saved && billing ? (
         <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,.9fr)]">
@@ -528,17 +528,17 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
           configure={payload => mutate('configure',payload)} />
       ) : (
         <section className={card + ' p-4 sm:p-6'}>
-          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#eee1d9] pb-5">
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gr-border pb-5">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#a4783d]">
+              <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-gr-gold">
                 Document control
               </p>
 
-              <h2 className="mt-1 font-serif text-2xl text-[#4a1d35]">
+              <h2 className="mt-1 font-serif text-2xl text-gr-text">
                 Financial document register
               </h2>
 
-              <p className="mt-1 text-xs leading-5 text-[#917c86]">
+              <p className="mt-1 text-xs leading-5 text-gr-muted">
                 Filter issued documents and review customer balances
                 when billing is connected.
               </p>
@@ -574,8 +574,8 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                 className={
                   'rounded-lg px-4 py-2 text-xs font-semibold transition ' +
                   (tab === key
-                    ? 'bg-[#54213a] text-white'
-                    : 'border border-[#e6d9d0] bg-white text-[#6e5160] hover:bg-[#fff8ef]')
+                    ? 'bg-gr-strong text-gr-on-strong'
+                    : 'border border-gr-border bg-gr-surface text-gr-muted hover:bg-gr-surface-alt')
                 }
               >
                 {title}
@@ -583,8 +583,8 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
             ))}
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#ede1dc] bg-white p-4">
-            <span className="flex items-center gap-2 text-sm text-[#87747e]">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gr-border bg-gr-surface p-4">
+            <span className="flex items-center gap-2 text-sm text-gr-muted">
               <Search size={17} />
               Search issued references
             </span>
@@ -600,7 +600,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
             />
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-[#917b85]">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-gr-muted">
             <span>
               Completed in-store sales do not become invoices
               automatically.
@@ -608,7 +608,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
 
             {staffCatalogue && <Link
               href="/workspace/orders"
-              className="inline-flex items-center gap-1.5 font-semibold text-[#7e4d31] hover:underline"
+              className="inline-flex items-center gap-1.5 font-semibold text-gr-gold hover:underline"
             >
               Open POS sales
               <ArrowRight size={15} />
@@ -619,15 +619,15 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
         <div className="grid min-w-0 gap-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[.17em] text-[#a4783d]">
+              <p className="text-[11px] font-bold uppercase tracking-[.17em] text-gr-gold">
                 Drafting studio
               </p>
 
-              <h2 className="mt-1 font-serif text-2xl text-[#4b2039]">
+              <h2 className="mt-1 font-serif text-2xl text-gr-text">
                 {saved ? 'Edit saved draft' : 'Create a commercial document'}
               </h2>
 
-              <p className="mt-1 text-sm text-[#8d7883]">
+              <p className="mt-1 text-sm text-gr-muted">
                 Fill in the details and check the live document
                 preview.
               </p>
@@ -676,8 +676,8 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                       className={
                         'flex min-h-16 items-center justify-between gap-3 rounded-xl border px-4 text-left ' +
                         (draft.kind === kind
-                          ? 'border-[#b18c54] bg-[#fff7ea] text-[#53253b]'
-                          : 'border-[#ebdfd8] bg-white text-[#8b7580]')
+                          ? 'border-gr-control-border bg-gr-surface text-gr-text'
+                          : 'border-gr-border bg-gr-surface text-gr-muted')
                       }
                     >
                       <span className="flex items-center gap-2 font-semibold">
@@ -690,7 +690,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                       {draft.kind === kind && (
                         <CheckCircle2
                           size={18}
-                          className="text-[#9d753d]"
+                          className="text-gr-gold"
                         />
                       )}
                     </ActionButton>
@@ -745,7 +745,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                   load={(search) => findBillingCustomers(storeId, search)} select={chooseCustomer} /> :
                   canBrowseCustomers && <InvoiceLookup title="Choose a customer from CRM" filterLabel="Search active customers"
                     load={findInvoiceCustomers} select={chooseCustomer} />}
-                {draft.customerId && <p className="text-xs text-[#6f5162]">Linked to CRM. Editing the name, email or phone removes the link.</p>}
+                {draft.customerId && <p className="text-xs text-gr-danger">Linked to CRM. Editing the name, email or phone removes the link.</p>}
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className={label}>
@@ -842,11 +842,11 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                 <div className="grid gap-3">
                   {draft.lines.map((line, index) => (
                     <div
-                      className="grid min-w-0 gap-3 rounded-xl border border-[#ecded6] bg-[#fffaf5] p-3 sm:p-4"
+                      className="grid min-w-0 gap-3 rounded-xl border border-gr-border bg-gr-surface p-3 sm:p-4"
                       key={line.id}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <strong className="text-xs font-bold uppercase tracking-wider text-[#956c47]">
+                        <strong className="text-xs font-bold uppercase tracking-wider text-gr-gold">
                           Line {String(index + 1).padStart(2, '0')}
                         </strong>
 
@@ -856,7 +856,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                             onClick={() => copyLine(line)}
                             disabled={draft.lines.length >= 30}
                             aria-label={`Duplicate line ${index + 1}`}
-                            className="rounded-lg border border-[#e6d8cd] bg-white p-2 text-[#775268] hover:bg-[#fff1de] disabled:opacity-40"
+                            className="rounded-lg border border-gr-border bg-gr-surface p-2 text-gr-muted hover:bg-gr-accent-soft disabled:opacity-40"
                           >
                             <Copy size={16} />
                           </ActionButton>
@@ -866,7 +866,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                             onClick={() => removeLine(line.id)}
                             disabled={draft.lines.length === 1}
                             aria-label={`Remove line ${index + 1}`}
-                            className="rounded-lg border border-[#e6d8cd] bg-white p-2 text-[#9f4955] hover:bg-[#fff1ef] disabled:opacity-40"
+                            className="rounded-lg border border-gr-border bg-gr-surface p-2 text-gr-danger hover:bg-gr-surface-alt disabled:opacity-40"
                           >
                             <Trash2 size={16} />
                           </ActionButton>
@@ -956,7 +956,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                         <div className={label}>
                           <span>Line total</span>
 
-                          <strong className="flex min-h-11 items-center rounded-xl bg-white px-3 text-sm tabular-nums text-[#55253e]">
+                          <strong className="flex min-h-11 items-center rounded-xl bg-gr-surface px-3 text-sm tabular-nums text-gr-text">
                             {calc.rows[index].valid
                               ? money(calc.rows[index].amount)
                               : '—'}
@@ -978,7 +978,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                   {draft.lines.length >= 30 && '(maximum 30)'}
                 </ActionButton>
 
-                <div className="grid gap-4 border-t border-[#eee3dd] pt-5 sm:grid-cols-2">
+                <div className="grid gap-4 border-t border-gr-border pt-5 sm:grid-cols-2">
                   <label className={label}>
                     Document discount (₦)
 
@@ -997,33 +997,33 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                     {billing ? 'Verified store tax rate (%)' : 'Tax rate (%) (optional)'}
                     <input className={control} inputMode="decimal" value={formDraft.taxRate} readOnly={!!billing}
                       onChange={event => patch('taxRate', event.target.value)} placeholder="No rate set" />
-                    <span className="text-xs font-normal leading-5 text-[#6f5162]">{billing ?
+                    <span className="text-xs font-normal leading-5 text-gr-muted">{billing ?
                       'Applied after the discount. An owner verifies the rate before issuance.' :
                       'Applied after the discount. Use your approved rate for this preview.'}</span>
                   </label>
                 </div>
 
-                <div className="grid gap-3 rounded-xl bg-[#f8f0e8] p-5 text-sm">
+                <div className="grid gap-3 rounded-xl bg-gr-surface-alt p-5 text-sm">
                   <div className="flex justify-between gap-3">
-                    <span className="text-[#7f6471]">Subtotal</span>
+                    <span className="text-gr-muted">Subtotal</span>
                     <strong className="tabular-nums">
                       {money(calc.subtotal)}
                     </strong>
                   </div>
 
                   <div className="flex justify-between gap-3">
-                    <span className="text-[#7f6471]">Discount</span>
+                    <span className="text-gr-muted">Discount</span>
                     <strong className="tabular-nums">
                       − {money(calc.discount)}
                     </strong>
                   </div>
 
                   <div className="flex justify-between gap-3">
-                    <span className="text-[#7f6471]">Tax</span>
+                    <span className="text-gr-muted">Tax</span>
                     <strong className="tabular-nums">{calc.taxRate === null ? 'No rate set' : money(calc.tax)}</strong>
                   </div>
 
-                  <div className="flex justify-between gap-3 border-t border-[#e4d6c5] pt-3 text-lg text-[#4e1d36]">
+                  <div className="flex justify-between gap-3 border-t border-gr-border pt-3 text-lg text-gr-text">
                     <strong>Draft total</strong>
 
                     <strong className="tabular-nums">
@@ -1073,8 +1073,8 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
                   className={
                     'rounded-xl border p-4 text-xs leading-5 ' +
                     (calc.valid
-                      ? 'border-[#d6e5d4] bg-[#f0f8f0] text-[#3f7449]'
-                      : 'border-[#ead9b7] bg-[#fff9ee] text-[#856433]')
+                      ? 'border-gr-border bg-gr-success-bg text-gr-success'
+                      : 'border-gr-border bg-gr-surface text-gr-gold')
                   }
                 >
                   <div className="flex items-center gap-2 font-semibold">
@@ -1103,16 +1103,16 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
             <div className="min-w-0 2xl:sticky 2xl:top-6 2xl:self-start">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#a27540]">
+                  <p className="text-[10px] font-bold uppercase tracking-[.15em] text-gr-gold">
                     Real-time A4 preview
                   </p>
 
-                  <h3 className="font-serif text-xl text-[#4b2138]">
+                  <h3 className="font-serif text-xl text-gr-text">
                     Customer document
                   </h3>
                 </div>
 
-                <span className="rounded-full bg-[#fff0e8] px-3 py-1 text-[11px] font-bold text-[#a94b57]">
+                <span className="rounded-full bg-gr-surface-alt px-3 py-1 text-[11px] font-bold text-gr-danger">
                   UNISSUED
                 </span>
               </div>
@@ -1149,7 +1149,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
               {copied === 'success' && (
                 <p
                   role="status"
-                  className="mt-3 text-xs text-[#36714c]"
+                  className="mt-3 text-xs text-gr-success"
                 >
                   Draft summary copied to your clipboard.
                 </p>
@@ -1158,13 +1158,13 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
               {copied === 'failed' && (
                 <p
                   role="alert"
-                  className="mt-3 text-xs text-[#a64b56]"
+                  className="mt-3 text-xs text-gr-danger"
                 >
                   Clipboard unavailable. Use the print option instead.
                 </p>
               )}
 
-              <p className="mt-3 text-xs leading-5 text-[#8c7782]">
+              <p className="mt-3 text-xs leading-5 text-gr-muted">
                 {billing ? 'Save to recover this draft after refresh. Printing a draft does not issue it or record payment.' :
                   'No server record is created. Closing or refreshing discards the draft; printing does not issue it or record payment.'}
               </p>
@@ -1173,7 +1173,7 @@ export function InvoiceStudio({ initialBilling, initialDocument = null, canBrows
         </div>
       )}
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e8dcd6] pt-4 text-xs text-[#89757f]">
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-gr-border pt-4 text-xs text-gr-muted">
         <span>Golden Rose · Commercial documents</span>
 
         <span className="inline-flex items-center gap-1.5">

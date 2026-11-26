@@ -90,13 +90,13 @@ type Notice = {
 type UploadAction = 'review' | 'stage';
 
 const primary =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#54213a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#6b304b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b68a51] disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gr-strong-hover px-5 py-3 text-sm font-semibold text-gr-on-strong transition hover:bg-gr-strong-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gr-gold disabled:cursor-not-allowed disabled:opacity-50';
 
 const secondary =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#dfd0c8] bg-white px-4 py-2.5 text-sm font-semibold text-[#54213a] transition hover:bg-[#fff7ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b68a51] disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gr-border bg-gr-surface px-4 py-2.5 text-sm font-semibold text-gr-gold transition hover:bg-gr-surface-alt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gr-gold disabled:cursor-not-allowed disabled:opacity-50';
 
 const fieldClass =
-  'min-h-11 w-full min-w-0 rounded-xl border border-[#dfd0c8] bg-white px-3 py-2 text-sm text-[#54213a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b68a51]';
+  'min-h-11 w-full min-w-0 rounded-xl border border-gr-gold bg-gr-surface px-3 py-2 text-sm text-gr-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gr-gold';
 
 async function request<T>(
   body?: FormData,
@@ -186,10 +186,10 @@ function Banner({
       className={
         'flex items-start gap-3 rounded-xl border p-4 text-sm leading-6 ' +
         (ok
-          ? 'border-[#b8d8bf] bg-[#f1fff5] text-[#28643c]'
+          ? 'border-gr-border bg-gr-success-bg text-gr-success'
           : neutral
-            ? 'border-[#e3d6c7] bg-[#fff8eb] text-[#72512f]'
-            : 'border-[#e7c4cc] bg-[#fff3f4] text-[#92394f]')
+            ? 'border-gr-border bg-gr-surface text-gr-gold'
+            : 'border-gr-border bg-gr-surface text-gr-danger')
       }
     >
       {ok ? (
@@ -561,20 +561,20 @@ export function OdooHistoricalSalesImport() {
 
   return (
     <div className="grid min-w-0 gap-6">
-      <section className="grid gap-4 rounded-2xl border border-[#e9dad1] bg-white p-5">
+      <section className="grid gap-4 rounded-2xl border border-gr-border bg-gr-surface p-5">
         <div className="flex items-start gap-3">
           <Upload
             size={24}
-            className="mt-1 shrink-0 text-[#a17741]"
+            className="mt-1 shrink-0 text-gr-gold"
             aria-hidden="true"
           />
 
           <div className="min-w-0">
-            <h2 className="font-serif text-2xl text-[#54213a]">
+            <h2 className="font-serif text-2xl text-gr-text">
               Review Odoo historical sales
             </h2>
 
-            <p className="mt-1 text-sm leading-6 text-[#806b77]">
+            <p className="mt-1 text-sm leading-6 text-gr-muted">
               Import CSV, XLSX, JSON or ZIP
               containing one data export. Column
               order does not matter. Fields are
@@ -589,7 +589,7 @@ export function OdooHistoricalSalesImport() {
           onSubmit={reviewFile}
           className="grid gap-4"
         >
-          <label className="grid gap-2 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-2 text-sm font-semibold text-gr-text">
             Historical sales file (maximum 4 MB)
 
             <input
@@ -609,12 +609,12 @@ export function OdooHistoricalSalesImport() {
                 setSourceConfirmed(false);
                 setNotice(null);
               }}
-              className="min-h-12 w-full rounded-xl border border-[#e2d3ca] bg-[#fffaf6] p-3 text-sm text-[#54213a] file:mr-4 file:rounded-lg file:border-0 file:bg-[#54213a] file:px-4 file:py-2 file:text-white"
+              className="min-h-12 w-full rounded-xl border border-gr-border bg-gr-surface p-3 text-sm text-gr-text file:mr-4 file:rounded-lg file:border-0 file:bg-gr-strong file:px-4 file:py-2 file:text-gr-on-strong"
             />
           </label>
 
           {file && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#faf4ee] px-4 py-3 text-sm text-[#715765]">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gr-surface-alt px-4 py-3 text-sm text-gr-muted">
               <span className="min-w-0 break-all">
                 {file.name} (
                 {(file.size / 1024).toFixed(1)} KB)
@@ -635,7 +635,7 @@ export function OdooHistoricalSalesImport() {
             </div>
           )}
 
-          <p className="text-xs leading-5 text-[#806b77]">
+          <p className="text-xs leading-5 text-gr-muted">
             Legacy XLS must be converted to CSV
             or XLSX. Each staging file may contain
             up to 1,000 sale lines; large exports
@@ -675,13 +675,13 @@ export function OdooHistoricalSalesImport() {
       </section>
 
       {review && (
-        <section className="grid gap-5 rounded-2xl border border-[#e9dad1] bg-white p-5">
+        <section className="grid gap-5 rounded-2xl border border-gr-border bg-gr-surface p-5">
           <div>
-            <h2 className="font-serif text-2xl text-[#54213a]">
+            <h2 className="font-serif text-2xl text-gr-text">
               Match Odoo columns
             </h2>
 
-            <p className="mt-1 text-sm leading-6 text-[#806b77]">
+            <p className="mt-1 text-sm leading-6 text-gr-muted">
               {review.rowCount} source line(s).
               Match each Golden Rose field to
               the correct Odoo column. Required
@@ -695,7 +695,7 @@ export function OdooHistoricalSalesImport() {
             {fieldOrder.map((field) => (
               <label
                 key={field}
-                className="grid min-w-0 gap-1.5 text-sm font-semibold text-[#54213a]"
+                className="grid min-w-0 gap-1.5 text-sm font-semibold text-gr-text"
               >
                 <span>
                   {review.fields[field]}
@@ -737,7 +737,7 @@ export function OdooHistoricalSalesImport() {
           </div>
 
           {needsCurrencyConfirmation && (
-            <label className="flex items-start gap-3 rounded-xl border border-[#e9dac7] bg-[#fff8ed] p-4 text-sm leading-6 text-[#54213a]">
+            <label className="flex items-start gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 text-sm leading-6 text-gr-text">
               <input
                 type="checkbox"
                 checked={confirmNgn}
@@ -764,7 +764,7 @@ export function OdooHistoricalSalesImport() {
           {review.issueCount > 0 && (
             <div
               role="alert"
-              className="rounded-xl border border-[#e5c0cc] bg-[#fff3f5] p-4 text-sm leading-6 text-[#92394f]"
+              className="rounded-xl border border-gr-border bg-gr-surface p-4 text-sm leading-6 text-gr-danger"
             >
               <strong>
                 {review.issueCount} issue(s)
@@ -795,21 +795,21 @@ export function OdooHistoricalSalesImport() {
           )}
 
           <div className="grid gap-3">
-            <h3 className="font-serif text-xl text-[#54213a]">
+            <h3 className="font-serif text-xl text-gr-text">
               Source preview (first five lines)
             </h3>
 
-            <p className="text-xs text-[#806b77]">
+            <p className="text-xs text-gr-muted">
               Preview values come from the selected
               file. Nothing is posted to inventory
               or revenue.
             </p>
 
-            <div className="max-w-full overflow-x-auto rounded-xl border border-[#e9ddd5]">
+            <div className="max-w-full overflow-x-auto rounded-xl border border-gr-border">
               <table className="min-w-max border-collapse text-left text-xs">
-                <thead className="bg-[#faf4ee] text-[#67485a]">
+                <thead className="bg-gr-surface-alt text-gr-text">
                   <tr>
-                    <th className="border-b border-[#e9ddd5] px-3 py-3">
+                    <th className="border-b border-gr-border px-3 py-3">
                       Row
                     </th>
 
@@ -817,7 +817,7 @@ export function OdooHistoricalSalesImport() {
                       (header, i) => (
                         <th
                           key={`${header}:${i}`}
-                          className="border-b border-[#e9ddd5] px-3 py-3 font-semibold"
+                          className="border-b border-gr-border px-3 py-3 font-semibold"
                         >
                           {header}
                         </th>
@@ -831,7 +831,7 @@ export function OdooHistoricalSalesImport() {
                     (row, index) => (
                       <tr
                         key={index}
-                        className="border-b border-[#f1e7e0] text-[#735868]"
+                        className="border-b border-gr-border text-gr-muted"
                       >
                         <td className="px-3 py-3">
                           {index + 2}
@@ -858,7 +858,7 @@ export function OdooHistoricalSalesImport() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 border-t border-[#eee2db] pt-4">
+          <div className="flex flex-wrap items-center gap-3 border-t border-gr-border pt-4">
             <button
               type="button"
               onClick={() =>
@@ -884,7 +884,7 @@ export function OdooHistoricalSalesImport() {
             </button>
           </div>
 
-          <label className="flex items-start gap-3 rounded-xl border border-[#e9dac7] bg-[#fff8ed] p-4 text-sm leading-6 text-[#54213a]">
+          <label className="flex items-start gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 text-sm leading-6 text-gr-text">
             <input
               type="checkbox"
               checked={sourceConfirmed}
@@ -941,14 +941,14 @@ export function OdooHistoricalSalesImport() {
         </section>
       )}
 
-      <section className="grid gap-4 rounded-2xl border border-[#e9dad1] bg-white p-5">
+      <section className="grid gap-4 rounded-2xl border border-gr-border bg-gr-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-serif text-2xl text-[#54213a]">
+            <h2 className="font-serif text-2xl text-gr-text">
               Staged import history
             </h2>
 
-            <p className="mt-1 text-sm text-[#806b77]">
+            <p className="mt-1 text-sm text-gr-muted">
               Staged records are not posted
               to financial reports.
             </p>
@@ -981,7 +981,7 @@ export function OdooHistoricalSalesImport() {
         {historyError && (
           <p
             role="alert"
-            className="text-sm text-[#92394f]"
+            className="text-sm text-gr-danger"
           >
             {historyError}
           </p>
@@ -990,7 +990,7 @@ export function OdooHistoricalSalesImport() {
         {historyLoading && (
           <p
             role="status"
-            className="text-sm text-[#806b77]"
+            className="text-sm text-gr-muted"
           >
             Loading import history…
           </p>
@@ -999,7 +999,7 @@ export function OdooHistoricalSalesImport() {
         {!historyLoading &&
           history.length === 0 &&
           !historyError && (
-            <p className="rounded-xl bg-[#faf4ee] p-4 text-sm text-[#806b77]">
+            <p className="rounded-xl bg-gr-surface-alt p-4 text-sm text-gr-muted">
               No historical sales have
               been staged.
             </p>
@@ -1008,8 +1008,8 @@ export function OdooHistoricalSalesImport() {
         {history.length > 0 && (
           <div className="max-w-full overflow-x-auto">
             <table className="w-full min-w-[650px] text-left text-sm">
-              <thead className="text-[#806b77]">
-                <tr className="border-b border-[#e9dad1]">
+              <thead className="text-gr-muted">
+                <tr className="border-b border-gr-border">
                   <th className="py-3 pr-3">
                     File / uploaded at
                   </th>
@@ -1032,14 +1032,14 @@ export function OdooHistoricalSalesImport() {
                 {history.map((batch) => (
                   <tr
                     key={batch.id}
-                    className="border-b border-[#f1e8e2]"
+                    className="border-b border-gr-border"
                   >
                     <td className="py-3 pr-3">
-                      <p className="break-all font-semibold text-[#54213a]">
+                      <p className="break-all font-semibold text-gr-text">
                         {batch.filename}
                       </p>
 
-                      <p className="mt-1 text-xs text-[#806b77]">
+                      <p className="mt-1 text-xs text-gr-muted">
                         {new Date(
                           batch.createdAt,
                         ).toLocaleString('en-NG')}
@@ -1058,7 +1058,7 @@ export function OdooHistoricalSalesImport() {
                       {batch.unmatched}
                     </td>
 
-                    <td className="py-3 text-right capitalize text-[#846034]">
+                    <td className="py-3 text-right capitalize text-gr-gold">
                       {batch.status}
                     </td>
                   </tr>
@@ -1069,7 +1069,7 @@ export function OdooHistoricalSalesImport() {
         )}
       </section>
 
-      <div className="flex items-start gap-3 rounded-xl border border-[#eadfd7] bg-[#fffdfa] p-4 text-xs leading-6 text-[#806b77]">
+      <div className="flex items-start gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 text-xs leading-6 text-gr-muted">
         <FileSpreadsheet
           size={18}
           className="mt-0.5 shrink-0"

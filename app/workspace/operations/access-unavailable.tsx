@@ -28,19 +28,19 @@ export function StaffAccessUnavailable({
   }
 
   return (
-    <main className="grid min-h-[65vh] place-items-center bg-[#faf7f5] px-4 py-10">
+    <main className="grid min-h-[65vh] place-items-center bg-gr-surface px-4 py-10">
       <section
         role="alert"
-        className="w-full max-w-lg rounded-2xl border border-[#eadbd6] bg-white p-6 text-[#4b2438] shadow-lg sm:p-8"
+        className="w-full max-w-lg rounded-2xl border border-gr-border bg-gr-surface p-6 text-gr-text shadow-lg sm:p-8"
       >
-        <div className="mb-5 flex size-12 items-center justify-center rounded-xl bg-[#fff2df] text-[#99632b]">
+        <div className="mb-5 flex size-12 items-center justify-center rounded-xl bg-gr-surface-alt text-gr-gold">
           <AlertCircle
             size={25}
             aria-hidden="true"
           />
         </div>
 
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#aa7b43]">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gr-gold">
           Golden Rose · Workspace
         </p>
 
@@ -48,13 +48,13 @@ export function StaffAccessUnavailable({
           Unable to verify access
         </h1>
 
-        <p className="mt-4 text-sm leading-7 text-[#765f6c]">
+        <p className="mt-4 text-sm leading-7 text-gr-muted">
           The system could not complete its security
           verification. This may be a temporary connection
           or database-service issue.
         </p>
 
-        <div className="mt-5 flex items-start gap-3 rounded-xl bg-[#fff7e9] p-4 text-sm leading-6 text-[#79532e]">
+        <div className="mt-5 flex items-start gap-3 rounded-xl bg-gr-surface p-4 text-sm leading-6 text-gr-gold">
           <ShieldCheck
             size={20}
             className="mt-0.5 shrink-0"
@@ -73,7 +73,7 @@ export function StaffAccessUnavailable({
           disabled={pending}
           aria-busy={pending}
           onClick={handleRetry}
-          className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#54213a] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#713450] disabled:cursor-wait disabled:opacity-70"
+          className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gr-strong-hover px-5 py-3 text-sm font-semibold text-gr-on-strong transition-colors hover:bg-gr-strong-hover disabled:cursor-wait disabled:opacity-70"
         >
           <RefreshCw
             size={18}
@@ -88,7 +88,7 @@ export function StaffAccessUnavailable({
             : 'Retry verification'}
         </button>
 
-        <p className="mt-4 text-center text-xs text-[#8c7781]">
+        <p className="mt-4 text-center text-xs text-gr-muted">
           If verification repeatedly fails, check the
           server logs before attempting another sign-in.
         </p>

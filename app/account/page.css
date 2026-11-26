@@ -1,10 +1,11 @@
 /* Shared authentication form styling; scoped to authentication screens only. */
-.gr-auth { --auth-bg: #0b0908; --auth-panel: #14110e; --auth-text: #faf4e9; --auth-muted: #c0b29e; --auth-gold: #d8b575; --auth-border: #695438; --auth-input: #0e0c0a; --auth-error: #ffb1a5; min-height: 100svh; background: var(--auth-bg); color: var(--auth-text); display: flex; flex-direction: column; padding: 0 24px; font-family: Arial, Helvetica, sans-serif; }
+.gr-auth { --auth-bg: var(--gr-theme-bg); --auth-panel: var(--gr-theme-surface); --auth-text: var(--gr-theme-text); --auth-muted: var(--gr-theme-muted); --auth-gold: var(--gr-theme-gold); --auth-border: var(--gr-theme-border); --auth-input: var(--gr-theme-input); --auth-error: var(--gr-theme-danger); min-height: 100svh; background: var(--auth-bg); color: var(--auth-text); display: flex; flex-direction: column; padding: 0 24px; font-family: Arial, Helvetica, sans-serif; }
 .gr-auth *, .gr-auth *::before, .gr-auth *::after { box-sizing: border-box; }
 .gr-auth a { color: var(--auth-gold); text-decoration: none; }
 .gr-auth a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .gr-auth-header { width: min(1120px, 100%); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 20px 0; }
-.gr-auth-brand { display: inline-flex; align-items: center; gap: 15px; color: #e5c68c !important; }
+.gr-auth-brand { display: inline-flex; align-items: center; gap: 15px; }
+.gr-auth .gr-auth-brand { color: var(--gr-theme-gold); }
 .gr-auth-brand img { display: block; height: 76px; width: auto; }
 .gr-auth-brand > span { font: 400 19px Georgia, serif; letter-spacing: .1em; }
 .gr-auth-brand small { display: block; margin-top: 9px; font: 600 8px Arial, sans-serif; letter-spacing: .22em; }
@@ -18,14 +19,14 @@
 .gr-auth-field { display: flex; flex-direction: column; gap: 9px; }
 .gr-auth-field label { color: var(--auth-text); font-size: 12px; font-weight: 600; }
 .gr-auth-input-wrap { position: relative; }
-.gr-auth-input-wrap input { display: block; width: 100%; min-height: 50px; padding: 12px 65px 12px 13px; border: 1px solid var(--auth-border); border-radius: 0; background: var(--auth-input); color: var(--auth-text); font: 400 16px Arial, sans-serif; }
+.gr-auth-input-wrap input { display: block; width: 100%; min-height: 50px; padding: 12px 65px 12px 13px; border: 1px solid var(--gr-theme-control-border); border-radius: 0; background: var(--auth-input); color: var(--auth-text); font: 400 16px Arial, sans-serif; }
 .gr-auth-input-wrap input[aria-invalid="true"] { border-color: var(--auth-error); }
 .gr-auth-input-wrap input:autofill { outline: 2px solid var(--auth-gold); }
 .gr-auth-reveal { position: absolute; right: 4px; top: 3px; min-height: 44px; min-width: 52px; border: 0; background: transparent; color: var(--auth-gold); cursor: pointer; font-size: 11px; font-weight: 700; }
 .gr-auth-field small { color: var(--auth-muted); font-size: 11px; line-height: 1.5; }
 .gr-auth .gr-auth-error { margin: 0; color: var(--auth-error); font-size: 12px; line-height: 1.5; }
-.gr-auth-submit { min-height: 51px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 20px; border: 1px solid #d8b575; background: #d8b575; color: #19130d; font-size: 12px; font-weight: 700; cursor: pointer; }
-.gr-auth-submit:hover { background: #f0d69f; }
+.gr-auth-submit { min-height: 51px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 20px; border: 1px solid var(--gr-theme-border); background: var(--gr-theme-button); color: var(--gr-theme-on-gold); font-size: 12px; font-weight: 700; cursor: pointer; }
+.gr-auth-submit:hover { background: var(--gr-theme-button-hover); }
 .gr-auth .gr-auth-status { margin: 0; color: var(--auth-text); font-size: 12px; line-height: 1.7; padding: 12px; border: 1px solid var(--auth-border); }
 .gr-auth-links { display: flex; flex-direction: column; align-items: flex-start; gap: 15px; margin-top: 26px; font-size: 12px; line-height: 1.6; }
 .gr-auth .gr-auth-footnote { margin: 25px 0 0; padding-top: 20px; border-top: 1px solid var(--auth-border); color: var(--auth-muted); font-size: 11px; line-height: 1.7; }
@@ -97,7 +98,7 @@
   padding: 3px;
   border-radius: 50%;
   object-fit: contain;
-  background: #070605;
+  background: var(--gr-theme-media);
 }
 
 .gr-boutique__brand > span {
@@ -126,7 +127,7 @@
 }
 
 .gr-boutique__split { display: grid; grid-template-columns: minmax(0, 1fr); }
-.gr-boutique__visual { min-width: 0; margin: 0; background: #100b08; }
+.gr-boutique__visual { min-width: 0; margin: 0; background: var(--gr-theme-media); }
 .gr-boutique__stage {
   position: relative;
   isolation: isolate;
@@ -207,7 +208,7 @@
   min-height: 46px;
   padding: 10px 12px;
   border-radius: 7px;
-  border-color: color-mix(in srgb, var(--auth-border) 78%, var(--auth-gold));
+  border-color: var(--gr-theme-control-border);
   background: var(--auth-input);
   transition: border-color .18s ease;
 }
@@ -222,10 +223,10 @@
   justify-content: center;
   min-height: 46px;
   padding: 10px 34px;
-  border: 1px solid #c19b5e;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 7px;
-  color: #24190d;
-  background: linear-gradient(110deg, #d3aa6d, #f2dba8 49%, #d8af73);
+  color: var(--gr-theme-on-gold);
+  background: linear-gradient(110deg, var(--gr-theme-button), var(--gr-theme-button-hover) 49%, var(--gr-theme-button-hover));
   box-shadow: inset 0 1px #ffffff70, 0 3px 10px #6d482614;
   font-size: 13px;
   text-align: center;
@@ -244,14 +245,14 @@
 .gr-boutique .gr-auth-google {
   gap: 10px;
   padding-inline: 12px;
-  border-color: #747775;
-  background: #fff;
-  color: #1f1f1f;
+  border-color: var(--gr-theme-border);
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
   font: 500 14px/1.4 Roboto, Arial, sans-serif;
   box-shadow: 0 2px 8px #0000000b;
 }
-.gr-boutique .gr-auth-google:not(:disabled):hover { background: #f7f8f8; filter: none; }
-.gr-boutique .gr-auth-google:not(:disabled):active { background: #eeefef; }
+.gr-boutique .gr-auth-google:not(:disabled):hover { background: var(--gr-theme-surface-alt); filter: none; }
+.gr-boutique .gr-auth-google:not(:disabled):active { background: var(--gr-theme-surface-alt); }
 
 .gr-boutique__links {
   display: flex;

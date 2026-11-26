@@ -74,7 +74,7 @@ export default function PackagingPage({
       fallback={
         <p
           role="status"
-          className="p-6 text-sm text-[#735765]"
+          className="p-6 text-sm text-gr-muted"
         >
           Loading product packaging…
         </p>
@@ -163,7 +163,7 @@ async function PackagingContent({
           method="get"
           className="flex flex-wrap items-end gap-3"
         >
-          <label className="grid min-w-[240px] flex-1 gap-2 text-sm font-semibold text-[#54213a]">
+          <label className="grid min-w-[240px] flex-1 gap-2 text-sm font-semibold text-gr-text">
             Find a product by SKU or name
 
             <input
@@ -185,7 +185,7 @@ async function PackagingContent({
           </button>
         </form>
 
-        <p className="text-xs text-[#896e7c]">
+        <p className="text-xs text-gr-muted">
           Showing up to 25 matching active catalogue SKUs.
         </p>
       </WorkspacePanel>
@@ -212,7 +212,7 @@ async function PackagingContent({
           className="grid gap-5"
         >
           <div className="flex items-start gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f8eddf] text-[#a57539]">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
               <Package
                 size={21}
                 aria-hidden="true"
@@ -220,16 +220,16 @@ async function PackagingContent({
             </span>
 
             <div className="min-w-0">
-              <h2 className="font-serif text-xl text-[#54213a]">
+              <h2 className="font-serif text-xl text-gr-text">
                 {product.name}
               </h2>
 
-              <p className="mt-1 text-sm text-[#806e78]">
+              <p className="mt-1 text-sm text-gr-muted">
                 SKU: {product.sku}
               </p>
 
               {product.sizeMl !== null && (
-                <p className="mt-1 text-xs text-[#806e78]">
+                <p className="mt-1 text-xs text-gr-muted">
                   Product volume: {product.sizeMl} mL
                 </p>
               )}
@@ -237,27 +237,27 @@ async function PackagingContent({
           </div>
 
           <div className="grid gap-3">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#54213a]">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-gr-text">
               <Boxes size={18} />
               Configured packaging
             </h3>
 
             {product.packages.length === 0 ? (
-              <p className="rounded-xl bg-[#faf5ef] p-4 text-sm text-[#816c79]">
+              <p className="rounded-xl bg-gr-surface p-4 text-sm text-gr-muted">
                 No packs or cartons configured yet.
               </p>
             ) : (
               product.packages.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#eaded5] bg-white p-4"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gr-border bg-gr-surface p-4"
                 >
                   <div>
-                    <p className="font-semibold capitalize text-[#54213a]">
+                    <p className="font-semibold capitalize text-gr-text">
                       {item.unitName}
                     </p>
 
-                    <p className="text-sm text-[#7d6673]">
+                    <p className="text-sm text-gr-muted">
                       1 {item.unitName} ={' '}
                       {item.unitsPerPackage.toLocaleString(
                         'en-NG',
@@ -265,7 +265,7 @@ async function PackagingContent({
                       individual units
                     </p>
 
-                    <p className="mt-1 text-xs text-[#917b85]">
+                    <p className="mt-1 text-xs text-gr-muted">
                       {item.active
                         ? 'Active'
                         : 'Inactive'}
@@ -283,7 +283,7 @@ async function PackagingContent({
           {data.canManage ? (
             <PackageEditor variantId={product.id} />
           ) : (
-            <p className="text-sm text-[#816c79]">
+            <p className="text-sm text-gr-muted">
               Your role can view packaging but
               cannot modify conversions.
             </p>

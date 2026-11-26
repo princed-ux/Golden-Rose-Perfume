@@ -1339,12 +1339,12 @@ export function WholesaleWorkspace({
 
             (
               feedback.kind === 'error'
-                ? 'border-rose-200 bg-rose-50 text-rose-900'
+                ? 'border-gr-danger-border bg-gr-danger-bg text-gr-danger'
 
                 : feedback.kind === 'success'
-                  ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                  ? 'border-gr-success-border bg-gr-success-bg text-gr-success'
 
-                  : 'border-[#e5d5bf] bg-[#fff8ed] text-[#765331]'
+                  : 'border-gr-border bg-gr-surface text-gr-gold'
             )
           }
         >
@@ -1451,7 +1451,7 @@ export function WholesaleWorkspace({
       {salesMode && (
         <>
           <WorkspacePanel className="grid gap-5">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <Building2 size={23} />
               Business customer
             </h2>
@@ -1560,7 +1560,7 @@ export function WholesaleWorkspace({
           {/* PRODUCT CATALOGUE */}
 
           <WorkspacePanel className="grid gap-4">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <Package size={22} />
               Select fragrances
             </h2>
@@ -1601,9 +1601,9 @@ export function WholesaleWorkspace({
               </button>
             </form>
 
-            <div className="max-h-[420px] overflow-auto rounded-xl border border-[#ebdfd9]">
+            <div className="max-h-[420px] overflow-auto rounded-xl border border-gr-border">
               <table className="w-full min-w-[620px] text-left text-sm">
-                <thead className="sticky top-0 bg-[#f7efe9] text-[#54213a]">
+                <thead className="sticky top-0 bg-gr-surface-alt text-gr-text">
                   <tr>
                     <th className="p-3">
                       Product
@@ -1631,14 +1631,14 @@ export function WholesaleWorkspace({
                   {catalogue.map(product => (
                     <tr
                       key={product.id}
-                      className="border-t border-[#ebdfd9]"
+                      className="border-t border-gr-border"
                     >
                       <td className="p-3">
-                        <strong className="text-[#54213a]">
+                        <strong className="text-gr-text">
                           {product.name}
                         </strong>
 
-                        <p className="text-xs text-[#796570]">
+                        <p className="text-xs text-gr-muted">
                           {product.sku || 'No SKU'}
                           {product.sizeMl
                             ? ` · ${product.sizeMl} ml`
@@ -1685,7 +1685,7 @@ export function WholesaleWorkspace({
               </table>
 
               {!catalogue.length && (
-                <p className="p-5 text-sm text-[#796570]">
+                <p className="p-5 text-sm text-gr-muted">
                   {locationId
                     ? 'No matching products are available.'
                     : 'Select a selling location first.'}
@@ -1717,13 +1717,13 @@ export function WholesaleWorkspace({
             onSubmit={saveSale}
           >
             <WorkspacePanel className="grid gap-4">
-              <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+              <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
                 <ClipboardList size={22} />
                 Wholesale sale
               </h2>
 
               {!basket.length && (
-                <p className="text-sm text-[#796570]">
+                <p className="text-sm text-gr-muted">
                   Add the fragrances the business
                   customer wants to purchase.
                 </p>
@@ -1762,15 +1762,15 @@ export function WholesaleWorkspace({
                 return (
                   <article
                     key={line.id}
-                    className="grid gap-3 rounded-xl border border-[#eaded8] bg-white p-4"
+                    className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <h3 className="font-semibold text-[#54213a]">
+                        <h3 className="font-semibold text-gr-text">
                           {line.product.name}
                         </h3>
 
-                        <p className="text-xs text-[#796570]">
+                        <p className="text-xs text-gr-muted">
                           {line.product.sku || 'No SKU'}
                           {' · '}
                           {line.product.available}
@@ -1871,15 +1871,15 @@ export function WholesaleWorkspace({
                       </label>
                     </fieldset>
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#f0e6df] pt-3">
-                      <span className="text-sm text-[#796570]">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gr-border pt-3">
+                      <span className="text-sm text-gr-muted">
                         {Number.isSafeInteger(bottles) &&
                         bottles > 0
                           ? `${bottles} individual bottles`
                           : 'Check quantity'}
                       </span>
 
-                      <strong className="tabular-nums text-[#54213a]">
+                      <strong className="tabular-nums text-gr-text">
                         {lineTotal === undefined
                           ? 'Check price'
                           : money(lineTotal)}
@@ -1887,7 +1887,7 @@ export function WholesaleWorkspace({
 
                       <button
                         type="button"
-                        className="text-sm font-semibold text-[#946a37] underline disabled:opacity-50"
+                        className="text-sm font-semibold text-gr-gold underline disabled:opacity-50"
                         disabled={
                           mutationDisabled ||
                           basket.length >= 100
@@ -1934,38 +1934,38 @@ export function WholesaleWorkspace({
             {/* PAYMENT AND TOTALS */}
 
             <WorkspacePanel className="grid gap-5">
-              <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+              <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
                 <Wallet size={22} />
                 Payment and dispatch
               </h2>
 
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-[#eaded8] bg-white p-4">
-                  <p className="text-xs text-[#796570]">
+                <div className="rounded-xl border border-gr-border bg-gr-surface p-4">
+                  <p className="text-xs text-gr-muted">
                     Total bottles
                   </p>
 
-                  <strong className="text-xl tabular-nums text-[#54213a]">
+                  <strong className="text-xl tabular-nums text-gr-text">
                     {calculation?.bottleCount ?? 0}
                   </strong>
                 </div>
 
-                <div className="rounded-xl border border-[#eaded8] bg-white p-4">
-                  <p className="text-xs text-[#796570]">
+                <div className="rounded-xl border border-gr-border bg-gr-surface p-4">
+                  <p className="text-xs text-gr-muted">
                     Total sale
                   </p>
 
-                  <strong className="text-xl tabular-nums text-[#54213a]">
+                  <strong className="text-xl tabular-nums text-gr-text">
                     {money(calculation?.totalMinor ?? 0)}
                   </strong>
                 </div>
 
-                <div className="rounded-xl border border-[#eaded8] bg-white p-4">
-                  <p className="text-xs text-[#796570]">
+                <div className="rounded-xl border border-gr-border bg-gr-surface p-4">
+                  <p className="text-xs text-gr-muted">
                     Outstanding balance
                   </p>
 
-                  <strong className="text-xl tabular-nums text-[#946a37]">
+                  <strong className="text-xl tabular-nums text-gr-gold">
                     {calculationError
                       ? '—'
                       : money(balanceMinor)}
@@ -2039,7 +2039,7 @@ export function WholesaleWorkspace({
                 </label>
 
                 {paidMinor > 0 && (
-                  <label className="flex items-start gap-3 rounded-xl border border-[#e8d8c7] p-4 text-sm md:col-span-2">
+                  <label className="flex items-start gap-3 rounded-xl border border-gr-border p-4 text-sm md:col-span-2">
                     <input
                       type="checkbox"
                       className="mt-1 accent-[#54213a]"
@@ -2061,7 +2061,7 @@ export function WholesaleWorkspace({
                 )}
 
                 {canDispatch && (
-                  <label className="flex items-start gap-3 rounded-xl border border-[#e8d8c7] p-4 text-sm md:col-span-2">
+                  <label className="flex items-start gap-3 rounded-xl border border-gr-border p-4 text-sm md:col-span-2">
                     <input
                       type="checkbox"
                       className="mt-1 accent-[#54213a]"
@@ -2100,7 +2100,7 @@ export function WholesaleWorkspace({
                 <ArrowRight size={18} />
               </button>
 
-              <p className="text-xs leading-5 text-[#796570]">
+              <p className="text-xs leading-5 text-gr-muted">
                 Recording a sale does not automatically
                 charge a customer or initiate a bank transfer.
                 Undispatched goods are not reserved in this
@@ -2114,7 +2114,7 @@ export function WholesaleWorkspace({
       {/* SALES AND DISPATCH REGISTER */}
 
       <WorkspacePanel className="grid gap-4">
-        <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+        <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
           {salesMode ? (
             <ClipboardList size={22} />
           ) : (
@@ -2176,7 +2176,7 @@ export function WholesaleWorkspace({
         </form>
 
         {orders.length === 0 ? (
-          <p className="rounded-xl bg-[#faf5f1] p-5 text-sm text-[#796570]">
+          <p className="rounded-xl bg-gr-surface p-5 text-sm text-gr-muted">
             No recorded wholesale transactions
             match the current search.
           </p>
@@ -2185,14 +2185,14 @@ export function WholesaleWorkspace({
             {orders.map(order => (
               <article
                 key={order.id}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#eaded8] bg-white p-4"
+                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-gr-border bg-gr-surface p-4"
               >
                 <div className="min-w-0 flex-1">
-                  <h3 className="break-words font-semibold text-[#54213a]">
+                  <h3 className="break-words font-semibold text-gr-text">
                     {order.business_name}
                   </h3>
 
-                  <p className="text-xs text-[#796570]">
+                  <p className="text-xs text-gr-muted">
                     {reference(order.id)}
                     {' · '}
                     {dateLabel(order.created_at)}
@@ -2208,7 +2208,7 @@ export function WholesaleWorkspace({
                 {salesMode &&
                   order.total_minor !== undefined && (
                     <div className="text-sm">
-                      <strong className="tabular-nums text-[#54213a]">
+                      <strong className="tabular-nums text-gr-text">
                         {money(order.total_minor)}
                       </strong>
 
@@ -2216,7 +2216,7 @@ export function WholesaleWorkspace({
                         {orderPaymentStatus(order)}
                       </p>
 
-                      <p className="text-xs text-[#946a37]">
+                      <p className="text-xs text-gr-gold">
                         Balance:{' '}
                         {money(order.balance_minor)}
                       </p>
@@ -2262,15 +2262,15 @@ export function WholesaleWorkspace({
         <WorkspacePanel className="grid gap-5">
           <header className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-[#a17940]">
+              <p className="text-xs font-semibold text-gr-gold">
                 {reference(details.order.id)}
               </p>
 
-              <h2 className="font-serif text-2xl text-[#54213a]">
+              <h2 className="font-serif text-2xl text-gr-text">
                 {details.order.business_name}
               </h2>
 
-              <p className="text-sm text-[#796570]">
+              <p className="text-sm text-gr-muted">
                 {dateLabel(
                   details.order.created_at,
                 )}
@@ -2289,7 +2289,7 @@ export function WholesaleWorkspace({
             </button>
           </header>
 
-          <div className="grid gap-3 rounded-xl bg-[#faf5f1] p-4 text-sm sm:grid-cols-2">
+          <div className="grid gap-3 rounded-xl bg-gr-surface p-4 text-sm sm:grid-cols-2">
             <p>
               <strong>Contact:</strong>{' '}
               {details.order.contact || 'Not provided'}
@@ -2315,9 +2315,9 @@ export function WholesaleWorkspace({
 
           {/* PRODUCT SNAPSHOTS */}
 
-          <div className="overflow-auto rounded-xl border border-[#eaded8]">
+          <div className="overflow-auto rounded-xl border border-gr-border">
             <table className="w-full min-w-[520px] text-left text-sm">
-              <thead className="bg-[#f7efe9] text-[#54213a]">
+              <thead className="bg-gr-surface-alt text-gr-text">
                 <tr>
                   <th className="p-3">Product</th>
                   <th className="p-3">Packaging</th>
@@ -2333,14 +2333,14 @@ export function WholesaleWorkspace({
                 {details.lines.map(line => (
                   <tr
                     key={line.line_id}
-                    className="border-t border-[#eaded8]"
+                    className="border-t border-gr-border"
                   >
                     <td className="p-3">
                       <strong>
                         {line.product_name}
                       </strong>
 
-                      <p className="text-xs text-[#796570]">
+                      <p className="text-xs text-gr-muted">
                         {line.sku || 'No SKU'}
                       </p>
                     </td>
@@ -2376,7 +2376,7 @@ export function WholesaleWorkspace({
           {salesMode &&
             details.order.total_minor !== undefined && (
               <>
-                <dl className="grid gap-3 rounded-xl border border-[#eaded8] bg-white p-4 text-sm">
+                <dl className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 text-sm">
                   <div className="flex justify-between gap-3">
                     <dt>Order value</dt>
 
@@ -2397,10 +2397,10 @@ export function WholesaleWorkspace({
                     </dd>
                   </div>
 
-                  <div className="flex justify-between gap-3 border-t border-[#eaded8] pt-3">
+                  <div className="flex justify-between gap-3 border-t border-gr-border pt-3">
                     <dt>Outstanding</dt>
 
-                    <dd className="font-semibold tabular-nums text-[#946a37]">
+                    <dd className="font-semibold tabular-nums text-gr-gold">
                       {money(
                         details.order.balance_minor,
                       )}
@@ -2418,12 +2418,12 @@ export function WholesaleWorkspace({
                   </div>
                 </dl>
 
-                <h3 className="font-semibold text-[#54213a]">
+                <h3 className="font-semibold text-gr-text">
                   Payment history
                 </h3>
 
                 {details.payments.length === 0 ? (
-                  <p className="text-sm text-[#796570]">
+                  <p className="text-sm text-gr-muted">
                     No payments have been recorded.
                   </p>
                 ) : (
@@ -2431,7 +2431,7 @@ export function WholesaleWorkspace({
                     {details.payments.map(payment => (
                       <div
                         key={payment.id}
-                        className="flex flex-wrap justify-between gap-3 rounded-xl border border-[#eaded8] p-3 text-sm"
+                        className="flex flex-wrap justify-between gap-3 rounded-xl border border-gr-border p-3 text-sm"
                       >
                         <div>
                           <strong>
@@ -2440,7 +2440,7 @@ export function WholesaleWorkspace({
                             )}
                           </strong>
 
-                          <p className="text-xs text-[#796570]">
+                          <p className="text-xs text-gr-muted">
                             {dateLabel(payment.created_at)}
                           </p>
 
@@ -2463,10 +2463,10 @@ export function WholesaleWorkspace({
 
                 {(details.order.balance_minor ?? 0) > 0 && (
                   <form
-                    className="grid gap-4 rounded-xl border border-[#e8d8c7] bg-[#fffaf4] p-4"
+                    className="grid gap-4 rounded-xl border border-gr-border bg-gr-surface p-4"
                     onSubmit={saveAdditionalPayment}
                   >
-                    <h3 className="font-semibold text-[#54213a]">
+                    <h3 className="font-semibold text-gr-text">
                       Record another payment
                     </h3>
 
@@ -2569,21 +2569,21 @@ export function WholesaleWorkspace({
 
           {/* DISPATCH MANAGEMENT */}
 
-          <div className="grid gap-3 rounded-xl border border-[#eaded8] p-4">
-            <h3 className="flex items-center gap-2 font-semibold text-[#54213a]">
+          <div className="grid gap-3 rounded-xl border border-gr-border p-4">
+            <h3 className="flex items-center gap-2 font-semibold text-gr-text">
               <Truck size={19} />
               Goods dispatch
             </h3>
 
             {details.order.dispatched_at ? (
               <>
-                <p className="flex items-center gap-2 text-sm text-emerald-800">
+                <p className="flex items-center gap-2 text-sm text-gr-success">
                   <CheckCircle2 size={16} />
 
                   Dispatched successfully
                 </p>
 
-                <p className="text-xs text-[#796570]">
+                <p className="text-xs text-gr-muted">
                   {dateLabel(
                     details.order.dispatched_at,
                   )}
@@ -2592,7 +2592,7 @@ export function WholesaleWorkspace({
                 {details.dispatches.map(dispatch => (
                   <p
                     key={dispatch.id}
-                    className="break-all text-xs text-[#796570]"
+                    className="break-all text-xs text-gr-muted"
                   >
                     Dispatch reference: {dispatch.id}
                   </p>
@@ -2600,7 +2600,7 @@ export function WholesaleWorkspace({
               </>
             ) : (
               <>
-                <p className="text-sm text-[#796570]">
+                <p className="text-sm text-gr-muted">
                   These goods have not yet been
                   dispatched. Confirming dispatch
                   deducts all listed bottle quantities
@@ -2619,7 +2619,7 @@ export function WholesaleWorkspace({
                     Confirm goods dispatched
                   </button>
                 ) : (
-                  <p className="text-xs text-[#946a37]">
+                  <p className="text-xs text-gr-gold">
                     An employee with dispatch
                     permission must confirm handover.
                   </p>
@@ -2633,7 +2633,7 @@ export function WholesaleWorkspace({
       {busy && (
         <p
           role="status"
-          className="text-sm text-[#796570]"
+          className="text-sm text-gr-muted"
         >
           Processing request…
         </p>

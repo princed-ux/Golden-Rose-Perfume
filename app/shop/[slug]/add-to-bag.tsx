@@ -1,7 +1,7 @@
-
 'use client';
 
 import Link from 'next/link';
+
 import {
   ArrowRight,
   ShoppingBag,
@@ -27,14 +27,26 @@ import {
   useShoppingBag,
 } from '@/src/components/use-shopping-bag';
 
+interface AddToBagProps {
+  variants: CatalogVariant[];
+  account?: boolean;
+}
+
 export function AddToBag({
   variants,
-}: {
-  variants: CatalogVariant[];
-}) {
+  account = false,
+}: AddToBagProps) {
   const [notice, setNotice] = useState('');
   const [selectedId, setSelectedId] = useState('');
   const [quantity, setQuantity] = useState(1);
+
+  const collectionHref = account
+    ? '/account/shop'
+    : '/shop';
+
+  const bagHref = account
+    ? '/account/shop?view=bag'
+    : '/cart';
 
   const {
     ready,
@@ -47,8 +59,6 @@ export function AddToBag({
     lines,
   } = useShoppingBag();
 
-  // Only variants that can be used by the current
-  // NGN shopping-bag and WhatsApp checkout are eligible.
   const options = variants.filter(
     variant =>
       variant.currency === 'NGN' &&
@@ -78,13 +88,10 @@ export function AddToBag({
 
     const form = new FormData(event.currentTarget);
 
-    const id = String(
-      form.get('variant') ?? '',
-    );
+    const id = String(form.get('variant') ?? '');
 
-    const requestedQuantity = Number(
-      form.get('quantity'),
-    );
+    const requestedQuantity =
+      Number(form.get('quantity'));
 
     if (
       !options.some(variant => variant.id === id) ||
@@ -95,12 +102,13 @@ export function AddToBag({
       setNotice(
         'Choose a valid bottle size and quantity.',
       );
+
       return;
     }
 
-    const existingQuantity =
-      lines.find(line => line.variantId === id)
-        ?.quantity ?? 0;
+    const existingQuantity = lines.find(
+      line => line.variantId === id,
+    )?.quantity ?? 0;
 
     if (
       existingQuantity + requestedQuantity >
@@ -109,6 +117,7 @@ export function AddToBag({
       setNotice(
         `Your bag already contains ${existingQuantity} of this selection. The maximum is ${MAX_QUANTITY} per variant.`,
       );
+
       return;
     }
 
@@ -117,10 +126,9 @@ export function AddToBag({
     try {
       const changed = await update(
         current => {
-          const previous =
-            current.find(
-              line => line.variantId === id,
-            )?.quantity ?? 0;
+          const previous = current.find(
+            line => line.variantId === id,
+          )?.quantity ?? 0;
 
           if (
             previous + requestedQuantity >
@@ -145,6 +153,7 @@ export function AddToBag({
             : 'Fragrance added to your shopping bag.'
           : 'Unable to add this selection. Check your bag and quantity.',
       );
+
     } catch {
       setNotice(
         'The fragrance could not be added. Please try again.',
@@ -152,7 +161,7 @@ export function AddToBag({
     }
   }
 
-  if (!options.length) {
+  if (!selectedVariant) {
     return (
       <div
         className="mt-6 rounded-xl border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] p-5"
@@ -169,10 +178,11 @@ export function AddToBag({
         </p>
 
         <Link
-          href="/shop"
+          href={collectionHref}
           className="text-link mt-4"
         >
           Explore other perfumes
+
           <ArrowRight
             size={16}
             aria-hidden="true"
@@ -184,7 +194,7 @@ export function AddToBag({
 
   return (
     <section
-      className="mt-7 rounded-2xl border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] p-5 shadow-sm sm:p-6"
+      className="mt-4 min-w-0 rounded-2xl border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] p-4 shadow-sm sm:p-6"
       aria-labelledby="gr-order-heading"
     >
       <div className="mb-5 border-b border-[var(--gr-theme-border)] pb-4">
@@ -200,19 +210,19 @@ export function AddToBag({
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-[var(--gr-theme-muted)]">
-          Select a bottle size and quantity to add
-          to your shopping bag.
+          Select your preferred bottle size and
+          quantity, then add it to your shopping bag.
         </p>
       </div>
 
       <form
-        className="gr-bag-form"
+        className="gr-bag-form min-w-0"
         onSubmit={submit}
         onChange={() => setNotice('')}
         aria-busy={pending}
       >
-        <div className="grid w-full gap-4 sm:grid-cols-2">
-          <label>
+        <div className="grid w-full min-w-0 gap-4 sm:grid-cols-2">
+          <label className="min-w-0">
             Bottle size / variant
 
             <select
@@ -223,6 +233,7 @@ export function AddToBag({
                 setSelectedId(event.target.value)
               }
               required
+              className="w-full min-w-0"
             >
               {options.map(variant => (
                 <option
@@ -234,6 +245,7 @@ export function AddToBag({
                     : variant.sku ?? 'Standard'}
 
                   {' · '}
+
                   {formatPrice(variant.priceMinor)}
 
                   {variant.sizeMl && variant.sku
@@ -250,11 +262,10 @@ export function AddToBag({
             <input
               name="quantity"
               type="number"
+              inputMode="numeric"
               value={quantity}
               onChange={event =>
-                setQuantity(
-                  Number(event.target.value),
-                )
+                setQuantity(Number(event.target.value))
               }
               min={1}
               max={MAX_QUANTITY}
@@ -285,10 +296,10 @@ export function AddToBag({
           </p>
         </div>
 
-        <div className="flex w-full flex-wrap items-center gap-4">
+        <div className="grid w-full gap-3 sm:flex sm:flex-wrap sm:items-center">
           <button
             type="submit"
-            className="gr-bag-primary !min-h-12 !rounded-lg !border-[#58243d] !bg-[#58243d] !px-6 !text-white hover:!bg-[#7c3b58]"
+            className="gr-bag-primary min-h-12! rounded-lg! px-6!"
             disabled={
               !ready ||
               unavailable ||
@@ -306,10 +317,11 @@ export function AddToBag({
           </button>
 
           <Link
-            className="text-link"
-            href="/cart"
+            className="text-link min-h-11"
+            href={bagHref}
           >
             View shopping bag
+
             <ArrowRight
               size={16}
               aria-hidden="true"
@@ -324,8 +336,8 @@ export function AddToBag({
           >
             <p>
               Your shopping bag could not be synced.
-              Your existing selections have not been
-              deliberately cleared.
+              Your existing selections have not
+              been deliberately cleared.
             </p>
 
             <button
@@ -349,10 +361,11 @@ export function AddToBag({
         )}
       </form>
 
-      <p className="mt-5 mb-0 border-t border-[var(--gr-theme-border)] pt-4 text-xs leading-6 text-[var(--gr-theme-muted)]">
-        Checkout continues through WhatsApp. Golden Rose
-        will confirm availability, delivery arrangements
-        and payment details before completing your order.
+      <p className="mb-0 mt-5 border-t border-[var(--gr-theme-border)] pt-4 text-xs leading-6 text-[var(--gr-theme-muted)]">
+        Checkout continues through WhatsApp.
+        Golden Rose will confirm availability,
+        delivery arrangements and payment details
+        before completing your order.
       </p>
     </section>
   );

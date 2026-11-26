@@ -1,8 +1,8 @@
-
 import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+
 import {
   ArrowRight,
   ArrowUpRight,
@@ -15,18 +15,37 @@ import {
   UserRound,
 } from 'lucide-react';
 
-import { CustomerAccountShell } from '@/src/components/customer-account-shell';
-import { requireCustomer } from '@/src/lib/customer/session';
-import { getCatalogPage } from '@/src/lib/golden-rose/edge';
-import { ProductCard } from '@/src/components/product-card';
+import {
+  CustomerAccountShell,
+} from '@/src/components/customer-account-shell';
+
+import {
+  requireCustomer,
+} from '@/src/lib/customer/session';
+
+import {
+  getCatalogPage,
+} from '@/src/lib/golden-rose/edge';
+
+import {
+  ProductCard,
+} from '@/src/components/product-card';
+
 import { AuthNotice } from '../auth-notice';
-import { SignedInToast } from '@/src/components/auth-toast';
+
+import {
+  SignedInToast,
+} from '@/src/components/auth-toast';
 
 export const metadata: Metadata = {
   title: 'My Account — Golden Rose Perfume',
+
   description:
     'Your personal Golden Rose fragrance experience.',
 };
+
+const SHOP = '/account/shop';
+const BAG = '/account/shop?view=bag';
 
 const editorialCollections = [
   {
@@ -49,33 +68,54 @@ const editorialCollections = [
   },
 ];
 
+/* =========================================================
+   AUTHENTICATED CUSTOMER DASHBOARD
+   ========================================================= */
+
 async function CustomerDashboard({
   searchParams,
 }: {
   searchParams: Promise<{ notice?: string }>;
 }) {
-  const [customer, catalogue] = await Promise.all([requireCustomer(), getCatalogPage(0, 6).catch(() => null)]);
-  const newArrivals = catalogue?.newArrivals ?? [];
-  const products = newArrivals.length ? newArrivals : catalogue?.items ?? [];
+  const customer = await requireCustomer();
+
+  const catalogue = await getCatalogPage(
+    0,
+    6,
+  ).catch(() => null);
+
+  const newArrivals =
+    catalogue?.newArrivals ?? [];
+
+  const products = newArrivals.length
+    ? newArrivals
+    : catalogue?.items ?? [];
 
   const firstName =
-    customer.name.trim().split(/\s+/)[0] || 'there';
+    customer.name.trim().split(/\s+/)[0] ||
+    'there';
 
   return (
     <CustomerAccountShell
       active="overview"
       name={customer.name}
     >
-      <div className="grc-dashboard">
+      <div className="grc-dashboard min-w-0">
+
+        {/* CUSTOMER GREETING */}
+
         <div className="grc-dashboard__topline">
-          <div>
+          <div className="min-w-0">
             <p className="grc-eyebrow">
               YOUR GOLDEN ROSE WORLD
             </p>
 
-            <p className="grc-dashboard__welcome">
+            <p className="grc-dashboard__welcome break-words">
               Welcome back, {firstName}.
-              <span aria-hidden="true"> ✦</span>
+
+              <span aria-hidden="true">
+                {' '}✦
+              </span>
             </p>
           </div>
 
@@ -84,6 +124,7 @@ async function CustomerDashboard({
               size={15}
               aria-hidden="true"
             />
+
             CUSTOMER ACCOUNT
           </span>
         </div>
@@ -91,9 +132,13 @@ async function CustomerDashboard({
         <Suspense fallback={null}>
           <AuthNotice searchParams={searchParams} />
         </Suspense>
-        <Suspense fallback={null}><SignedInToast destination="customer" /></Suspense>
+
+        <Suspense fallback={null}>
+          <SignedInToast destination="customer" />
+        </Suspense>
 
         {/* PERSONAL BOUTIQUE HERO */}
+
         <section
           className="grc-hero"
           aria-labelledby="grc-hero-title"
@@ -118,7 +163,9 @@ async function CustomerDashboard({
 
             <h1 id="grc-hero-title">
               Your signature
+
               <br />
+
               <em>awaits.</em>
             </h1>
 
@@ -129,10 +176,11 @@ async function CustomerDashboard({
 
             <div className="grc-hero__actions">
               <Link
-                href="/shop"
+                href={SHOP}
                 className="grc-button grc-button--gold"
               >
                 Explore perfumes
+
                 <ArrowUpRight
                   size={17}
                   aria-hidden="true"
@@ -140,7 +188,7 @@ async function CustomerDashboard({
               </Link>
 
               <Link
-                href="/cart"
+                href={BAG}
                 className="grc-button grc-button--outline"
               >
                 My fragrance bag
@@ -154,20 +202,23 @@ async function CustomerDashboard({
         </section>
 
         {/* ACCOUNT QUICK ACTIONS */}
+
         <div className="grc-quick-grid">
           <Link
-            href="/cart"
+            href={BAG}
             className="grc-quick-card"
           >
             <span className="grc-quick-card__icon">
               <ShoppingBag
                 size={23}
                 strokeWidth={1.3}
+                aria-hidden="true"
               />
             </span>
 
             <div>
               <h2>Your fragrance bag</h2>
+
               <p>
                 Continue with the scents you&apos;ve selected.
               </p>
@@ -176,6 +227,7 @@ async function CustomerDashboard({
             <ArrowUpRight
               className="grc-quick-card__arrow"
               size={18}
+              aria-hidden="true"
             />
           </Link>
 
@@ -187,19 +239,22 @@ async function CustomerDashboard({
               <MessageCircle
                 size={23}
                 strokeWidth={1.3}
+                aria-hidden="true"
               />
             </span>
 
             <div>
               <h2>Order enquiries</h2>
+
               <p>
-                Understand how WhatsApp orders work.
+                View your WhatsApp order enquiries.
               </p>
             </div>
 
             <ArrowUpRight
               className="grc-quick-card__arrow"
               size={18}
+              aria-hidden="true"
             />
           </Link>
 
@@ -211,11 +266,13 @@ async function CustomerDashboard({
               <UserRound
                 size={23}
                 strokeWidth={1.3}
+                aria-hidden="true"
               />
             </span>
 
             <div>
               <h2>My preferences</h2>
+
               <p>
                 Manage your account and appearance.
               </p>
@@ -224,11 +281,13 @@ async function CustomerDashboard({
             <ArrowUpRight
               className="grc-quick-card__arrow"
               size={18}
+              aria-hidden="true"
             />
           </Link>
         </div>
 
         {/* REAL PUBLISHED FRAGRANCES */}
+
         <section
           className="grc-section"
           aria-labelledby="grc-products-title"
@@ -240,7 +299,15 @@ async function CustomerDashboard({
               </p>
 
               <h2 id="grc-products-title">
-                {newArrivals.length ? <>New <em>arrivals.</em></> : <>Explore our <em>collection.</em></>}
+                {newArrivals.length ? (
+                  <>
+                    New <em>arrivals.</em>
+                  </>
+                ) : (
+                  <>
+                    Explore our <em>collection.</em>
+                  </>
+                )}
               </h2>
 
               <p>
@@ -250,11 +317,15 @@ async function CustomerDashboard({
             </div>
 
             <Link
-              href="/shop"
+              href={SHOP}
               className="grc-text-link"
             >
               View all perfumes
-              <ArrowRight size={17} />
+
+              <ArrowRight
+                size={17}
+                aria-hidden="true"
+              />
             </Link>
           </div>
 
@@ -283,23 +354,28 @@ async function CustomerDashboard({
                 className="grc-text-link"
               >
                 Retry
+
                 <ArrowRight size={16} />
               </Link>
             </div>
           ) : products.length ? (
-            <div className="grc-product-grid">
+            <div className="grid min-w-0 grid-cols-2 gap-3 md:gap-5 lg:grid-cols-3">
               {products.map(product => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   compact
+                  account
                 />
               ))}
             </div>
           ) : (
             <div className="grc-empty grc-empty--collection">
               <span className="grc-empty__icon">
-                <Flower2 size={31} strokeWidth={1.2} />
+                <Flower2
+                  size={31}
+                  strokeWidth={1.2}
+                />
               </span>
 
               <div>
@@ -319,17 +395,19 @@ async function CustomerDashboard({
               </div>
 
               <Link
-                href="/shop"
+                href={SHOP}
                 className="grc-button grc-button--soft"
               >
-                Explore the shop
+                Explore perfumes
+
                 <ArrowUpRight size={16} />
               </Link>
             </div>
           )}
         </section>
 
-        {/* CAMPAIGN / EDITORIAL DISCOVERY */}
+        {/* EDITORIAL DISCOVERY */}
+
         <section
           className="grc-section grc-section--editorial"
           aria-labelledby="grc-edits-title"
@@ -354,7 +432,7 @@ async function CustomerDashboard({
           <div className="grc-editorial-grid">
             {editorialCollections.map(collection => (
               <Link
-                href="/shop"
+                href={SHOP}
                 key={collection.number}
                 className="grc-editorial-card"
               >
@@ -372,9 +450,13 @@ async function CustomerDashboard({
                 </span>
 
                 <div className="grc-editorial-card__text">
-                  <small>{collection.subtitle}</small>
+                  <small>
+                    {collection.subtitle}
+                  </small>
 
-                  <h3>{collection.title}</h3>
+                  <h3>
+                    {collection.title}
+                  </h3>
 
                   <span className="grc-editorial-card__circle">
                     <ArrowUpRight
@@ -390,11 +472,12 @@ async function CustomerDashboard({
           <p className="grc-editorial-caption">
             Campaign collections are inspiration;
             individual fragrances and availability
-            appear in the live shop.
+            appear in the live collection.
           </p>
         </section>
 
-        {/* WHATSAPP CHECKOUT EXPLANATION */}
+        {/* PERSONAL SHOPPING SERVICE */}
+
         <section className="grc-order-story">
           <div className="grc-order-story__icon">
             <Heart
@@ -410,7 +493,9 @@ async function CustomerDashboard({
 
             <h2>
               Your fragrance journey,
+
               <br />
+
               <em>our personal touch.</em>
             </h2>
 
@@ -423,16 +508,20 @@ async function CustomerDashboard({
           </div>
 
           <Link
-            href="/cart"
+            href={BAG}
             className="grc-button grc-button--gold"
           >
             View my bag
+
             <ArrowUpRight size={16} />
           </Link>
         </section>
 
+        {/* CUSTOMER PRIVACY FOOTNOTE */}
+
         <div className="grc-dashboard__footnote">
           <Sparkles size={14} />
+
           <span>
             Your account is private to you.
             Your fragrances, your experience.
@@ -451,7 +540,10 @@ export default function Dashboard({
   return (
     <Suspense
       fallback={
-        <div className="grc-loading" role="status">
+        <div
+          className="grc-loading"
+          role="status"
+        >
           Preparing your Golden Rose experience…
         </div>
       }

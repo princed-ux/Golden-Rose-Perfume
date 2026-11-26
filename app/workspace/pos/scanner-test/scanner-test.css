@@ -1,11 +1,11 @@
 
 .grscanner {
-  --wine: #4a1028;
-  --gold: #ad7a43;
-  --line: #e9dee0;
+  --wine: var(--gr-theme-text);
+  --gold: var(--gr-theme-gold);
+  --line: var(--gr-theme-border);
   min-width: 0;
   padding: 12px 0 35px;
-  color: #3c2934;
+  color: var(--gr-theme-text);
 }
 
 .grscanner * {
@@ -28,7 +28,7 @@
 }
 
 .grscanner-header p:not(.grscanner-eyebrow) {
-  color: #88777c;
+  color: var(--gr-theme-gold);
   font-size: 13px;
 }
 
@@ -37,7 +37,7 @@
   align-items: center;
   gap: 7px;
   margin-bottom: 17px;
-  color: #855a6c;
+  color: var(--gr-theme-danger);
   font-size: 12px;
   text-decoration: none;
 }
@@ -54,10 +54,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #e6d5bc;
-  background: #fcf1df;
+  border: 1px solid var(--gr-theme-border);
+  background: var(--gr-theme-accent-soft);
   border-radius: 30px;
-  color: #825c33;
+  color: var(--gr-theme-gold);
   padding: 10px 13px;
   font-size: 11px;
   font-weight: 700;
@@ -74,7 +74,7 @@
   min-width: 0;
   padding: clamp(18px, 2.2vw, 28px);
   border: 1px solid var(--line);
-  background: #fffefd;
+  background: var(--gr-theme-surface);
   border-radius: 15px;
   box-shadow: 0 6px 24px #3c182008;
 }
@@ -84,7 +84,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #966d40;
+  color: var(--gr-theme-gold);
 }
 
 .grscanner-card-title {
@@ -94,12 +94,12 @@
 .grscanner-card-title h2 {
   margin: 0;
   font: 400 23px Georgia, serif;
-  color: #461d31;
+  color: var(--gr-theme-text);
 }
 
 .grscanner-card > p,
 .grscanner-info p {
-  color: #87787f;
+  color: var(--gr-theme-muted);
   font-size: 12px;
   line-height: 1.7;
 }
@@ -121,14 +121,14 @@
   align-items: center;
   gap: 12px;
   padding: 0 15px;
-  border: 1px solid #ddccd1;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 10px;
-  background: #faf7f6;
-  color: #a07843;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-gold);
 }
 
 .grscanner-input-wrap:focus-within {
-  border-color: #b9915a;
+  border-color: var(--gr-theme-gold);
   box-shadow: 0 0 0 3px #b9915a22;
 }
 
@@ -139,7 +139,7 @@
   background: transparent;
   border: none;
   outline: none;
-  color: #492c3b;
+  color: var(--gr-theme-text);
   font-size: 13px;
 }
 
@@ -164,15 +164,15 @@
 }
 
 .grscanner-primary {
-  border: 1px solid var(--wine);
-  background: var(--wine);
-  color: white;
+  border: 1px solid var(--gr-theme-strong);
+  background: var(--gr-theme-strong);
+  color: var(--gr-theme-on-strong);
 }
 
 .grscanner-secondary {
-  border: 1px solid #e7d8d9;
-  background: #fff;
-  color: #673a4e;
+  border: 1px solid var(--gr-theme-border);
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
 }
 
 .grscanner-error,
@@ -187,13 +187,13 @@
 }
 
 .grscanner-error {
-  background: #fff0f1;
-  color: #ae394c;
+  background: var(--gr-theme-danger-bg);
+  color: var(--gr-theme-danger);
 }
 
 .grscanner-success {
-  background: #eff8f1;
-  color: #346c4b;
+  background: var(--gr-theme-success-bg);
+  color: var(--gr-theme-success);
 }
 
 .grscanner-success div {
@@ -208,12 +208,12 @@
 .grscanner-info {
   margin-top: 20px;
   padding: 17px;
-  background: #fcf7f1;
+  background: var(--gr-theme-surface);
   border-radius: 10px;
 }
 
 .grscanner-info strong {
-  color: #6a4b34;
+  color: var(--gr-theme-gold);
   font-size: 12px;
 }
 
@@ -223,7 +223,7 @@
 
 .grscanner-count {
   padding: 5px 10px;
-  background: #faf0df;
+  background: var(--gr-theme-surface-alt);
   border-radius: 20px;
   font-size: 11px;
 }
@@ -234,19 +234,19 @@
   text-align: center;
   gap: 10px;
   padding: 45px 20px;
-  color: #ae8c64;
+  color: var(--gr-theme-gold);
 }
 
 .grscanner-empty h3 {
   margin: 0;
-  color: #5e3648;
+  color: var(--gr-theme-text);
   font: 400 18px Georgia, serif;
 }
 
 .grscanner-empty p {
   margin: 0;
   max-width: 270px;
-  color: #99898f;
+  color: var(--gr-theme-muted);
   font-size: 12px;
 }
 
@@ -262,7 +262,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 12px;
-  border: 1px solid #ece2e2;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 9px;
 }
 
@@ -274,12 +274,12 @@
 
 .grscanner-result span,
 .grscanner-result small {
-  color: #96868a;
+  color: var(--gr-theme-muted);
   font-size: 10px;
 }
 
 .grscanner-result strong {
-  color: #4a2135;
+  color: var(--gr-theme-text);
   font-size: 13px;
   overflow-wrap: anywhere;
 }

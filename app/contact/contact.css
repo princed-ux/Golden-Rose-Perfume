@@ -1,5 +1,5 @@
 /* Simple, enquiry-first Contact page. Scoped to /contact only. */
-.gr-contact {--contact-ink:#30202d;--contact-muted:#736775;--contact-accent:#963b59;--contact-line:#e9dfe1;--contact-surface:#fff}
+.gr-contact {--contact-ink:var(--gr-theme-text);--contact-muted:var(--gr-theme-muted);--contact-accent:var(--gr-theme-gold);--contact-line:var(--gr-theme-border);--contact-surface:var(--gr-theme-surface)}
 .gr-contact__intro {max-width:700px;padding:42px 0 52px}
 .gr-contact__eyebrow {display:block;color:var(--contact-accent);font:750 10px/1.5 Arial,Helvetica,sans-serif;letter-spacing:.18em;text-transform:uppercase}
 .gr-contact__intro h1 {margin:12px 0 14px;font-size:clamp(40px,5.2vw,64px);line-height:1.12;letter-spacing:-.058em;font-weight:650}
@@ -15,29 +15,29 @@
 .gr-contact__field label {font-size:12px;font-weight:700;line-height:1.5}
 .gr-contact__field label span {color:var(--contact-accent)}
 .gr-contact__field label small {font-weight:400;color:var(--contact-muted)}
-.gr-contact__field input,.gr-contact__field select,.gr-contact__field textarea {width:100%;min-width:0;border:1px solid var(--contact-line);border-radius:8px;padding:14px 15px;background:var(--contact-surface);color:var(--contact-ink);font:400 13px/1.55 Arial,Helvetica,sans-serif;transition:border-color .2s ease,box-shadow .2s ease}
+.gr-contact__field input,.gr-contact__field select,.gr-contact__field textarea {width:100%;min-width:0;border:1px solid var(--gr-theme-control-border);border-radius:8px;padding:14px 15px;background:var(--gr-theme-input);color:var(--contact-ink);font:400 13px/1.55 Arial,Helvetica,sans-serif;transition:border-color .2s ease,box-shadow .2s ease}
 .gr-contact__field input,.gr-contact__field select {min-height:48px}
 .gr-contact__field textarea {min-height:154px;resize:vertical}
-.gr-contact__field input:focus-visible,.gr-contact__field select:focus-visible,.gr-contact__field textarea:focus-visible {outline:0;border-color:var(--contact-accent);box-shadow:0 0 0 3px rgba(150,59,89,.12)}
-.gr-contact__field input::placeholder,.gr-contact__field textarea::placeholder {color:#9d9198}
+.gr-contact__field input:focus-visible,.gr-contact__field select:focus-visible,.gr-contact__field textarea:focus-visible {outline:0;border-color:var(--contact-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--gr-theme-gold) 18%,transparent)}
+.gr-contact__field input::placeholder,.gr-contact__field textarea::placeholder {color:var(--gr-theme-muted)}
 .gr-contact__field-note {display:block;justify-self:end;font-size:10px;color:var(--contact-muted)}
 .gr-contact__privacy {margin:0;color:var(--contact-muted);font-size:11px;line-height:1.7}
 .gr-contact__submit-row {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
-.gr-contact__submit {display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:13px 24px;border:0;border-radius:8px;background:#342333;color:#fff;cursor:pointer;font-size:12px;font-weight:750;transition:background .2s ease,transform .2s ease}
-.gr-contact__submit:hover:not(:disabled) {background:#963b59;transform:translateY(-1px)}
+.gr-contact__submit {display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:13px 24px;border:0;border-radius:8px;background:var(--gr-theme-strong);color:var(--gr-theme-on-strong);cursor:pointer;font-size:12px;font-weight:750;transition:background .2s ease,transform .2s ease}
+.gr-contact__submit:hover:not(:disabled) {background:var(--gr-theme-strong-hover);transform:translateY(-1px)}
 .gr-contact__submit:disabled {cursor:not-allowed;opacity:.55}
 .gr-contact__required {color:var(--contact-muted);font-size:11px}
 .gr-contact__feedback {margin:0;padding:13px 16px;border:1px solid var(--contact-line);border-radius:7px;font-size:12px;line-height:1.7}
-.gr-contact__feedback--success {color:#185a35;border-color:#b6d5c2;background:#eef8f2}
-.gr-contact__feedback--error {color:#9b2039;border-color:#ecc1cb;background:#fff3f5}
-.gr-contact__feedback--draft {color:#67431b;border-color:#e8d0a7;background:#fff9ee}
+.gr-contact__feedback--success {color:var(--gr-theme-success);border-color:var(--gr-theme-success-border);background:var(--gr-theme-success-bg)}
+.gr-contact__feedback--error {color:var(--gr-theme-danger);border-color:var(--gr-theme-danger-border);background:var(--gr-theme-danger-bg)}
+.gr-contact__feedback--draft {color:var(--gr-theme-gold);border-color:var(--gr-theme-border);background:var(--gr-theme-surface)}
 .gr-contact__honeypot {position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}
 .gr-contact__aside {display:grid;align-content:start;gap:13px}
 .gr-contact__aside-top {padding:12px 0 15px}
 .gr-contact__aside-top h2 {margin-top:13px}
 .gr-contact__method {display:flex;min-height:87px;align-items:center;gap:14px;padding:17px 16px;border:1px solid var(--contact-line);border-radius:12px;background:var(--contact-surface);color:var(--contact-accent)!important}
-.gr-contact__method:hover {border-color:#caa2af}
-.gr-contact__method-icon {display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;border-radius:9px;background:#f6e9ed}
+.gr-contact__method:hover {border-color:var(--gr-theme-border)}
+.gr-contact__method-icon {display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;border-radius:9px;background:var(--gr-theme-surface-alt)}
 .gr-contact__method-copy {display:grid;flex:1;min-width:0;gap:4px}
 .gr-contact__method-copy strong {color:var(--contact-ink);font-size:13px}
 .gr-contact__method-copy small {color:var(--contact-muted);font-size:11px;line-height:1.7;overflow-wrap:anywhere}
@@ -47,9 +47,6 @@
 .gr-contact__faq-link h3 {margin:0 0 8px;color:var(--contact-ink);font-size:15px}
 .gr-contact__faq-link p {margin:0 0 12px;color:var(--contact-muted);font-size:12px;line-height:1.75}
 .gr-contact__faq-link a {display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
-.gr-theme-root[data-theme='dark'] .gr-contact {--contact-ink:#f5edf3;--contact-muted:#cbb8c6;--contact-accent:#e5a1b7;--contact-line:#51414d;--contact-surface:#29232b}
-.gr-theme-root[data-theme='dark'] .gr-contact__field input,.gr-theme-root[data-theme='dark'] .gr-contact__field select,.gr-theme-root[data-theme='dark'] .gr-contact__field textarea {color-scheme:dark}
-@media (prefers-color-scheme:dark) {.gr-theme-root[data-theme='system'] .gr-contact {--contact-ink:#f5edf3;--contact-muted:#cbb8c6;--contact-accent:#e5a1b7;--contact-line:#51414d;--contact-surface:#29232b}}
 @media (max-width:890px) {.gr-contact__layout {grid-template-columns:minmax(0,1fr)}.gr-contact__aside {grid-template-columns:repeat(2,minmax(0,1fr))}.gr-contact__aside-top,.gr-contact__faq-link {grid-column:1/-1}}
 @media (max-width:540px) {.gr-contact__intro {padding:26px 0 30px}.gr-contact__form-panel {padding:24px 18px}.gr-contact__fields-two,.gr-contact__aside {grid-template-columns:minmax(0,1fr)}.gr-contact__aside-top,.gr-contact__faq-link {grid-column:auto}}
 @media (prefers-reduced-motion:reduce) {.gr-contact *, .gr-contact *::before,.gr-contact *::after {transition:none!important}}

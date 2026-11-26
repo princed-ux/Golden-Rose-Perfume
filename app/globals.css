@@ -1,53 +1,72 @@
 @import "tailwindcss";
+@import "../src/styles/theme.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+:root { color-scheme: light dark; }
+:root:has(> body > .gr-theme-root[data-theme="light"]) { color-scheme: light; }
+:root:has(> body > .gr-theme-root[data-theme="dark"]) { color-scheme: dark; }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--gr-theme-bg);
+  --color-foreground: var(--gr-theme-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-gr-bg: var(--gr-theme-bg);
+  --color-gr-surface: var(--gr-theme-surface);
+  --color-gr-surface-alt: var(--gr-theme-surface-alt);
+  --color-gr-input: var(--gr-theme-input);
+  --color-gr-text: var(--gr-theme-text);
+  --color-gr-muted: var(--gr-theme-muted);
+  --color-gr-border: var(--gr-theme-border);
+  --color-gr-control-border: var(--gr-theme-control-border);
+  --color-gr-gold: var(--gr-theme-gold);
+  --color-gr-accent-soft: var(--gr-theme-accent-soft);
+  --color-gr-strong: var(--gr-theme-strong);
+  --color-gr-strong-hover: var(--gr-theme-strong-hover);
+  --color-gr-on-strong: var(--gr-theme-on-strong);
+  --color-gr-button: var(--gr-theme-button);
+  --color-gr-button-hover: var(--gr-theme-button-hover);
+  --color-gr-on-gold: var(--gr-theme-on-gold);
+  --color-gr-media: var(--gr-theme-media);
+  --color-gr-media-accent: var(--gr-theme-media-accent);
+  --color-gr-danger: var(--gr-theme-danger);
+  --color-gr-danger-bg: var(--gr-theme-danger-bg);
+  --color-gr-danger-border: var(--gr-theme-danger-border);
+  --color-gr-success: var(--gr-theme-success);
+  --color-gr-success-bg: var(--gr-theme-success-bg);
+  --color-gr-success-border: var(--gr-theme-success-border);
+  --color-gr-info: var(--gr-theme-info);
+  --color-gr-info-bg: var(--gr-theme-info-bg);
+  --color-gr-info-border: var(--gr-theme-info-border);
+  --color-gr-scrim: var(--gr-theme-scrim);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--gr-theme-bg);
+  color: var(--gr-theme-text);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Shared theme tokens only. Page layouts remain in their page.css files. */
-:root, .gr-theme-root {
-  --gr-theme-bg: #f7f5ef; --gr-theme-surface: #fffefa; --gr-theme-surface-alt: #eee9dd;
-  --gr-theme-text: #292820; --gr-theme-muted: #686354; --gr-theme-border: #d8d1c1;
-  --gr-theme-gold: #846029; --gr-theme-input: #faf8f2; --gr-theme-danger: #a52927;
-  --gr-theme-on-gold: #19130d; --gr-theme-button: #d8b575;
+.gr-theme-root {
+  min-height: 100svh;
+  background: var(--gr-theme-bg);
+  color: var(--gr-theme-text);
 }
-.gr-theme-root[data-theme="dark"] {
-  --gr-theme-bg: #0b0908; --gr-theme-surface: #17130f; --gr-theme-surface-alt: #262018;
-  --gr-theme-text: #faf4e9; --gr-theme-muted: #c0b29e; --gr-theme-border: #5e4e36;
-  --gr-theme-gold: #d8b575; --gr-theme-input: #100d0a; --gr-theme-danger: #ffb1a5;
-  color-scheme: dark;
+
+.gr-theme-root :where(input, select, textarea) { accent-color: var(--gr-theme-gold); }
+.gr-theme-root :where(input, textarea)::placeholder { color: var(--gr-theme-muted); opacity: 1; }
+.gr-theme-root :where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--gr-theme-gold);
+  outline-offset: 3px;
 }
-.gr-theme-root[data-theme="light"] { color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-  .gr-theme-root[data-theme="system"] {
-    --gr-theme-bg: #0b0908; --gr-theme-surface: #17130f; --gr-theme-surface-alt: #262018;
-    --gr-theme-text: #faf4e9; --gr-theme-muted: #c0b29e; --gr-theme-border: #5e4e36;
-    --gr-theme-gold: #d8b575; --gr-theme-input: #100d0a; --gr-theme-danger: #ffb1a5;
-    color-scheme: dark;
-  }
+.gr-theme-root :where(select, datalist) :where(option, optgroup) {
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
 }
-.gr-theme-root { min-height: 100svh; color: var(--gr-theme-text); background: var(--gr-theme-bg); --ink: var(--gr-theme-text); --muted: var(--gr-theme-muted); --cream: var(--gr-theme-bg); --white: var(--gr-theme-surface); --stroke: var(--gr-theme-border); }
+
+@media print {
+  :root:has(> body > .gr-theme-root[data-theme]) { color-scheme: light; }
+}
+
 .gr-theme-control { position: fixed; z-index: 50; right: 16px; bottom: 14px; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--gr-theme-border); border-radius: 7px; background: var(--gr-theme-surface); color: var(--gr-theme-muted); box-shadow: 0 3px 16px #0002; font: 500 11px Arial, sans-serif; }
 .gr-theme-control select { min-height: 32px; border: 0; background: var(--gr-theme-surface); color: var(--gr-theme-text); font: inherit; cursor: pointer; }
 .gr-theme-control select:focus-visible { outline: 2px solid var(--gr-theme-gold); outline-offset: 3px; }

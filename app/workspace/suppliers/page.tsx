@@ -69,7 +69,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
         <>
           {canEdit && (
             <WorkspacePanel className="grid gap-4">
-              <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+              <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
                 <Plus size={19} />
                 Register supplier
               </h2>
@@ -146,7 +146,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
           )}
 
           <WorkspacePanel className="grid gap-4">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <Truck size={20} />
               Supplier directory ({data.suppliers.length})
             </h2>
@@ -161,21 +161,21 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
             {data.suppliers.map((supplier) => (
               <article
                 key={supplier.id}
-                className="rounded-xl border border-[#eaddd5] bg-white p-4"
+                className="rounded-xl border border-gr-border bg-gr-surface p-4"
               >
                 <div className="flex flex-wrap justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <Building2
                       size={18}
-                      className="mt-1 text-[#9b713e]"
+                      className="mt-1 text-gr-gold"
                     />
 
                     <div>
-                      <h3 className="font-semibold text-[#512238]">
+                      <h3 className="font-semibold text-gr-text">
                         {supplier.name}
                       </h3>
 
-                      <p className="text-sm text-[#806d78]">
+                      <p className="text-sm text-gr-muted">
                         {supplier.contactName ||
                           'No contact person'}
                         {' · '}
@@ -183,12 +183,12 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
                       </p>
 
                       {supplier.email && (
-                        <p className="text-sm text-[#806d78]">
+                        <p className="text-sm text-gr-muted">
                           {supplier.email}
                         </p>
                       )}
 
-                      <p className="text-xs text-[#806d78]">
+                      <p className="text-xs text-gr-muted">
                         {supplier.termsDays} day payment terms
                         {' · '}
                         {supplier.active ? 'Active' : 'Inactive'}
@@ -223,8 +223,8 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
                 </div>
 
                 {canEdit && (
-                  <details className="mt-3 border-t border-[#efe4dc] pt-3">
-                    <summary className="cursor-pointer text-sm font-semibold text-[#6a3e54]">
+                  <details className="mt-3 border-t border-gr-border pt-3">
+                    <summary className="cursor-pointer text-sm font-semibold text-gr-text">
                       Edit supplier
                     </summary>
 

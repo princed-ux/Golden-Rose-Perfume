@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ActionButton } from '@/src/components/action-feedback';
@@ -11,7 +10,10 @@ import {
   type FormEvent,
 } from 'react';
 
-import { MessageCircle, ShoppingBag } from 'lucide-react';
+import {
+  MessageCircle,
+  ShoppingBag,
+} from 'lucide-react';
 
 import {
   formatPrice,
@@ -43,6 +45,10 @@ interface CheckoutFormProps {
   disabled: boolean;
 }
 
+/* =========================================================
+   WHATSAPP CHECKOUT
+   ========================================================= */
+
 function CheckoutForm({
   lines,
   profile,
@@ -67,7 +73,9 @@ function CheckoutForm({
 
   const snapshot = JSON.stringify(lines);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     if (pending || disabled || !configured) {
@@ -75,11 +83,11 @@ function CheckoutForm({
     }
 
     const data = new FormData(event.currentTarget);
+
     data.set('bag', snapshot);
 
-    const fingerprint = JSON.stringify([
-      ...data.entries(),
-    ]);
+    const fingerprint =
+      JSON.stringify([...data.entries()]);
 
     if (
       !requestRef.current ||
@@ -115,16 +123,19 @@ function CheckoutForm({
           reference: result.reference,
           snapshot,
         });
+
       } else {
         setError(
           result.error ??
-            'The message could not be prepared.',
+          'The message could not be prepared.',
         );
       }
+
     } catch {
       setError(
         'The message could not be prepared. Try again.',
       );
+
     } finally {
       setPending(false);
     }
@@ -132,7 +143,7 @@ function CheckoutForm({
 
   return (
     <section
-      className="gr-bag-panel"
+      className="gr-bag-panel min-w-0"
       aria-labelledby="whatsapp-heading"
     >
       <h2 id="whatsapp-heading">
@@ -160,7 +171,7 @@ function CheckoutForm({
       )}
 
       <form
-        className="gr-bag-form"
+        className="gr-bag-form min-w-0"
         onSubmit={submit}
         onChange={() => {
           setPrepared(null);
@@ -169,8 +180,12 @@ function CheckoutForm({
         aria-busy={pending}
       >
         <fieldset
-          disabled={pending || disabled || !configured}
-          className="gr-bag-form"
+          disabled={
+            pending ||
+            disabled ||
+            !configured
+          }
+          className="gr-bag-form min-w-0"
         >
           <label>
             Name
@@ -213,7 +228,7 @@ function CheckoutForm({
 
             <textarea
               name="delivery"
-              rows={2}
+              rows={3}
               maxLength={240}
             />
           </label>
@@ -232,22 +247,23 @@ function CheckoutForm({
       </form>
 
       {error && (
-        <p role="alert">
-          {error}
-        </p>
+        <p role="alert">{error}</p>
       )}
 
       {!disabled &&
         prepared?.snapshot === snapshot && (
-          <div className="gr-bag-prepared">
+          <div className="gr-bag-prepared min-w-0">
             <p role="status">
               Enquiry{' '}
+
               <strong>
                 {prepared.reference}
               </strong>
+
               {' '}saved.
 
               Current estimated item total{' '}
+
               <strong>
                 {formatPrice(prepared.totalMinor)}
               </strong>
@@ -269,7 +285,7 @@ function CheckoutForm({
 
             <p>
               Your enquiry is saved as a draft request,
-              not a paid order. Review and SEND the
+              not a paid order. Review and send the
               message in WhatsApp; opening the chat alone
               does not notify the boutique or reserve stock.
             </p>
@@ -288,11 +304,22 @@ function CheckoutForm({
   );
 }
 
+/* =========================================================
+   SHARED SHOPPING BAG
+   ========================================================= */
+
 export interface ShoppingBagScreenProps {
   checkout?: boolean;
   configured?: boolean;
   contactUnavailable?: boolean;
   profile?: CustomerProfile | null;
+
+  /*
+   * Keep navigation inside the customer account
+   * without changing the bag's storage or data model.
+   */
+
+  account?: boolean;
 }
 
 export function ShoppingBagScreen({
@@ -300,7 +327,25 @@ export function ShoppingBagScreen({
   configured = false,
   contactUnavailable = false,
   profile = null,
+  account = false,
 }: ShoppingBagScreenProps) {
+  const collectionHref = account
+    ? '/account/shop'
+    : '/shop';
+
+  const bagHref = account
+    ? '/account/shop?view=bag'
+    : '/cart';
+
+  const checkoutHref = account
+    ? '/account/shop?view=checkout'
+    : '/checkout';
+
+  const productHref = (slug: string) =>
+    account
+      ? `/account/shop?product=${encodeURIComponent(slug)}`
+      : `/shop/${encodeURIComponent(slug)}`;
+
   const {
     ready,
     lines,
@@ -313,7 +358,9 @@ export function ShoppingBagScreen({
   } = useShoppingBag();
 
   const snapshot =
-    ready && !syncUnavailable && lines.length
+    ready &&
+    !syncUnavailable &&
+    lines.length
       ? JSON.stringify(lines)
       : '';
 
@@ -326,10 +373,10 @@ export function ShoppingBagScreen({
     products: CatalogProduct[] | null;
   }>();
 
+  /* LOAD CURRENT PRICES FROM THE EXISTING SERVICE */
+
   useEffect(() => {
-    if (!snapshot) {
-      return;
-    }
+    if (!snapshot) return;
 
     let current = true;
 
@@ -368,10 +415,12 @@ export function ShoppingBagScreen({
     quantity: number,
   ) =>
     update(
-      (current) =>
+      current =>
         setBagQuantity(current, id, quantity),
       id,
     );
+
+  /* LOADING */
 
   if (!ready) {
     return (
@@ -383,6 +432,8 @@ export function ShoppingBagScreen({
       </p>
     );
   }
+
+  /* SYNCHRONIZATION FAILURE */
 
   if (syncUnavailable) {
     return (
@@ -406,6 +457,8 @@ export function ShoppingBagScreen({
     );
   }
 
+  /* EMPTY BAG */
+
   if (!lines.length) {
     return (
       <section className="gr-bag-panel gr-bag-empty">
@@ -414,9 +467,7 @@ export function ShoppingBagScreen({
           aria-hidden="true"
         />
 
-        <h2>
-          Your bag is empty.
-        </h2>
+        <h2>Your bag is empty.</h2>
 
         {deviceOnly && (
           <p role="status">
@@ -426,7 +477,7 @@ export function ShoppingBagScreen({
         )}
 
         <Link
-          href="/shop"
+          href={collectionHref}
           className="gr-bag-primary"
         >
           Explore fragrances
@@ -434,6 +485,8 @@ export function ShoppingBagScreen({
       </section>
     );
   }
+
+  /* PRICE VERIFICATION */
 
   if (products === undefined) {
     return (
@@ -461,7 +514,7 @@ export function ShoppingBagScreen({
           type="button"
           className="gr-bag-primary"
           onClick={() =>
-            setRequest((value) => value + 1)
+            setRequest(value => value + 1)
           }
         >
           Try again
@@ -482,10 +535,12 @@ export function ShoppingBagScreen({
     unavailable.length === 0 &&
     totalMinor !== null;
 
+  /* SHOPPING BAG CONTENT */
+
   return (
-    <div className="gr-bag-grid">
+    <div className="gr-bag-grid min-w-0">
       <section
-        className="gr-bag-panel"
+        className="gr-bag-panel min-w-0"
         aria-labelledby="bag-items"
         aria-busy={pending}
       >
@@ -501,28 +556,23 @@ export function ShoppingBagScreen({
         )}
 
         {error && (
-          <p role="alert">
-            {error}
-          </p>
+          <p role="alert">{error}</p>
         )}
 
-        {items.map((item) => (
+        {items.map(item => (
           <article
-            className="gr-bag-item"
+            className="gr-bag-item min-w-0"
             key={item.variantId}
           >
-            <div>
+            <div className="min-w-0">
               <Link
-                href={
-                  '/shop/' +
-                  encodeURIComponent(item.slug)
-                }
-                className="gr-bag-item-name"
+                href={productHref(item.slug)}
+                className="gr-bag-item-name break-words"
               >
                 {item.name}
               </Link>
 
-              <p>
+              <p className="break-words">
                 {[
                   item.sizeMl
                     ? item.sizeMl + ' ml'
@@ -538,7 +588,7 @@ export function ShoppingBagScreen({
               </p>
             </div>
 
-            <div>
+            <div className="min-w-0">
               <p>
                 {formatPrice(
                   item.priceMinor * item.quantity,
@@ -550,7 +600,7 @@ export function ShoppingBagScreen({
                   Quantity {item.quantity}
                 </p>
               ) : (
-                <div className="gr-bag-quantity">
+                <div className="gr-bag-quantity flex-wrap!">
                   <ActionButton
                     type="button"
                     disabled={
@@ -616,9 +666,11 @@ export function ShoppingBagScreen({
           </article>
         ))}
 
+        {/* UNAVAILABLE SELECTIONS */}
+
         {unavailable.map((item, index) => (
           <div
-            className="gr-bag-item"
+            className="gr-bag-item min-w-0"
             key={item.variantId}
           >
             <p>
@@ -648,7 +700,9 @@ export function ShoppingBagScreen({
           </div>
         ))}
 
-        <p className="gr-bag-total">
+        {/* CURRENT VERIFIED ESTIMATED TOTAL */}
+
+        <p className="gr-bag-total flex-wrap!">
           <span>
             Estimated item total
           </span>
@@ -674,9 +728,11 @@ export function ShoppingBagScreen({
           </p>
         )}
 
+        {/* ACCOUNT-AWARE CHECKOUT LINKS */}
+
         {checkout ? (
           <Link
-            href="/cart"
+            href={bagHref}
             className="text-link"
           >
             Edit shopping bag
@@ -684,7 +740,7 @@ export function ShoppingBagScreen({
         ) : (
           canCheckout && (
             <Link
-              href="/checkout"
+              href={checkoutHref}
               className="gr-bag-primary"
             >
               Continue to WhatsApp checkout
@@ -692,6 +748,8 @@ export function ShoppingBagScreen({
           )
         )}
       </section>
+
+      {/* CHECKOUT FORM */}
 
       {checkout && (
         <CheckoutForm

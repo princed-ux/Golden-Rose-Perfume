@@ -84,15 +84,15 @@ function ReadinessPanel({
       <div className="grid gap-4" id="staff-readiness">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#a07a46]">
+            <p className="text-xs font-bold uppercase tracking-widest text-gr-gold">
               Owner controls
             </p>
 
-            <h2 className="mt-1 font-serif text-2xl text-[#441d30]">
+            <h2 className="mt-1 font-serif text-2xl text-gr-text">
               Staff setup &amp; security
             </h2>
 
-            <p className="mt-1 max-w-2xl text-sm text-[#806a75]">
+            <p className="mt-1 max-w-2xl text-sm text-gr-muted">
               Live configuration checks, not a simulated
               employee test. No accounts or passwords are
               changed by opening this panel.
@@ -103,8 +103,8 @@ function ReadinessPanel({
             className={
               'rounded-lg px-3 py-2 text-sm font-semibold ' +
               (ready
-                ? 'bg-[#e6f3e9] text-[#28623e]'
-                : 'bg-[#fff2dc] text-[#805622]')
+                ? 'bg-gr-success-bg text-gr-success'
+                : 'bg-gr-surface-alt text-gr-gold')
             }
           >
             {passed} / {required.length} required checks passed
@@ -130,21 +130,21 @@ function ReadinessPanel({
             },
           ].map(({ label, value, Icon }) => (
             <div
-              className="flex items-center gap-3 rounded-xl border border-[#ecdfd9] bg-[#fffdfa] p-3"
+              className="flex items-center gap-3 rounded-xl border border-gr-border bg-gr-surface p-3"
               key={label}
             >
               <Icon
                 size={20}
-                className="text-[#91633e]"
+                className="text-gr-gold"
                 aria-hidden="true"
               />
 
               <span className="grid gap-0.5">
-                <strong className="text-lg text-[#4a2437]">
+                <strong className="text-lg text-gr-text">
                   {directory ? value : '—'}
                 </strong>
 
-                <small className="text-[#78656f]">
+                <small className="text-gr-muted">
                   {label}
                 </small>
               </span>
@@ -156,29 +156,29 @@ function ReadinessPanel({
           {items.map((item) => (
             <li
               key={item.label}
-              className="flex items-start gap-3 rounded-xl border border-[#ecdfd9] bg-white p-3"
+              className="flex items-start gap-3 rounded-xl border border-gr-border bg-gr-surface p-3"
             >
               {item.ok ? (
                 <CheckCircle2
                   size={18}
-                  className="mt-0.5 shrink-0 text-[#2c8253]"
+                  className="mt-0.5 shrink-0 text-gr-success"
                   aria-hidden="true"
                 />
               ) : (
                 <CircleAlert
                   size={18}
-                  className="mt-0.5 shrink-0 text-[#a16924]"
+                  className="mt-0.5 shrink-0 text-gr-gold"
                   aria-hidden="true"
                 />
               )}
 
               <span className="grid gap-1">
-                <strong className="text-sm text-[#47283a]">
+                <strong className="text-sm text-gr-text">
                   {item.label}
                   {item.optional ? ' · Optional' : ''}
                 </strong>
 
-                <small className="leading-5 text-[#78656f]">
+                <small className="leading-5 text-gr-muted">
                   {item.detail}
                 </small>
               </span>
@@ -186,7 +186,7 @@ function ReadinessPanel({
           ))}
         </ul>
 
-        <p className="flex items-start gap-2 text-xs leading-5 text-[#785e6c]">
+        <p className="flex items-start gap-2 text-xs leading-5 text-gr-gold">
           <ShieldCheck
             size={16}
             className="mt-0.5 shrink-0"
@@ -200,14 +200,14 @@ function ReadinessPanel({
 
         <div className="flex flex-wrap gap-3 text-sm">
           <Link
-            className="font-semibold text-[#672b49] underline underline-offset-4"
+            className="font-semibold text-gr-text underline underline-offset-4"
             href="/workspace/inventory"
           >
             Manage live store locations
           </Link>
 
           <Link
-            className="font-semibold text-[#672b49] underline underline-offset-4"
+            className="font-semibold text-gr-text underline underline-offset-4"
             href="/staff/employee-invite"
           >
             Employee invitation page
@@ -435,7 +435,7 @@ export default async function StaffManagementPage() {
 
       <section
         id="staff-owners"
-        className="grid min-w-0 scroll-mt-24 gap-5 border-t border-[#e8dcd7] pt-1"
+        className="grid min-w-0 scroll-mt-24 gap-5 border-t border-gr-border pt-1"
         aria-labelledby="grstaff-owner-title"
       >
         <WorkspacePageHeader

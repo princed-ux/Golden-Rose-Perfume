@@ -95,7 +95,7 @@ export function InventoryTable({
       aria-label="Inventory balances"
       className="grid min-w-0"
     >
-      <div className="grid gap-3 border-b border-[#ede1db] p-4 lg:grid-cols-[minmax(0,1fr)_12rem_11rem]">
+      <div className="grid gap-3 border-b border-gr-border p-4 lg:grid-cols-[minmax(0,1fr)_12rem_11rem]">
         <label className="relative min-w-0">
           <span className="sr-only">
             Filter stock by product or SKU
@@ -104,7 +104,7 @@ export function InventoryTable({
           <Search
             size={17}
             aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-3.5 text-[#a07849]"
+            className="pointer-events-none absolute left-3 top-3.5 text-gr-gold"
           />
 
           <input
@@ -150,7 +150,7 @@ export function InventoryTable({
           <Filter
             size={15}
             aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-3.5 text-[#a07849]"
+            className="pointer-events-none absolute left-3 top-3.5 text-gr-gold"
           />
 
           <select
@@ -173,18 +173,18 @@ export function InventoryTable({
 
       {filtered.length === 0 ? (
         <div className="grid justify-items-center gap-3 px-5 py-14 text-center">
-          <span className="grid size-14 place-items-center rounded-2xl bg-[#f9eee2] text-[#a57839]">
+          <span className="grid size-14 place-items-center rounded-2xl bg-gr-surface-alt text-gr-gold">
             <PackageSearch
               size={25}
               aria-hidden="true"
             />
           </span>
 
-          <h3 className="font-serif text-xl text-[#471a31]">
+          <h3 className="font-serif text-xl text-gr-text">
             No matching stock records
           </h3>
 
-          <p className="max-w-md text-sm leading-6 text-[#806d77]">
+          <p className="max-w-md text-sm leading-6 text-gr-muted">
             {items.length === 0
               ? 'No inventory rows are available on this page.'
               : 'Try another filter or search term. Only the currently loaded page is being searched.'}
@@ -214,7 +214,7 @@ export function InventoryTable({
         >
           <table className="w-full min-w-[740px] border-collapse text-left">
             <thead>
-              <tr className="bg-[#f9f3ee] text-[11px] font-bold uppercase tracking-wider text-[#79616c]">
+              <tr className="bg-gr-surface-alt text-[11px] font-bold uppercase tracking-wider text-gr-muted">
                 <th scope="col" className="px-5 py-4">
                   Fragrance
                 </th>
@@ -236,7 +236,7 @@ export function InventoryTable({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-[#f0e6e1]">
+            <tbody className="divide-y divide-gr-border">
               {filtered.map(item => {
                 const status = stockState(item);
                 const low = status === 'available' && item.available <= 5;
@@ -249,15 +249,15 @@ export function InventoryTable({
                       ':' +
                       item.locationId
                     }
-                    className="bg-white transition-colors hover:bg-[#fffaf5]"
+                    className="bg-gr-surface transition-colors hover:bg-gr-surface-alt"
                   >
                     <td className="px-5 py-4">
                       <div className="grid gap-1">
-                        <strong className="text-sm font-semibold text-[#40243a]">
+                        <strong className="text-sm font-semibold text-gr-text">
                           {item.name}
                         </strong>
 
-                        <span className="text-xs text-[#8c7580]">
+                        <span className="text-xs text-gr-muted">
                           {[
                             item.sku,
                             item.sizeMl
@@ -270,19 +270,19 @@ export function InventoryTable({
                       </div>
                     </td>
 
-                    <td className="px-4 py-4 text-sm text-[#614c57]">
+                    <td className="px-4 py-4 text-sm text-gr-muted">
                       {item.locationName}
                     </td>
 
-                    <td className="px-4 py-4 text-right text-sm tabular-nums text-[#614c57]">
+                    <td className="px-4 py-4 text-right text-sm tabular-nums text-gr-muted">
                       {quantity(item.onHand)}
                     </td>
 
-                    <td className="px-4 py-4 text-right text-sm tabular-nums text-[#614c57]">
+                    <td className="px-4 py-4 text-right text-sm tabular-nums text-gr-muted">
                       {quantity(item.reserved)}
                     </td>
 
-                    <td className="px-4 py-4 text-right text-sm font-bold tabular-nums text-[#471a31]">
+                    <td className="px-4 py-4 text-right text-sm font-bold tabular-nums text-gr-text">
                       {quantity(item.available)}
                     </td>
 
@@ -291,10 +291,10 @@ export function InventoryTable({
                         className={
                           'inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ' +
                           (status === 'available' && !low
-                            ? 'bg-[#e8f3e9] text-[#28613d]'
+                            ? 'bg-gr-success-bg text-gr-success'
                             : low || status === 'unverified-zero' || status === 'not-counted'
-                              ? 'bg-[#fff0d8] text-[#96621f]'
-                              : 'bg-[#f4ecef] text-[#6f4255]')
+                              ? 'bg-gr-surface-alt text-gr-gold'
+                              : 'bg-gr-surface-alt text-gr-text')
                         }
                       >
                         {low ? 'Available · low stock' : stockLabels[status]}
@@ -308,8 +308,8 @@ export function InventoryTable({
         </div>
       )}
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#ede1db] bg-[#fffdfa] px-5 py-4">
-        <p className="text-xs text-[#806d77]">
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-gr-border bg-gr-surface px-5 py-4">
+        <p className="text-xs text-gr-muted">
           Showing {filtered.length} of {items.length}{' '}
           records on this page.
           {' '}

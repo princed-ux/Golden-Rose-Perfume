@@ -28,7 +28,7 @@ export default function MigrationLayout({
           <Link
             key={section.href}
             href={section.href}
-            className="inline-flex min-h-10 items-center rounded-xl border border-[#e4d5ce] bg-white px-4 py-2 text-sm font-semibold text-[#54213a] transition hover:border-[#b68c56] hover:bg-[#fff7ed]"
+            className="inline-flex min-h-10 items-center rounded-xl border border-gr-border bg-gr-surface px-4 py-2 text-sm font-semibold text-gr-text transition hover:border-gr-control-border hover:bg-gr-surface-alt"
           >
             {section.label}
           </Link>

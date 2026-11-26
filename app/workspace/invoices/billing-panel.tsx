@@ -34,19 +34,19 @@ import {
    ========================================================= */
 
 const box =
-  'grid min-w-0 gap-4 rounded-2xl border border-[#ecdfd9] bg-[#fffdfa] p-4 sm:p-6';
+  'grid min-w-0 gap-4 rounded-2xl border border-gr-border bg-gr-surface p-4 sm:p-6';
 
 const button =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#e5d6cc] bg-white px-3 py-2 text-sm font-semibold text-[#53203a] hover:bg-[#fff5e6] disabled:opacity-45';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gr-border bg-gr-surface px-3 py-2 text-sm font-semibold text-gr-text hover:bg-gr-accent-soft disabled:opacity-45';
 
 const primary =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#53203a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3d1428] disabled:opacity-45';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gr-strong-hover px-4 py-2 text-sm font-semibold text-gr-on-strong hover:bg-gr-strong-hover disabled:opacity-45';
 
 const field =
-  'min-h-11 w-full min-w-0 rounded-xl border border-[#e5d6cc] bg-white px-3 py-2 text-sm text-[#402332]';
+  'min-h-11 w-full min-w-0 rounded-xl border border-gr-border bg-gr-surface px-3 py-2 text-sm text-gr-text';
 
 const label =
-  'grid min-w-0 gap-1.5 text-xs font-semibold text-[#6f5162]';
+  'grid min-w-0 gap-1.5 text-xs font-semibold text-gr-muted';
 
 const formatter =
   new Intl.NumberFormat('en-NG', {
@@ -192,7 +192,7 @@ function BillingSetup({
           />
         </label>
 
-        <label className="flex items-start gap-3 rounded-xl border border-[#e8d8c7] bg-white p-3 text-xs leading-5 sm:col-span-2">
+        <label className="flex items-start gap-3 rounded-xl border border-gr-border bg-gr-surface p-3 text-xs leading-5 sm:col-span-2">
           <input
             type="checkbox"
             required
@@ -215,7 +215,7 @@ function BillingSetup({
         Save business billing details
       </ActionButton>
 
-      <p className="text-xs leading-5 text-[#87747e]">
+      <p className="text-xs leading-5 text-gr-muted">
         These details are reused for future documents
         from this store. Enter zero tax only when
         that treatment has been verified.
@@ -295,15 +295,15 @@ export function BillingRegister({
       aria-busy={busy}
     >
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#a4783d]">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gr-gold">
           Customer documents
         </p>
 
-        <h2 className="font-serif text-2xl text-[#4a1d35]">
+        <h2 className="font-serif text-2xl text-gr-text">
           Invoices &amp; Quotations
         </h2>
 
-        <p className="mt-1 text-sm text-[#796570]">
+        <p className="mt-1 text-sm text-gr-muted">
           Find saved documents, issue invoices and
           manage customer payments.
         </p>
@@ -315,7 +315,7 @@ export function BillingRegister({
         <details
           id="billing-configuration"
           open={configurationRequired || undefined}
-          className="rounded-xl border border-[#ecdfd9] bg-[#fffaf5] p-4 text-[#53203a]"
+          className="rounded-xl border border-gr-border bg-gr-surface p-4 text-gr-text"
         >
           <summary className="cursor-pointer font-semibold">
             {configurationRequired
@@ -327,7 +327,7 @@ export function BillingRegister({
             {configurationRequired ? (
               <div
                 role="status"
-                className="flex items-start gap-3 rounded-xl border border-[#e8d7b8] bg-[#fff3e4] p-3 text-sm"
+                className="flex items-start gap-3 rounded-xl border border-gr-border bg-gr-surface-alt p-3 text-sm"
               >
                 <CircleAlert
                   size={19}
@@ -341,7 +341,7 @@ export function BillingRegister({
                 </p>
               </div>
             ) : (
-              <p className="flex items-center gap-2 text-sm text-emerald-800">
+              <p className="flex items-center gap-2 text-sm text-gr-success">
                 <CheckCircle2 size={17} />
                 Billing configuration available
               </p>
@@ -392,7 +392,7 @@ export function BillingRegister({
       <form
         key={JSON.stringify({ ...filters, page: 0 })}
         onSubmit={filter}
-        className="grid min-w-0 gap-3 rounded-xl border border-[#ecdfd9] bg-[#fffaf5] p-3 sm:grid-cols-2 xl:grid-cols-4"
+        className="grid min-w-0 gap-3 rounded-xl border border-gr-border bg-gr-surface p-3 sm:grid-cols-2 xl:grid-cols-4"
       >
         <label className={`${label} sm:col-span-2`}>
           Customer or invoice number
@@ -512,28 +512,28 @@ export function BillingRegister({
       {/* SAVED DOCUMENTS */}
 
       {!data.documents.length ? (
-        <div className="grid justify-items-center gap-3 rounded-xl border border-dashed border-[#e5d6cc] p-8 text-center">
+        <div className="grid justify-items-center gap-3 rounded-xl border border-dashed border-gr-border p-8 text-center">
           <FileText
             size={32}
-            className="text-[#b08a58]"
+            className="text-gr-gold"
           />
 
-          <strong className="text-[#53203a]">
+          <strong className="text-gr-text">
             No matching documents
           </strong>
 
-          <p className="max-w-md text-sm text-[#6f5162]">
+          <p className="max-w-md text-sm text-gr-muted">
             Create a new quotation or invoice,
             or change the filters to find an
             existing document.
           </p>
         </div>
       ) : (
-        <ul className="grid divide-y divide-[#ecdfd9] rounded-xl border border-[#ecdfd9] bg-white">
+        <ul className="grid divide-y divide-gr-border rounded-xl border border-gr-border bg-gr-surface">
           {data.documents.map(doc => (
             <li
               key={doc.id}
-              className="grid min-w-0 gap-3 p-4 text-sm text-[#5a394c] sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center"
+              className="grid min-w-0 gap-3 p-4 text-sm text-gr-text sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center"
             >
               <div className="min-w-0 break-words">
                 <strong>
@@ -558,12 +558,12 @@ export function BillingRegister({
                     'inline-flex rounded-lg px-2.5 py-1 text-xs font-semibold ' +
                     (
                       doc.state === 'draft'
-                        ? 'bg-[#fff0d8] text-[#8f632f]'
+                        ? 'bg-gr-surface-alt text-gr-gold'
 
                         : doc.state === 'voided'
-                          ? 'bg-rose-50 text-rose-800'
+                          ? 'bg-gr-danger-bg text-gr-danger'
 
-                          : 'bg-emerald-50 text-emerald-800'
+                          : 'bg-gr-success-bg text-gr-success'
                     )
                   }
                 >
@@ -718,13 +718,13 @@ export function BillingDocumentControls({
       aria-busy={busy}
     >
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#a4783d]">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gr-gold">
           {doc.location_name}
           {' · '}
           {billingStatus[doc.status]}
         </p>
 
-        <h2 className="font-serif text-2xl text-[#4a1d35]">
+        <h2 className="font-serif text-2xl text-gr-text">
           {invoiceNumber(doc.invoice_number) ||
             (
               doc.kind === 'quotation'
@@ -743,20 +743,20 @@ export function BillingDocumentControls({
 
       {/* DOCUMENT TOTALS */}
 
-      <div className="grid gap-3 rounded-xl border border-[#ecdfd9] bg-white p-4">
+      <div className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-4">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-sm text-[#796570]">
+          <span className="text-sm text-gr-muted">
             Document total
           </span>
 
-          <strong className="break-all text-xl tabular-nums text-[#53203a]">
+          <strong className="break-all text-xl tabular-nums text-gr-text">
             {money(doc.total_minor)}
           </strong>
         </div>
 
         {doc.state === 'issued' && (
           <>
-            <div className="flex justify-between gap-3 border-t border-[#ecdfd9] pt-3 text-sm">
+            <div className="flex justify-between gap-3 border-t border-gr-border pt-3 text-sm">
               <span>Amount paid</span>
 
               <strong>
@@ -767,7 +767,7 @@ export function BillingDocumentControls({
             <div className="flex justify-between gap-3 text-sm">
               <span>Outstanding balance</span>
 
-              <strong className="text-[#946a37]">
+              <strong className="text-gr-gold">
                 {doc.balance_minor === null
                   ? 'Unavailable'
                   : money(doc.balance_minor)}
@@ -778,7 +778,7 @@ export function BillingDocumentControls({
       </div>
 
       {!activeStore?.active && (
-        <p className="rounded-xl bg-[#faf5f1] p-3 text-sm">
+        <p className="rounded-xl bg-gr-surface p-3 text-sm">
           The selling location is unavailable or
           inactive. This document is available
           for reference only.
@@ -790,7 +790,7 @@ export function BillingDocumentControls({
       {doc.state === 'draft' &&
         activeStore?.active && (
           <div className="grid gap-4">
-            <div className="flex items-start gap-3 rounded-xl border border-[#e8d7b8] bg-[#fff9ed] p-4 text-sm leading-6 text-[#75512d]">
+            <div className="flex items-start gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 text-sm leading-6 text-gr-gold">
               <FileText
                 size={20}
                 className="mt-0.5 shrink-0"
@@ -811,22 +811,22 @@ export function BillingDocumentControls({
             {/* BILLING CONFIGURATION BLOCKER */}
 
             {doc.tax_bps === null && (
-              <div className="grid gap-4 rounded-xl border border-[#e8d7b8] bg-[#fffaf3] p-4">
+              <div className="grid gap-4 rounded-xl border border-gr-border bg-gr-surface p-4">
                 <div className="flex items-start gap-3">
                   <Settings2
                     size={20}
-                    className="mt-0.5 shrink-0 text-[#946a37]"
+                    className="mt-0.5 shrink-0 text-gr-gold"
                   />
 
                   <div>
-                    <h3 className="font-semibold text-[#53203a]">
+                    <h3 className="font-semibold text-gr-text">
                       {storeConfigured
                         ? 'Update the saved document'
 
                         : 'Complete billing setup'}
                     </h3>
 
-                    <p className="mt-1 text-sm leading-6 text-[#796570]">
+                    <p className="mt-1 text-sm leading-6 text-gr-muted">
                       {storeConfigured
                         ? 'The store billing details are now available. Edit and save this draft again to apply them.'
 
@@ -846,7 +846,7 @@ export function BillingDocumentControls({
                 )}
 
                 {!storeConfigured && !data.canConfigure && (
-                  <p className="rounded-lg bg-white p-3 text-sm text-[#946a37]">
+                  <p className="rounded-lg bg-gr-surface p-3 text-sm text-gr-gold">
                     Ask an authorized administrator
                     to complete the business billing
                     details. Your saved draft will
@@ -911,8 +911,8 @@ export function BillingDocumentControls({
             {doc.tax_bps !== null &&
               doc.kind === 'invoice' && (
                 confirmIssue ? (
-                  <div className="grid gap-3 rounded-xl border border-[#e8d7b8] bg-[#fff3e9] p-4 text-sm">
-                    <strong className="text-[#53203a]">
+                  <div className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface-alt p-4 text-sm">
+                    <strong className="text-gr-text">
                       Confirm invoice issuance
                     </strong>
 
@@ -926,7 +926,7 @@ export function BillingDocumentControls({
                       financial details will be locked.
                     </p>
 
-                    <p className="text-xs text-[#796570]">
+                    <p className="text-xs text-gr-muted">
                       Issuing an invoice does not
                       automatically record payment.
                     </p>
@@ -988,7 +988,7 @@ export function BillingDocumentControls({
               });
             }}
           >
-            <p className="text-sm text-[#796570]">
+            <p className="text-sm text-gr-muted">
               The customer has accepted this
               quotation. Create the corresponding
               invoice without re-entering its products.
@@ -1019,7 +1019,7 @@ export function BillingDocumentControls({
 
       {doc.state === 'issued' && (
         <div className="grid gap-4">
-          <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+          <div className="flex items-start gap-3 rounded-xl border border-gr-success-border bg-gr-success-bg p-3 text-sm text-gr-success">
             <CheckCircle2
               size={20}
               className="mt-0.5 shrink-0"
@@ -1035,12 +1035,12 @@ export function BillingDocumentControls({
             </div>
           </div>
 
-          <h3 className="font-serif text-xl text-[#4a1d35]">
+          <h3 className="font-serif text-xl text-gr-text">
             Payments &amp; Reconciliation
           </h3>
 
           {!doc.payments.length && (
-            <p className="text-sm text-[#796570]">
+            <p className="text-sm text-gr-muted">
               No payments have been recorded.
             </p>
           )}
@@ -1051,7 +1051,7 @@ export function BillingDocumentControls({
             <ul className="grid gap-2">
               {doc.payments.map(payment => (
                 <li
-                  className="grid gap-2 break-words rounded-xl border border-[#ecdfd9] p-3 text-sm"
+                  className="grid gap-2 break-words rounded-xl border border-gr-border p-3 text-sm"
                   key={payment.id}
                 >
                   <strong>
@@ -1229,7 +1229,7 @@ export function BillingDocumentControls({
             mode === 'pos' &&
             !!doc.balance_minor && (
               <form
-                className="grid gap-3 rounded-xl border border-[#ecdfd9] p-4"
+                className="grid gap-3 rounded-xl border border-gr-border p-4"
                 onSubmit={event => {
                   const values = getValues(event);
 
@@ -1276,7 +1276,7 @@ export function BillingDocumentControls({
             mode === 'offline' &&
             !!doc.balance_minor && (
               <form
-                className="grid gap-3 rounded-xl border border-[#ecdfd9] p-4"
+                className="grid gap-3 rounded-xl border border-gr-border p-4"
                 onSubmit={event => {
                   const values = getValues(event);
 
@@ -1361,7 +1361,7 @@ export function BillingDocumentControls({
               payment => payment.status === 'pending',
             ) && (
               <form
-                className="grid gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4"
+                className="grid gap-3 rounded-xl border border-gr-danger-border bg-gr-danger-bg p-4"
                 onSubmit={event => {
                   const values = getValues(event);
 
@@ -1371,7 +1371,7 @@ export function BillingDocumentControls({
                   });
                 }}
               >
-                <p className="text-sm text-rose-900">
+                <p className="text-sm text-gr-danger">
                   The invoice will be marked as void.
                   Its document number and history
                   will be retained.

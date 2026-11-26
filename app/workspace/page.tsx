@@ -290,15 +290,15 @@ function MetricCard({ metric }: { metric: Metric }) {
   const Icon = metric.icon;
 
   const styles = {
-    connected: 'bg-[#e8f5ed] text-[#266746]',
-    attention: 'bg-[#fff1dc] text-[#915d22]',
-    unavailable: 'bg-[#f5edf0] text-[#86546a]',
+    connected: 'bg-gr-success-bg text-gr-success',
+    attention: 'bg-gr-surface-alt text-gr-gold',
+    unavailable: 'bg-gr-surface-alt text-gr-danger',
   }[metric.status];
 
   return (
-    <article className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-4 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-5">
+    <article className="min-w-0 rounded-2xl border border-gr-border bg-gr-surface p-4 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-5">
       <div className="flex items-start justify-between gap-3">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f9ecda] text-[#9d702f]">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
           <Icon
             size={21}
             strokeWidth={1.7}
@@ -320,15 +320,15 @@ function MetricCard({ metric }: { metric: Metric }) {
         </span>
       </div>
 
-      <p className="mt-4 text-xs font-semibold text-[#826f7a]">
+      <p className="mt-4 text-xs font-semibold text-gr-muted">
         {metric.title}
       </p>
 
-      <p className="mt-1 font-serif text-[clamp(1.5rem,2.6vw,2rem)] leading-tight text-[#46172f]">
+      <p className="mt-1 font-serif text-[clamp(1.5rem,2.6vw,2rem)] leading-tight text-gr-text">
         {metric.value}
       </p>
 
-      <p className="mt-2 text-xs leading-5 text-[#8a7782]">
+      <p className="mt-2 text-xs leading-5 text-gr-muted">
         {metric.detail}
       </p>
     </article>
@@ -345,13 +345,13 @@ function ReadinessRow({
   ready: boolean;
 }) {
   return (
-    <li className="flex items-start gap-3 border-b border-[#f0e5e1] py-3 last:border-0">
+    <li className="flex items-start gap-3 border-b border-gr-border py-3 last:border-0">
       <span
         className={
           'mt-0.5 grid size-8 shrink-0 place-items-center rounded-full ' +
           (ready
-            ? 'bg-[#eaf5ec] text-[#37764d]'
-            : 'bg-[#fff1df] text-[#a26f2c]')
+            ? 'bg-gr-success-bg text-gr-success'
+            : 'bg-gr-surface-alt text-gr-gold')
         }
       >
         {ready ? (
@@ -362,11 +362,11 @@ function ReadinessRow({
       </span>
 
       <span className="grid min-w-0 gap-1">
-        <strong className="text-sm font-semibold text-[#4e2b3d]">
+        <strong className="text-sm font-semibold text-gr-text">
           {title}
         </strong>
 
-        <small className="text-xs leading-5 text-[#87747e]">
+        <small className="text-xs leading-5 text-gr-muted">
           {detail}
         </small>
       </span>
@@ -560,25 +560,25 @@ export default async function WorkspaceOverview() {
     >
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="grid min-w-0 gap-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#a47636]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gr-gold">
             Golden Rose / Operations
           </p>
 
           <h2
             id="gr-operations-title"
-            className="font-serif text-[clamp(1.75rem,3vw,2.35rem)] leading-tight tracking-tight text-[#46172f]"
+            className="font-serif text-[clamp(1.75rem,3vw,2.35rem)] leading-tight tracking-tight text-gr-text"
           >
             Executive overview
           </h2>
 
-          <p className="max-w-2xl text-sm leading-6 text-[#85717d]">
+          <p className="max-w-2xl text-sm leading-6 text-gr-muted">
             Verified catalogue and inventory totals,
             completed POS performance and access to
             every permitted business workspace.
           </p>
         </div>
 
-        <span className="inline-flex items-center gap-2 rounded-full border border-[#e9d8bb] bg-[#fff7e8] px-3 py-2 text-xs font-semibold text-[#8c612b]">
+        <span className="inline-flex items-center gap-2 rounded-full border border-gr-border bg-gr-surface px-3 py-2 text-xs font-semibold text-gr-gold">
           <ShieldCheck size={16} aria-hidden="true" />
           Authenticated business workspace
         </span>
@@ -595,23 +595,23 @@ export default async function WorkspaceOverview() {
 
       {mayViewFinance && (
         <section
-          className="grid min-w-0 gap-4 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
+          className="grid min-w-0 gap-4 rounded-2xl border border-gr-border bg-gr-surface p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
           aria-labelledby="gr-executive-finance"
         >
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gr-gold">
                 Executive finance / real transactions
               </p>
 
               <h3
                 id="gr-executive-finance"
-                className="mt-1 font-serif text-2xl text-[#46172f]"
+                className="mt-1 font-serif text-2xl text-gr-text"
               >
                 Financial overview
               </h3>
 
-              <p className="mt-2 max-w-3xl text-xs leading-5 text-[#826c78]">
+              <p className="mt-2 max-w-3xl text-xs leading-5 text-gr-muted">
                 {periodStart} to {today} (Africa/Lagos).
                 POS revenue counts completed transactions only.
                 Enquiries, invoice issuance and purchase commitments
@@ -621,7 +621,7 @@ export default async function WorkspaceOverview() {
 
             <Link
               href="/workspace/reports"
-              className="inline-flex items-center gap-2 rounded-lg border border-[#dfc9b6] bg-[#fff8ee] px-3 py-2 text-xs font-semibold text-[#754c27] hover:bg-[#fff1dc]"
+              className="inline-flex items-center gap-2 rounded-lg border border-gr-border bg-gr-surface px-3 py-2 text-xs font-semibold text-gr-gold hover:bg-gr-accent-soft"
             >
               Full reports
               <ArrowRight size={15} aria-hidden="true" />
@@ -631,7 +631,7 @@ export default async function WorkspaceOverview() {
           {!monthFinance || !todayFinance ? (
             <p
               role="status"
-              className="rounded-xl border border-[#f0dac7] bg-[#fff8ed] p-4 text-sm text-[#8c5d31]"
+              className="rounded-xl border border-gr-border bg-gr-surface p-4 text-sm text-gr-gold"
             >
               One or more financial reporting periods could not be verified.
               Check Reports &amp; Analytics; no revenue has been estimated.
@@ -668,15 +668,15 @@ export default async function WorkspaceOverview() {
               ].map(item => (
                 <article
                   key={item.title}
-                  className="rounded-xl border border-[#eee1da] bg-[#fbf7f3] p-4"
+                  className="rounded-xl border border-gr-border bg-gr-surface p-4"
                 >
-                  <p className="text-xs font-semibold text-[#826f7a]">
+                  <p className="text-xs font-semibold text-gr-muted">
                     {item.title}
                   </p>
-                  <p className="mt-2 break-words font-serif text-xl text-[#46172f]">
+                  <p className="mt-2 break-words font-serif text-xl text-gr-text">
                     {item.value}
                   </p>
-                  <p className="mt-2 text-xs leading-5 text-[#8a7782]">
+                  <p className="mt-2 text-xs leading-5 text-gr-muted">
                     {item.detail}
                   </p>
                 </article>
@@ -685,7 +685,7 @@ export default async function WorkspaceOverview() {
           )}
 
           <div className="grid gap-3 lg:grid-cols-2">
-            <p className="rounded-xl border border-[#efddca] bg-[#fff8ed] p-4 text-xs leading-5 text-[#76513b]">
+            <p className="rounded-xl border border-gr-border bg-gr-surface p-4 text-xs leading-5 text-gr-gold">
               <strong>Gross and net profit: not yet verified.</strong>
               {' '}Historical COGS, stock-cost snapshots, returns and
               refunds must be reconciled before trustworthy profit
@@ -697,7 +697,7 @@ export default async function WorkspaceOverview() {
               (monthFinance?.sales.qaCodedTransactions ?? 0)) ? (
               <p
                 role="status"
-                className="rounded-xl border border-[#efddca] bg-[#fff8ed] p-4 text-xs leading-5 text-[#76513b]"
+                className="rounded-xl border border-gr-border bg-gr-surface p-4 text-xs leading-5 text-gr-gold"
               >
                 <strong>QA records detected:</strong>
                 {' '}{quantity(inventory?.qaProducts ?? 0)} QA-labelled
@@ -708,7 +708,7 @@ export default async function WorkspaceOverview() {
                 real trading performance.
               </p>
             ) : (
-              <p className="rounded-xl border border-[#e7e4dc] bg-[#faf8f3] p-4 text-xs leading-5 text-[#796d75]">
+              <p className="rounded-xl border border-gr-border bg-gr-surface p-4 text-xs leading-5 text-gr-muted">
                 For live trading decisions, reconcile transaction records
                 against receipts, verified payments and operating expenses.
               </p>
@@ -719,25 +719,25 @@ export default async function WorkspaceOverview() {
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,1fr)]">
         <section
-          className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
+          className="min-w-0 rounded-2xl border border-gr-border bg-gr-surface p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
           aria-labelledby="gr-ops-priorities"
         >
-          <div className="flex items-start justify-between gap-3 border-b border-[#f0e6e2] pb-4">
+          <div className="flex items-start justify-between gap-3 border-b border-gr-border pb-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gr-gold">
                 Recommended next actions
               </p>
 
               <h3
                 id="gr-ops-priorities"
-                className="mt-1 font-serif text-2xl text-[#46172f]"
+                className="mt-1 font-serif text-2xl text-gr-text"
               >
                 What needs attention
               </h3>
             </div>
 
             <ClipboardList
-              className="text-[#ad8247]"
+              className="text-gr-gold"
               size={22}
               aria-hidden="true"
             />
@@ -747,20 +747,20 @@ export default async function WorkspaceOverview() {
             {!catalogueReady && mayViewProducts && (
               <Link
                 href="/workspace/products"
-                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 transition-colors hover:bg-gr-accent-soft"
               >
                 <Package
-                  className="shrink-0 text-[#a67532]"
+                  className="shrink-0 text-gr-gold"
                   size={19}
                   aria-hidden="true"
                 />
 
                 <span className="grid min-w-0 flex-1 gap-1">
-                  <strong className="text-sm text-[#4f2b3d]">
+                  <strong className="text-sm text-gr-text">
                     Check catalogue access
                   </strong>
 
-                  <small className="text-xs leading-5 text-[#8a7580]">
+                  <small className="text-xs leading-5 text-gr-muted">
                     Verify imported products and
                     their publication status.
                   </small>
@@ -768,7 +768,7 @@ export default async function WorkspaceOverview() {
 
                 <ArrowRight
                   size={17}
-                  className="shrink-0 text-[#a67532]"
+                  className="shrink-0 text-gr-gold"
                   aria-hidden="true"
                 />
               </Link>
@@ -777,20 +777,20 @@ export default async function WorkspaceOverview() {
             {!storeReady && mayViewInventory && (
               <Link
                 href="/workspace/inventory"
-                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 transition-colors hover:bg-gr-accent-soft"
               >
                 <Building2
-                  className="shrink-0 text-[#a67532]"
+                  className="shrink-0 text-gr-gold"
                   size={19}
                   aria-hidden="true"
                 />
 
                 <span className="grid min-w-0 flex-1 gap-1">
-                  <strong className="text-sm text-[#4f2b3d]">
+                  <strong className="text-sm text-gr-text">
                     Verify store setup
                   </strong>
 
-                  <small className="text-xs leading-5 text-[#8a7580]">
+                  <small className="text-xs leading-5 text-gr-muted">
                     Employees and cash registers
                     need a real active retail location.
                   </small>
@@ -798,7 +798,7 @@ export default async function WorkspaceOverview() {
 
                 <ArrowRight
                   size={17}
-                  className="shrink-0 text-[#a67532]"
+                  className="shrink-0 text-gr-gold"
                   aria-hidden="true"
                 />
               </Link>
@@ -807,20 +807,20 @@ export default async function WorkspaceOverview() {
             {role === 'owner' && !staffReady && (
               <Link
                 href="/workspace/staff"
-                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 transition-colors hover:bg-gr-accent-soft"
               >
                 <UsersRound
-                  className="shrink-0 text-[#a67532]"
+                  className="shrink-0 text-gr-gold"
                   size={19}
                   aria-hidden="true"
                 />
 
                 <span className="grid min-w-0 flex-1 gap-1">
-                  <strong className="text-sm text-[#4f2b3d]">
+                  <strong className="text-sm text-gr-text">
                     Set up employee access
                   </strong>
 
-                  <small className="text-xs leading-5 text-[#8a7580]">
+                  <small className="text-xs leading-5 text-gr-muted">
                     Create or invite staff and
                     test role-based sign-in.
                   </small>
@@ -828,7 +828,7 @@ export default async function WorkspaceOverview() {
 
                 <ArrowRight
                   size={17}
-                  className="shrink-0 text-[#a67532]"
+                  className="shrink-0 text-gr-gold"
                   aria-hidden="true"
                 />
               </Link>
@@ -840,21 +840,21 @@ export default async function WorkspaceOverview() {
               stockAlerts > 0 && (
                 <Link
                   href="/workspace/inventory#inventory-balances"
-                  className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#f0e1d2] bg-[#fff9f0] p-4 transition-colors hover:bg-[#fff1db]"
+                  className="group flex min-w-0 items-center gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 transition-colors hover:bg-gr-accent-soft"
                 >
                   <CircleAlert
-                    className="shrink-0 text-[#a67532]"
+                    className="shrink-0 text-gr-gold"
                     size={19}
                     aria-hidden="true"
                   />
 
                   <span className="grid min-w-0 flex-1 gap-1">
-                    <strong className="text-sm text-[#4f2b3d]">
+                    <strong className="text-sm text-gr-text">
                       Review {stockAlerts} stock row(s)
                       needing attention
                     </strong>
 
-                    <small className="text-xs leading-5 text-[#8a7580]">
+                    <small className="text-xs leading-5 text-gr-muted">
                       {quantity(lowStockRows ?? 0)} recorded low/empty;
                       {` ${quantity(missingBalanceRows ?? 0)} missing stock balances`}.
                     </small>
@@ -862,7 +862,7 @@ export default async function WorkspaceOverview() {
 
                   <ArrowRight
                     size={17}
-                    className="shrink-0 text-[#a67532]"
+                    className="shrink-0 text-gr-gold"
                     aria-hidden="true"
                   />
                 </Link>
@@ -874,14 +874,14 @@ export default async function WorkspaceOverview() {
               inventory !== null &&
               stockAlerts === 0 &&
               inventory.qaProducts === 0 && (
-                <p className="rounded-xl border border-[#dceadf] bg-[#f3faf5] p-4 text-sm leading-6 text-[#3e6e4a]">
+                <p className="rounded-xl border border-gr-border bg-gr-success-bg p-4 text-sm leading-6 text-gr-success">
                   Catalogue, store and staff checks are available,
                   with no low or missing stock rows flagged.
                   Continue receipt, POS and payment acceptance testing.
                 </p>
               )}
 
-            <p className="rounded-xl bg-[#f8f3ee] p-4 text-xs leading-5 text-[#866f7b]">
+            <p className="rounded-xl bg-gr-surface-alt p-4 text-xs leading-5 text-gr-muted">
               Dashboard metrics use database-wide inventory summaries
               rather than the first page of inventory. Physical stock is
               counted across active locations; missing stock records are
@@ -893,16 +893,16 @@ export default async function WorkspaceOverview() {
         </section>
 
         <section
-          className="min-w-0 rounded-2xl border border-[#eadbd8] bg-[#fffdf9] p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
+          className="min-w-0 rounded-2xl border border-gr-border bg-gr-surface p-5 shadow-[0_7px_28px_rgba(77,24,49,0.045)] sm:p-6"
           aria-labelledby="gr-ops-readiness"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gr-gold">
             Live checks
           </p>
 
           <h3
             id="gr-ops-readiness"
-            className="mt-1 font-serif text-2xl text-[#46172f]"
+            className="mt-1 font-serif text-2xl text-gr-text"
           >
             Store readiness
           </h3>
@@ -973,13 +973,13 @@ export default async function WorkspaceOverview() {
       >
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a47636]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gr-gold">
               Your tools
             </p>
 
             <h3
               id="gr-ops-workspaces"
-              className="mt-1 font-serif text-2xl text-[#46172f]"
+              className="mt-1 font-serif text-2xl text-gr-text"
             >
               Business workspaces
             </h3>
@@ -988,7 +988,7 @@ export default async function WorkspaceOverview() {
           {role === 'owner' && (
             <Link
               href="/workspace/migration"
-              className="inline-flex items-center gap-2 rounded-lg border border-[#dfc9b6] bg-[#fff8ee] px-3 py-2 text-xs font-semibold text-[#754c27] hover:bg-[#fff1dc]"
+              className="inline-flex items-center gap-2 rounded-lg border border-gr-border bg-gr-surface px-3 py-2 text-xs font-semibold text-gr-gold hover:bg-gr-accent-soft"
             >
               Data Management
 
@@ -1008,9 +1008,9 @@ export default async function WorkspaceOverview() {
               <Link
                 key={link.id}
                 href={link.href}
-                className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#eadbd8] bg-[#fffdf9] p-4 shadow-[0_4px_20px_rgba(70,23,47,0.03)] transition-colors hover:border-[#d8b68e] hover:bg-[#fff8ef]"
+                className="group flex min-w-0 items-center gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 shadow-[0_4px_20px_rgba(70,23,47,0.03)] transition-colors hover:border-gr-border hover:bg-gr-surface-alt"
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#f9ecd9] text-[#a47636]">
+                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-gr-surface-alt text-gr-gold">
                   <Icon
                     size={19}
                     aria-hidden="true"
@@ -1018,18 +1018,18 @@ export default async function WorkspaceOverview() {
                 </span>
 
                 <span className="grid min-w-0 flex-1 gap-1">
-                  <strong className="text-sm text-[#4c293a]">
+                  <strong className="text-sm text-gr-text">
                     {link.label}
                   </strong>
 
-                  <small className="text-xs text-[#8a7880]">
+                  <small className="text-xs text-gr-muted">
                     {link.detail}
                   </small>
                 </span>
 
                 <ArrowRight
                   size={16}
-                  className="shrink-0 text-[#ad8248] transition-transform group-hover:translate-x-0.5"
+                  className="shrink-0 text-gr-gold transition-transform group-hover:translate-x-0.5"
                   aria-hidden="true"
                 />
               </Link>

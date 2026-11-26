@@ -256,12 +256,12 @@ function SalesPerformance({
                 >
                   <stop
                     offset="0%"
-                    stopColor="#d2983c"
+                    stopColor="var(--gr-theme-gold)"
                     stopOpacity=".32"
                   />
                   <stop
                     offset="100%"
-                    stopColor="#f3dc9f"
+                    stopColor="var(--gr-theme-accent-soft)"
                     stopOpacity=".04"
                   />
                 </linearGradient>
@@ -275,7 +275,7 @@ function SalesPerformance({
               <path
                 d="M0 119 C24 112 37 87 63 97 S98 106 119 79 S146 56 165 73 S195 75 220 57 S250 81 275 60 S310 54 334 44 S368 29 393 40 S426 65 451 54 S481 43 505 51 S561 22 600 27"
                 fill="none"
-                stroke="#b57d29"
+                stroke="var(--gr-theme-gold)"
                 strokeWidth="2.5"
                 vectorEffect="non-scaling-stroke"
               />
@@ -834,7 +834,7 @@ function WorkspaceFrame({
       >
         <button
           type="button"
-          className="self-end rounded-md p-2 text-[#f2d5a4] hover:bg-white/10 min-[901px]:hidden"
+          className="self-end rounded-md p-2 text-gr-media-accent hover:bg-white/10 min-[901px]:hidden"
           aria-label="Close workspace navigation"
           onClick={closeSidebar}
         >

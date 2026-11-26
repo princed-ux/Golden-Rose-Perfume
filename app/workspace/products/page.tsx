@@ -279,7 +279,7 @@ function Pagination({
 type CatalogueParams = Promise<{ q?: string; publication?: string; page?: string; add?: string; manage?: string }>;
 
 export default function ProductsCataloguePage({ searchParams }: { searchParams: CatalogueParams }) {
-  return <Suspense fallback={<p className="p-5 text-sm text-[#6f5162]" role="status">Loading catalogue…</p>}>
+  return <Suspense fallback={<p className="p-5 text-sm text-gr-muted" role="status">Loading catalogue…</p>}>
     <CatalogueWorkspace searchParams={searchParams} />
   </Suspense>;
 }

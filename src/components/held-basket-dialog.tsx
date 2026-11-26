@@ -819,14 +819,14 @@ export function HeldBasketDialog({
 
 const styles = `
 .gr-held-dialog {
-  --held-bg: #fffdfa;
-  --held-panel: #ffffff;
-  --held-text: #432538;
-  --held-muted: #806d78;
-  --held-border: #e9dcd7;
-  --held-soft: #f9f1e7;
-  --held-accent: #73324b;
-  --held-gold: #a77b41;
+  --held-bg: var(--gr-theme-surface);
+  --held-panel: var(--gr-theme-surface);
+  --held-text: var(--gr-theme-text);
+  --held-muted: var(--gr-theme-muted);
+  --held-border: var(--gr-theme-border);
+  --held-soft: var(--gr-theme-surface-alt);
+  --held-accent: var(--gr-theme-strong);
+  --held-gold: var(--gr-theme-gold);
 
   box-sizing: border-box;
   position: fixed;
@@ -849,7 +849,7 @@ const styles = `
 }
 
 .gr-held-dialog::backdrop {
-  background: rgba(29, 14, 23, .58);
+  background: var(--gr-theme-scrim);
   backdrop-filter: blur(5px);
 }
 
@@ -1007,9 +1007,9 @@ const styles = `
 }
 
 .gr-held-error {
-  border-color: #b94c64;
-  color: #a32f48;
-  background: #fff1f3;
+  border-color: var(--gr-theme-danger-border);
+  color: var(--gr-theme-danger);
+  background: var(--gr-theme-danger-bg);
 }
 
 /* SEARCH */
@@ -1175,9 +1175,9 @@ const styles = `
 }
 
 .gr-held-status {
-  color: #8b6329;
-  border: 1px solid #dac49f;
-  background: #fff5df;
+  color: var(--gr-theme-gold);
+  border: 1px solid var(--gr-theme-border);
+  background: var(--gr-theme-surface);
   border-radius: 999px;
   padding: 4px 9px;
   font-size: 11px;
@@ -1324,42 +1324,18 @@ const styles = `
 }
 
 .gr-held-remove {
-  color: #a33c54;
+  color: var(--gr-theme-danger);
 }
 
 .gr-held-primary {
-  color: #ffffff;
+  color: var(--gr-theme-on-strong);
   border-color: var(--held-accent);
   background: var(--held-accent);
 }
 
 /* EXPLICIT DARK THEME */
 
-.gr-theme-root[data-theme="dark"] .gr-held-dialog {
-  --held-bg: #211820;
-  --held-panel: #2d222b;
-  --held-text: #f2e5ec;
-  --held-muted: #c7b3be;
-  --held-border: #503c49;
-  --held-soft: #392b34;
-  --held-accent: #98526f;
-  --held-gold: #dfb978;
-}
-
 /* SYSTEM DARK THEME */
-
-@media (prefers-color-scheme: dark) {
-  .gr-theme-root[data-theme="system"] .gr-held-dialog {
-    --held-bg: #211820;
-    --held-panel: #2d222b;
-    --held-text: #f2e5ec;
-    --held-muted: #c7b3be;
-    --held-border: #503c49;
-    --held-soft: #392b34;
-    --held-accent: #98526f;
-    --held-gold: #dfb978;
-  }
-}
 
 /* RESPONSIVE MOBILE AND TABLET LAYOUT */
 

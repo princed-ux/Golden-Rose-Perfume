@@ -144,13 +144,13 @@ function EvidenceCard({
   icon: LucideIcon;
 }) {
   return (
-    <article className="min-w-0 rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-5">
-      <span className="grid size-10 place-items-center rounded-xl bg-[#f9eddf] text-[#a4773e]">
+    <article className="min-w-0 rounded-2xl border border-gr-border bg-gr-surface p-5">
+      <span className="grid size-10 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
         <Icon size={20} aria-hidden="true" />
       </span>
-      <h3 className="mt-3 text-xs font-semibold text-[#765d6b]">{title}</h3>
-      <p className="mt-2 break-words font-serif text-2xl text-[#4d1e34]">{value}</p>
-      <p className="mt-2 text-xs leading-5 text-[#8b7782]">{description}</p>
+      <h3 className="mt-3 text-xs font-semibold text-gr-muted">{title}</h3>
+      <p className="mt-2 break-words font-serif text-2xl text-gr-text">{value}</p>
+      <p className="mt-2 text-xs leading-5 text-gr-muted">{description}</p>
     </article>
   );
 }
@@ -217,14 +217,14 @@ async function AuthorizedFinancialReconciliation({
       />
 
       <form method="get" action="/workspace/reports/reconciliation"
-        className="flex flex-wrap items-end gap-3 rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-4"
+        className="flex flex-wrap items-end gap-3 rounded-2xl border border-gr-border bg-gr-surface p-4"
       >
-        <label className="grid min-w-40 gap-2 text-sm font-semibold text-[#54213a]">
+        <label className="grid min-w-40 gap-2 text-sm font-semibold text-gr-text">
           Start date
           <input type="date" name="from" defaultValue={from}
             className={workspaceInput} />
         </label>
-        <label className="grid min-w-40 gap-2 text-sm font-semibold text-[#54213a]">
+        <label className="grid min-w-40 gap-2 text-sm font-semibold text-gr-text">
           End date
           <input type="date" name="to" defaultValue={to}
             className={workspaceInput} />
@@ -243,8 +243,8 @@ async function AuthorizedFinancialReconciliation({
 
       {report && (
         <>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-[#7a6873]">
-            <span className="rounded-full border border-[#ead9bd] bg-[#fff7e9] px-3 py-2 font-semibold">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-gr-muted">
+            <span className="rounded-full border border-gr-border bg-gr-surface px-3 py-2 font-semibold">
               {report.from} to {report.to} · Africa/Lagos
             </span>
             <span>{report.locationId ? 'Assigned store' : 'Authorized reporting scope'}</span>
@@ -270,15 +270,15 @@ async function AuthorizedFinancialReconciliation({
               icon={FileWarning} />
           </section>
 
-          <section className="grid min-w-0 gap-4 rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-5 sm:p-6"
+          <section className="grid min-w-0 gap-4 rounded-2xl border border-gr-border bg-gr-surface p-5 sm:p-6"
             aria-labelledby="gr-cost-reconciliation">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 id="gr-cost-reconciliation" className="font-serif text-2xl text-[#4d1e34]">
+              <h2 id="gr-cost-reconciliation" className="font-serif text-2xl text-gr-text">
                 Cost-of-goods-sold evidence
               </h2>
               <span className={report.costSnapshotsComplete
-                ? 'rounded-full bg-[#e8f4e9] px-3 py-2 text-xs font-semibold text-[#2c6a42]'
-                : 'rounded-full bg-[#fff0d7] px-3 py-2 text-xs font-semibold text-[#8d5b22]'}>
+                ? 'rounded-full bg-gr-success-bg px-3 py-2 text-xs font-semibold text-gr-success'
+                : 'rounded-full bg-gr-surface-alt px-3 py-2 text-xs font-semibold text-gr-gold'}>
                 {report.costSnapshotsComplete ? 'Snapshots complete' : 'Reconciliation required'}
               </span>
             </div>
@@ -295,7 +295,7 @@ async function AuthorizedFinancialReconciliation({
                 description="Unexpected sale totals, missing sale lines, or mismatched cost snapshot quantities." />
             </div>
 
-            <p className="rounded-xl border border-[#e9d9c9] bg-[#fdf9f3] p-4 text-sm leading-6 text-[#725c67]">
+            <p className="rounded-xl border border-gr-border bg-gr-surface p-4 text-sm leading-6 text-gr-muted">
               <strong>Verified cost evidence:</strong>{' '}
               {formatPrice(report.knownSnapshotCostMinor)} from matching,
               nonnegative cost snapshots only. This is a partial cost-evidence
@@ -312,26 +312,26 @@ async function AuthorizedFinancialReconciliation({
           </section>
 
           <section className="grid gap-3 lg:grid-cols-2" aria-label="Profit readiness">
-            <div className="rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-5">
-              <div className="flex items-center gap-3 text-[#8d5b22]">
+            <div className="rounded-2xl border border-gr-border bg-gr-surface p-5">
+              <div className="flex items-center gap-3 text-gr-gold">
                 <AlertTriangle size={21} aria-hidden="true" />
-                <h2 className="font-serif text-xl text-[#4d1e34]">Refunds and returns</h2>
+                <h2 className="font-serif text-xl text-gr-text">Refunds and returns</h2>
               </div>
-              <p className="mt-3 text-sm leading-6 text-[#765e6c]">
+              <p className="mt-3 text-sm leading-6 text-gr-muted">
                 {report.refundLedgerConnected
                   ? 'The refund ledger is connected; recorded refunds still require payment and stock reconciliation.'
                   : 'A refund and returns ledger is not integrated with this report. The current revenue total is not automatically net of customer refunds.'}
               </p>
             </div>
-            <div className="rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-5">
-              <div className="flex items-center gap-3 text-[#8d5b22]">
+            <div className="rounded-2xl border border-gr-border bg-gr-surface p-5">
+              <div className="flex items-center gap-3 text-gr-gold">
                 <ShieldCheck size={21} aria-hidden="true" />
-                <h2 className="font-serif text-xl text-[#4d1e34]">Gross / net profit</h2>
+                <h2 className="font-serif text-xl text-gr-text">Gross / net profit</h2>
               </div>
-              <p className="mt-3 font-serif text-2xl text-[#4d1e34]">
+              <p className="mt-3 font-serif text-2xl text-gr-text">
                 {report.profitAvailable ? 'Requires reconciliation review' : 'Unavailable'}
               </p>
-              <p className="mt-2 text-sm leading-6 text-[#765e6c]">
+              <p className="mt-2 text-sm leading-6 text-gr-muted">
                 Gross and net profit are deliberately withheld until historical
                 COGS, refunds, payment evidence and operating costs agree.
               </p>
@@ -346,7 +346,7 @@ async function AuthorizedFinancialReconciliation({
             </WorkspaceNotice>
           )}
 
-          <p className="text-xs leading-5 text-[#82717b]">
+          <p className="text-xs leading-5 text-gr-muted">
             This is a read-only evidence report. No stock, sales, refunds,
             historical costs or payment records are created or modified here.
           </p>

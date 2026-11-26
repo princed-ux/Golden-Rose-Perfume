@@ -86,7 +86,7 @@ const when = (value: string) =>
   }).format(new Date(value));
 
 const card =
-  'min-w-0 rounded-2xl border border-[#e4d4cb] bg-[#fffdfa] p-6 shadow-[0_8px_28px_rgba(55,19,35,0.06)]';
+  'min-w-0 rounded-2xl border border-gr-border bg-gr-surface p-6 shadow-[0_8px_28px_rgba(55,19,35,0.06)]';
 
 
 /* =========================================================
@@ -107,11 +107,11 @@ function Summary({
   return (
     <article className={card}>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-semibold leading-5 text-[#5b394b]">
+        <span className="text-sm font-semibold leading-5 text-gr-text">
           {label}
         </span>
 
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f4e6ce] text-[#8d6334]">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
           <Icon
             size={21}
             strokeWidth={2}
@@ -120,11 +120,11 @@ function Summary({
         </span>
       </div>
 
-      <strong className="mt-4 block break-words font-serif text-[clamp(1.8rem,3vw,2.5rem)] font-semibold leading-tight tabular-nums text-[#3d152b]">
+      <strong className="mt-4 block break-words font-serif text-[clamp(1.8rem,3vw,2.5rem)] font-semibold leading-tight tabular-nums text-gr-text">
         {value}
       </strong>
 
-      <p className="mt-2 text-sm leading-6 text-[#705761]">
+      <p className="mt-2 text-sm leading-6 text-gr-muted">
         {detail}
       </p>
     </article>
@@ -172,46 +172,46 @@ function SaleReceipt({
       <div className="mx-auto w-full max-w-[760px]">
         <article
           id="gr-sales-receipt"
-          className="rounded-2xl border border-[#e9ddd5] bg-white p-6 shadow-[0_8px_36px_rgba(50,19,33,0.06)] sm:p-10"
+          className="rounded-2xl border border-gr-border bg-gr-surface p-6 shadow-[0_8px_36px_rgba(50,19,33,0.06)] sm:p-10"
           aria-label="Confirmed sales receipt"
         >
-          <header className="flex flex-wrap items-start justify-between gap-5 border-b border-[#e9dfd9] pb-6">
+          <header className="flex flex-wrap items-start justify-between gap-5 border-b border-gr-border pb-6">
             <div>
-              <p className="font-serif text-3xl tracking-wide text-[#471b31]">
+              <p className="font-serif text-3xl tracking-wide text-gr-text">
                 GOLDEN ROSE
               </p>
 
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.23em] text-[#aa803f]">
+              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.23em] text-gr-gold">
                 Beauty of Fragrance
               </p>
 
-              <p className="mt-5 text-xs text-[#6f5b65]">
+              <p className="mt-5 text-xs text-gr-muted">
                 Sales receipt · Payment confirmed
               </p>
             </div>
 
             <div className="text-left text-sm sm:text-right">
-              <strong className="text-[#48263b]">
+              <strong className="text-gr-text">
                 GR-{String(
                   receipt.saleNumber,
                 ).padStart(7, '0')}
               </strong>
 
-              <p className="mt-2 text-[#766571]">
+              <p className="mt-2 text-gr-muted">
                 {when(receipt.createdAt)}
               </p>
 
-              <p className="text-[#766571]">
+              <p className="text-gr-muted">
                 {receipt.locationName}
               </p>
 
-              <p className="text-[#766571]">
+              <p className="text-gr-muted">
                 Customer:{' '}
                 {receipt.customerName ||
                   'Walk-in customer'}
               </p>
 
-              <p className="mt-2 font-semibold text-[#356846]">
+              <p className="mt-2 font-semibold text-gr-success">
                 COMPLETED ·{' '}
                 {paymentMethodLabel(
                   receipt.method,
@@ -222,7 +222,7 @@ function SaleReceipt({
 
           <div className="mt-6 overflow-x-auto">
             <table className="w-full min-w-[360px] text-left text-sm">
-              <thead className="border-b border-[#e9dfd9] text-xs text-[#7e6471]">
+              <thead className="border-b border-gr-border text-xs text-gr-muted">
                 <tr>
                   <th
                     scope="col"
@@ -254,7 +254,7 @@ function SaleReceipt({
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-[#f1e8e3]">
+              <tbody className="divide-y divide-gr-border">
                 {receipt.items.map((line, index) => (
                   <tr
                     key={
@@ -264,11 +264,11 @@ function SaleReceipt({
                     }
                   >
                     <td className="py-3 pr-3">
-                      <strong className="block font-semibold text-[#48263b]">
+                      <strong className="block font-semibold text-gr-text">
                         {line.name}
                       </strong>
 
-                      <span className="text-xs text-[#8a7580]">
+                      <span className="text-xs text-gr-muted">
                         {[
                           line.sku,
 
@@ -296,7 +296,7 @@ function SaleReceipt({
             </table>
           </div>
 
-          <div className="ml-auto mt-6 grid max-w-[360px] gap-2 border-t border-[#e9dfd9] pt-5 text-sm">
+          <div className="ml-auto mt-6 grid max-w-[360px] gap-2 border-t border-gr-border pt-5 text-sm">
             {[
               [
                 'Subtotal',
@@ -315,17 +315,17 @@ function SaleReceipt({
                 className="flex justify-between gap-4"
                 key={name}
               >
-                <span className="text-[#765f6b]">
+                <span className="text-gr-muted">
                   {name}
                 </span>
 
-                <span className="tabular-nums text-[#45293a]">
+                <span className="tabular-nums text-gr-text">
                   {money(Number(amount))}
                 </span>
               </div>
             ))}
 
-            <div className="mt-2 flex justify-between gap-4 border-t border-[#e9dfd9] pt-3 text-base font-bold text-[#471b31]">
+            <div className="mt-2 flex justify-between gap-4 border-t border-gr-border pt-3 text-base font-bold text-gr-text">
               <span>Total paid</span>
 
               <span>
@@ -400,7 +400,7 @@ function SaleReceipt({
             </div>
           </div>
 
-          <footer className="mt-10 border-t border-[#e9dfd9] pt-5 text-center text-xs leading-6 text-[#75626c]">
+          <footer className="mt-10 border-t border-gr-border pt-5 text-center text-xs leading-6 text-gr-muted">
             Thank you for shopping with Golden Rose Perfume.
 
             <p>
@@ -445,7 +445,7 @@ export default function SalesOrdersPage({
     <Suspense
       fallback={
         <p
-          className="p-5 text-sm text-[#6f5162]"
+          className="p-5 text-sm text-gr-muted"
           role="status"
         >
           Loading sales history…
@@ -765,7 +765,7 @@ async function SalesOrdersWorkspace({
 
             {canViewModule(role, 'pos') && (
               <Link
-                className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-xl border border-[#bd904b] bg-[#e3bd78] px-5 py-3 text-base font-bold !text-[#321a29] shadow-[0_6px_18px_rgba(60,30,30,.12)] transition hover:border-[#ab7834] hover:bg-[#f1d29a] hover:!text-[#321a29] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b622d]"
+                className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-xl border border-gr-control-border bg-gr-button px-5 py-3 text-base font-bold !text-gr-text shadow-[0_6px_18px_rgba(60,30,30,.12)] transition hover:border-gr-gold hover:bg-gr-button hover:!text-gr-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gr-gold"
                 href="/workspace/pos"
               >
                 <Banknote
@@ -789,11 +789,11 @@ async function SalesOrdersWorkspace({
         className="flex flex-wrap items-center gap-2 text-xs font-semibold"
         aria-label="Sales channels"
       >
-        <span className="rounded-full border border-[#cfb58c] bg-[#fff4e3] px-3 py-1.5 text-[#815625]">
+        <span className="rounded-full border border-gr-border bg-gr-surface px-3 py-1.5 text-gr-gold">
           In-store · Confirmed POS sales
         </span>
 
-        <span className="rounded-full border border-[#e7dcd7] bg-white px-3 py-1.5 text-[#8b7b81]">
+        <span className="rounded-full border border-gr-border bg-gr-surface px-3 py-1.5 text-gr-muted">
           Online and WhatsApp orders · Not connected
         </span>
       </nav>
@@ -860,12 +860,12 @@ async function SalesOrdersWorkspace({
           <div>
             <h2
               id="gr-sales-filters"
-              className="font-serif text-2xl text-[#471c32]"
+              className="font-serif text-2xl text-gr-text"
             >
               Find a transaction
             </h2>
 
-            <p className="mt-1 text-sm leading-6 text-[#705d68]">
+            <p className="mt-1 text-sm leading-6 text-gr-muted">
               Search by receipt number, customer name, fragrance or SKU.
               Dates use Lagos local time. Customer-linked receipts are
               available from CRM invoice history.
@@ -874,7 +874,7 @@ async function SalesOrdersWorkspace({
 
           <ShieldCheck
             size={20}
-            className="text-[#9b733e]"
+            className="text-gr-gold"
             aria-hidden="true"
           />
         </div>
@@ -890,7 +890,7 @@ async function SalesOrdersWorkspace({
             <span className="relative">
               <Search
                 size={16}
-                className="pointer-events-none absolute left-3 top-3.5 text-[#a68153]"
+                className="pointer-events-none absolute left-3 top-3.5 text-gr-gold"
                 aria-hidden="true"
               />
 
@@ -985,19 +985,19 @@ async function SalesOrdersWorkspace({
           <div>
             <h2
               id="gr-sales-register"
-              className="font-serif text-2xl text-[#471c32]"
+              className="font-serif text-2xl text-gr-text"
             >
               Recorded sales
             </h2>
 
-            <p className="mt-1 text-sm leading-6 text-[#705d68]">
+            <p className="mt-1 text-sm leading-6 text-gr-muted">
               {page
                 ? 'Real completed transactions · Most recent first'
                 : 'Retrieving the protected sales ledger'}
             </p>
           </div>
 
-          <span className="inline-flex items-center gap-2 text-xs text-[#8c7680]">
+          <span className="inline-flex items-center gap-2 text-xs text-gr-muted">
             <ClipboardList
               size={16}
               aria-hidden="true"
@@ -1023,15 +1023,15 @@ async function SalesOrdersWorkspace({
             {failure} Existing transactions have not been changed.
           </WorkspaceNotice>
         ) : sales.length === 0 ? (
-          <div className="grid justify-items-center gap-3 rounded-xl border border-dashed border-[#e7d9d2] bg-[#fffcf8] px-5 py-12 text-center">
-            <span className="grid size-14 place-items-center rounded-2xl bg-[#f7ebdb] text-[#a27a44]">
+          <div className="grid justify-items-center gap-3 rounded-xl border border-dashed border-gr-border bg-gr-surface px-5 py-12 text-center">
+            <span className="grid size-14 place-items-center rounded-2xl bg-gr-surface-alt text-gr-gold">
               <ReceiptText
                 size={25}
                 aria-hidden="true"
               />
             </span>
 
-            <h3 className="font-serif text-xl text-[#471c32]">
+            <h3 className="font-serif text-xl text-gr-text">
               {filters.search ||
               filters.from ||
               filters.to ||
@@ -1040,7 +1040,7 @@ async function SalesOrdersWorkspace({
                 : 'No completed POS sales yet'}
             </h3>
 
-            <p className="max-w-md text-sm leading-6 text-[#87747d]">
+            <p className="max-w-md text-sm leading-6 text-gr-muted">
               {filters.search ||
               filters.from ||
               filters.to
@@ -1050,13 +1050,13 @@ async function SalesOrdersWorkspace({
           </div>
         ) : (
           <div
-            className="overflow-x-auto rounded-xl border border-[#eee2dc]"
+            className="overflow-x-auto rounded-xl border border-gr-border"
             role="region"
             aria-label="Sales history table"
             tabIndex={0}
           >
             <table className="w-full min-w-[900px] border-collapse text-left text-base">
-              <thead className="bg-[#f9f0e6] text-xs font-bold uppercase tracking-wide text-[#624957]">
+              <thead className="bg-gr-surface-alt text-xs font-bold uppercase tracking-wide text-gr-text">
                 <tr>
                   <th
                     scope="col"
@@ -1109,13 +1109,13 @@ async function SalesOrdersWorkspace({
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-[#f0e5e0]">
+              <tbody className="divide-y divide-gr-border">
                 {sales.map(sale => (
                   <tr
                     key={sale.saleId}
-                    className="bg-white hover:bg-[#fffaf5]"
+                    className="bg-gr-surface hover:bg-gr-surface-alt"
                   >
-                    <td className="px-4 py-4 font-semibold text-[#482438]">
+                    <td className="px-4 py-4 font-semibold text-gr-text">
                       GR-{String(
                         sale.saleNumber,
                       ).padStart(7, '0')}
@@ -1126,21 +1126,21 @@ async function SalesOrdersWorkspace({
                       </span>
                     </td>
 
-                    <td className="px-4 py-4 text-[#67525d]">
+                    <td className="px-4 py-4 text-gr-muted">
                       {when(sale.createdAt)}
                     </td>
 
-                    <td className="px-4 py-4 text-[#67525d]">
+                    <td className="px-4 py-4 text-gr-muted">
                       {sale.locationName}
                     </td>
 
-                    <td className="px-4 py-4 text-[#67525d]">
+                    <td className="px-4 py-4 text-gr-muted">
                       {sale.units} unit
                       {sale.units === 1
                         ? ''
                         : 's'}
 
-                      <span className="block text-sm text-[#77616c]">
+                      <span className="block text-sm text-gr-muted">
                         {sale.lineCount} line
                         {sale.lineCount === 1
                           ? ''
@@ -1149,14 +1149,14 @@ async function SalesOrdersWorkspace({
                     </td>
 
                     <td className="px-4 py-4">
-                      <span className="rounded-full bg-[#e9f4eb] px-2.5 py-1 text-xs font-semibold text-[#347148]">
+                      <span className="rounded-full bg-gr-success-bg px-2.5 py-1 text-xs font-semibold text-gr-success">
                         {paymentMethodLabel(
                           sale.method,
                         )} · Completed
                       </span>
                     </td>
 
-                    <td className="px-4 py-4 text-right font-semibold tabular-nums text-[#471c32]">
+                    <td className="px-4 py-4 text-right font-semibold tabular-nums text-gr-text">
                       {money(sale.totalMinor)}
                     </td>
 
@@ -1166,7 +1166,7 @@ async function SalesOrdersWorkspace({
                           '/workspace/orders?saleId=' +
                           encodeURIComponent(sale.saleId)
                         }
-                        className="inline-flex items-center gap-1.5 font-semibold text-[#7f4f28] underline-offset-2 hover:underline"
+                        className="inline-flex items-center gap-1.5 font-semibold text-gr-gold underline-offset-2 hover:underline"
                       >
                         View receipt
 
@@ -1194,10 +1194,10 @@ async function SalesOrdersWorkspace({
             filters.offset > 0
           ) && (
             <nav
-              className="flex flex-wrap items-center justify-between gap-3 border-t border-[#eee3df] pt-4"
+              className="flex flex-wrap items-center justify-between gap-3 border-t border-gr-border pt-4"
               aria-label="Sales pages"
             >
-              <span className="text-xs text-[#86717d]">
+              <span className="text-xs text-gr-muted">
                 Page{' '}
                 {Math.floor(
                   filters.offset / page.limit,
@@ -1243,7 +1243,7 @@ async function SalesOrdersWorkspace({
           )}
       </WorkspacePanel>
 
-      <p className="text-xs leading-6 text-[#87747d]">
+      <p className="text-xs leading-6 text-gr-muted">
         Sales & Orders reads confirmed in-store POS transactions,
         including cash, transfers, card terminal payments and split payments.
         Quotations, invoices, online orders and WhatsApp checkout require

@@ -12,6 +12,6 @@
 .gr-faq-compact__contact {display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:75px;padding:29px 0;border-top:1px solid var(--help-line);border-bottom:1px solid var(--help-line)}
 .gr-faq-compact__contact h2 {margin:0 0 6px;font-size:25px;letter-spacing:-.035em}
 .gr-faq-compact__contact p {margin:0;color:var(--help-muted);font-size:13px;line-height:1.8}
-.gr-faq-compact__contact>a {display:inline-flex;min-height:45px;align-items:center;gap:11px;flex-shrink:0;padding:11px 17px;border-radius:8px;background:#332332;color:#fff!important;font-size:12px;font-weight:750;text-decoration:none}
-.gr-faq-compact__contact>a:hover {background:#963b59}
+.gr-faq-compact__contact>a {display:inline-flex;min-height:45px;align-items:center;gap:11px;flex-shrink:0;padding:11px 17px;border-radius:8px;background:var(--gr-theme-strong);color:var(--gr-theme-on-strong)!important;font-size:12px;font-weight:750;text-decoration:none}
+.gr-faq-compact__contact>a:hover {background:var(--gr-theme-strong-hover)}
 @media (max-width:600px) {.gr-faq-compact__intro {padding:27px 0 30px}.gr-faq-compact__topics {padding-bottom:35px}.gr-faq-compact__questions {gap:45px}.gr-faq-compact__contact {align-items:flex-start;flex-direction:column;margin-top:53px}}

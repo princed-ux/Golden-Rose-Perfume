@@ -1,0 +1,33 @@
+/* The boutique login defines the espresso, ivory and champagne palette. */
+:root {
+  --gr-theme-bg: light-dark(#f7f3eb, #0d0b09);
+  --gr-theme-surface: light-dark(#fffdfa, #171410);
+  --gr-theme-surface-alt: light-dark(#f0e8dc, #231d16);
+  --gr-theme-input: light-dark(#fffdfa, #110e0b);
+  --gr-theme-text: light-dark(#282019, #faf4e8);
+  --gr-theme-muted: light-dark(#66594c, #c4b6a2);
+  --gr-theme-border: light-dark(#d9cbb8, #514331);
+  --gr-theme-control-border: light-dark(#94806a, #857252);
+  --gr-theme-gold: light-dark(#77511f, #dbb978);
+  --gr-theme-accent-soft: light-dark(#f5e7cc, #302519);
+  --gr-theme-strong: light-dark(#54243a, #35271c);
+  --gr-theme-strong-hover: light-dark(#69374a, #493626);
+  --gr-theme-sidebar: light-dark(#361722, #17110d);
+  --gr-theme-on-strong: #fff5e7;
+  --gr-theme-button: #dbb978;
+  --gr-theme-button-hover: #f2daa7;
+  --gr-theme-on-gold: #24190d;
+  --gr-theme-media: #17110d;
+  --gr-theme-media-accent: #f0cc93;
+  --gr-theme-danger: light-dark(#952b40, #ffb2b9);
+  --gr-theme-danger-bg: light-dark(#fce8ea, #392027);
+  --gr-theme-danger-border: light-dark(#d3a0a6, #805054);
+  --gr-theme-success: light-dark(#245c3e, #a9d7b6);
+  --gr-theme-success-bg: light-dark(#e7f1e6, #1c2b21);
+  --gr-theme-success-border: light-dark(#a0bea7, #496b52);
+  --gr-theme-info: light-dark(#36546e, #b5cee5);
+  --gr-theme-info-bg: light-dark(#e8f0f5, #202d36);
+  --gr-theme-info-border: light-dark(#9eb5c8, #536e84);
+  --gr-theme-scrim: rgb(13 9 6 / 65%);
+  --gr-theme-shadow: 0 16px 48px rgb(19 11 5 / 12%);
+}

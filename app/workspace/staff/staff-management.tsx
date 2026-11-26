@@ -47,12 +47,12 @@ const date = new Intl.DateTimeFormat('en-GB', {
 });
 
 const sectionTitle =
-  'font-serif text-xl font-normal text-[#41172a] sm:text-2xl';
+  'font-serif text-xl font-normal text-gr-text sm:text-2xl';
 
 const tableColumns =
   'grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_7rem] lg:items-center';
 
-const fieldHint = 'text-xs leading-5 text-[#806d75]';
+const fieldHint = 'text-xs leading-5 text-gr-muted';
 
 const accountSetupMessage: Record<EmployeeAccountSetupIssue, string> = {
   'server-key': 'The staff admin key is missing from the web server environment.',
@@ -63,12 +63,12 @@ const accountSetupMessage: Record<EmployeeAccountSetupIssue, string> = {
 };
 
 const pillColors: Record<string, string> = {
-  active: 'bg-[#e6f1e8] text-[#2d5b3c]',
-  accepted: 'bg-[#e6f1e8] text-[#2d5b3c]',
-  pending: 'bg-[#fff0d8] text-[#69461b]',
-  suspended: 'bg-[#fff0d8] text-[#69461b]',
-  revoked: 'bg-[#fae7eb] text-[#7b3045]',
-  expired: 'bg-[#f3ecee] text-[#644b56]',
+  active: 'bg-gr-success-bg text-gr-success',
+  accepted: 'bg-gr-success-bg text-gr-success',
+  pending: 'bg-gr-surface-alt text-gr-gold',
+  suspended: 'bg-gr-surface-alt text-gr-gold',
+  revoked: 'bg-gr-surface-alt text-gr-danger',
+  expired: 'bg-gr-surface-alt text-gr-muted',
 };
 
 const auditLabels: Record<string, string> = {
@@ -104,7 +104,7 @@ function Status({ status }: { status: string }) {
     <span
       className={
         'inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ' +
-        (pillColors[status] ?? 'bg-[#f3ecee] text-[#644b56]')
+        (pillColors[status] ?? 'bg-gr-surface-alt text-gr-muted')
       }
     >
       <span
@@ -333,13 +333,13 @@ export function StaffManagement({
         className="grid min-w-0 scroll-mt-24 gap-5"
       >
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-[#e8dcd7] bg-[#fffdf9] p-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#806574]">
+          <div className="rounded-xl border border-gr-border bg-gr-surface p-4">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gr-muted">
               <UsersRound size={16} aria-hidden="true" />
               Employees
             </div>
 
-            <p className="mt-2 font-serif text-3xl text-[#41172a]">
+            <p className="mt-2 font-serif text-3xl text-gr-text">
               {backendReady ? employees.length : '—'}
             </p>
 
@@ -350,13 +350,13 @@ export function StaffManagement({
             </p>
           </div>
 
-          <div className="rounded-xl border border-[#e8dcd7] bg-[#fffdf9] p-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#806574]">
+          <div className="rounded-xl border border-gr-border bg-gr-surface p-4">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gr-muted">
               <Mail size={16} aria-hidden="true" />
               Pending invitations
             </div>
 
-            <p className="mt-2 font-serif text-3xl text-[#41172a]">
+            <p className="mt-2 font-serif text-3xl text-gr-text">
               {backendReady
                 ? directory.invitations.filter(
                     item => item.status === 'pending',
@@ -369,13 +369,13 @@ export function StaffManagement({
             </p>
           </div>
 
-          <div className="rounded-xl border border-[#e8dcd7] bg-[#fffdf9] p-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#806574]">
+          <div className="rounded-xl border border-gr-border bg-gr-surface p-4">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gr-muted">
               <Building2 size={16} aria-hidden="true" />
               Active stores
             </div>
 
-            <p className="mt-2 font-serif text-3xl text-[#41172a]">
+            <p className="mt-2 font-serif text-3xl text-gr-text">
               {backendReady
                 ? directory.locations.filter(
                     item => item.active,
@@ -507,12 +507,12 @@ export function StaffManagement({
 
                     <span
                       role="status"
-                      className="text-xs text-[#634858] sm:col-span-2"
+                      className="text-xs text-gr-text sm:col-span-2"
                     >
                       {copyStatus}
                     </span>
                     {/^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//i.test(result.inviteUrl) && (
-                      <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900 sm:col-span-2">
+                      <p className="rounded-lg border border-gr-gold bg-gr-accent-soft p-3 text-xs leading-5 text-gr-gold sm:col-span-2">
                         Local testing link only: it will not open on another device.
                         After your website is publicly deployed, set NEXT_PUBLIC_SITE_URL to its
                         HTTPS address and reissue the invitation before sharing it.
@@ -536,7 +536,7 @@ export function StaffManagement({
                     Employee directory
                   </h2>
 
-                  <p className="mt-1 text-sm text-[#806d75]">
+                  <p className="mt-1 text-sm text-gr-muted">
                     {employees.length}{' '}
                     {employees.length === 1
                       ? 'employee'
@@ -585,7 +585,7 @@ export function StaffManagement({
               )}
 
               {employees.length > 0 && (
-                <div className="grid gap-3 border-b border-[#e8dcd7] pb-4 sm:grid-cols-[minmax(0,1fr)_12rem]">
+                <div className="grid gap-3 border-b border-gr-border pb-4 sm:grid-cols-[minmax(0,1fr)_12rem]">
                   <label className={workspaceLabel}>
                     Search employees
 
@@ -593,7 +593,7 @@ export function StaffManagement({
                       <Search
                         size={16}
                         aria-hidden="true"
-                        className="pointer-events-none absolute top-3.5 left-3 text-[#8a5b2d]"
+                        className="pointer-events-none absolute top-3.5 left-3 text-gr-gold"
                       />
 
                       <input
@@ -652,7 +652,7 @@ export function StaffManagement({
                   <li
                     className={
                       tableColumns +
-                      ' hidden rounded-lg bg-[#f7eee8] px-4 py-2 text-xs font-semibold text-[#684b56] lg:grid'
+                      ' hidden rounded-lg bg-gr-surface-alt px-4 py-2 text-xs font-semibold text-gr-muted lg:grid'
                     }
                     aria-hidden="true"
                   >
@@ -665,15 +665,15 @@ export function StaffManagement({
                   {filtered.map(employee => (
                     <li
                       key={employee.id}
-                      className="grid gap-3 rounded-xl border border-[#ebded8] bg-white p-4"
+                      className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-4"
                     >
                       <div className={tableColumns}>
                         <div className="grid min-w-0 gap-0.5 break-words">
-                          <strong className="text-sm text-[#3f2632]">
+                          <strong className="text-sm text-gr-text">
                             {employee.fullName}
                           </strong>
 
-                          <span className="text-xs text-[#6d5b64]">
+                          <span className="text-xs text-gr-muted">
                             {employee.email}
                             {employee.username
                               ? ' · @' + employee.username
@@ -681,15 +681,15 @@ export function StaffManagement({
                           </span>
                         </div>
 
-                        <span className="text-sm text-[#523a46]">
-                          <span className="block text-xs font-semibold text-[#806d75] lg:hidden">
+                        <span className="text-sm text-gr-text">
+                          <span className="block text-xs font-semibold text-gr-muted lg:hidden">
                             Role
                           </span>
                           {employeeRoles[employee.role]}
                         </span>
 
-                        <span className="text-sm text-[#523a46]">
-                          <span className="block text-xs font-semibold text-[#806d75] lg:hidden">
+                        <span className="text-sm text-gr-text">
+                          <span className="block text-xs font-semibold text-gr-muted lg:hidden">
                             Store
                           </span>
                           {storeName(employee.locationId)}
@@ -702,8 +702,8 @@ export function StaffManagement({
                       </div>
 
                       {employee.status !== 'revoked' && (
-                        <details className="border-t border-[#f0e6e1] pt-3">
-                          <summary className="w-fit cursor-pointer text-sm font-semibold text-[#54213a] focus-visible:outline-2 focus-visible:outline-offset-2">
+                        <details className="border-t border-gr-border pt-3">
+                          <summary className="w-fit cursor-pointer text-sm font-semibold text-gr-gold focus-visible:outline-2 focus-visible:outline-offset-2">
                             Manage access for{' '}
                             {employee.fullName}
                           </summary>
@@ -792,8 +792,8 @@ export function StaffManagement({
                             </fieldset>
                           </form>
                           {accountsReady && accountStates?.[employee.id] && (employee.status === 'active' || accountStates[employee.id] !== 'ready') && (
-                            <details className="mt-4 border-t border-[#f0e6e1] pt-3">
-                              <summary className="w-fit cursor-pointer text-sm font-semibold text-[#54213a]">Replace temporary password</summary>
+                            <details className="mt-4 border-t border-gr-border pt-3">
+                              <summary className="w-fit cursor-pointer text-sm font-semibold text-gr-text">Replace temporary password</summary>
                               <form action={action} className="mt-3" aria-busy={pending}>
                                 <fieldset disabled={pending} className="grid gap-3 sm:grid-cols-2">
                                   <input type="hidden" name="id" value={employee.id} />
@@ -829,11 +829,11 @@ export function StaffManagement({
                 </h2>
 
                 {directory.invitations.length === 0 ? (
-                  <p className="text-sm text-[#6d5b64]">
+                  <p className="text-sm text-gr-muted">
                     No invitations have been issued.
                   </p>
                 ) : (
-                  <ul className="divide-y divide-[#ebe0db]">
+                  <ul className="divide-y divide-gr-border">
                     {directory.invitations.map(invite => (
                       <li
                         key={invite.id}
@@ -845,7 +845,7 @@ export function StaffManagement({
                               {invite.fullName}
                             </strong>
 
-                            <span className="text-xs text-[#6d5b64]">
+                            <span className="text-xs text-gr-muted">
                               {invite.email}
                             </span>
                           </div>
@@ -853,7 +853,7 @@ export function StaffManagement({
                           <Status status={invite.status} />
                         </div>
 
-                        <p className="text-sm text-[#6d5b64]">
+                        <p className="text-sm text-gr-muted">
                           {employeeRoles[invite.role]}
                           {' · '}
                           {storeName(invite.locationId)}
@@ -909,7 +909,7 @@ export function StaffManagement({
                 label="staff-audit-title"
                 className="grid content-start gap-4"
               >
-                <div className="flex items-center gap-2 text-[#8a5b2d]">
+                <div className="flex items-center gap-2 text-gr-gold">
                   <History size={19} aria-hidden="true" />
 
                   <h2
@@ -921,11 +921,11 @@ export function StaffManagement({
                 </div>
 
                 {directory.audit.length === 0 ? (
-                  <p className="text-sm text-[#6d5b64]">
+                  <p className="text-sm text-gr-muted">
                     No employee access changes yet.
                   </p>
                 ) : (
-                  <ul className="divide-y divide-[#ebe0db]">
+                  <ul className="divide-y divide-gr-border">
                     {directory.audit.map(entry => (
                       <li
                         key={entry.id}
@@ -938,7 +938,7 @@ export function StaffManagement({
                           {entry.subject}
                         </strong>
 
-                        <span className="text-xs text-[#6d5b64]">
+                        <span className="text-xs text-gr-muted">
                           {entry.actor}
                           {' · '}
                           {date.format(
@@ -988,11 +988,11 @@ export function StaffManagement({
           onboardingForm.current?.reset();
           setOnboardingFeedback(null);
         }}
-        className="m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-xl overflow-auto rounded-2xl border border-[#e9d8cf] bg-[#fffdf9] p-5 text-[#38252f] shadow-2xl backdrop:bg-[#2b0b15]/65 sm:p-7"
+        className="m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-xl overflow-auto rounded-2xl border border-gr-border bg-gr-surface p-5 text-gr-text shadow-2xl backdrop:bg-gr-strong/65 sm:p-7"
       >
         <header className="mb-5 flex items-start justify-between gap-3">
           <div className="grid gap-1">
-            <p className="text-[0.67rem] font-bold uppercase tracking-[0.17em] text-[#8a5b2d]">
+            <p className="text-[0.67rem] font-bold uppercase tracking-[0.17em] text-gr-gold">
               Team onboarding
             </p>
 
@@ -1003,7 +1003,7 @@ export function StaffManagement({
               Add an employee
             </h2>
 
-            <p className="text-sm leading-6 text-[#6d5b64]">
+            <p className="text-sm leading-6 text-gr-muted">
               Each employee gets an individual account
               and access to their assigned store.
             </p>
@@ -1013,7 +1013,7 @@ export function StaffManagement({
             type="button"
             aria-label="Close employee dialog"
             disabled={pending}
-            className="rounded-lg p-2 text-[#54213a] hover:bg-[#f7eee8]"
+            className="rounded-lg p-2 text-gr-text hover:bg-gr-surface-alt"
             onClick={() => inviteDialog.current?.close()}
           >
             <X size={20} aria-hidden="true" />
@@ -1051,8 +1051,8 @@ export function StaffManagement({
               not deploy or change those functions.
             </WorkspaceNotice>
 
-            <div className="rounded-xl border border-[#e8dcd7] bg-white p-4">
-              <p className="flex items-center gap-2 font-semibold text-[#41172a]">
+            <div className="rounded-xl border border-gr-border bg-gr-surface p-4">
+              <p className="flex items-center gap-2 font-semibold text-gr-text">
                 <CircleAlert
                   size={18}
                   aria-hidden="true"
@@ -1060,7 +1060,7 @@ export function StaffManagement({
                 Step 2 — Set up the physical store
               </p>
 
-              <p className="mt-2 text-sm leading-6 text-[#6d5b64]">
+              <p className="mt-2 text-sm leading-6 text-gr-muted">
                 Employees are assigned to an active store.
                 Once the backend is deployed, create
                 the real store under Inventory & Stock
@@ -1204,7 +1204,7 @@ export function StaffManagement({
                 locations={directory.locations}
               />
 
-              {onboarding === 'create_account' ? <TemporaryPasswordFields initial /> : <p className="text-xs leading-5 text-[#806d75] sm:col-span-2">
+              {onboarding === 'create_account' ? <TemporaryPasswordFields initial /> : <p className="text-xs leading-5 text-gr-muted sm:col-span-2">
                 Employees set their own passwords.
                 An invitation is sent using the configured
                 email service; otherwise a private link
@@ -1219,7 +1219,7 @@ export function StaffManagement({
                 </div>
               )}
 
-              <div className="flex flex-wrap justify-end gap-2 border-t border-[#e9d8cf] pt-4 sm:col-span-2">
+              <div className="flex flex-wrap justify-end gap-2 border-t border-gr-border pt-4 sm:col-span-2">
                 <ActionButton
                   type="button"
                   className={workspaceSecondary}

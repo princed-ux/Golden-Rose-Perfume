@@ -47,7 +47,7 @@ export default function DispatchPage() {
       fallback={
         <p
           role="status"
-          className="p-6 text-sm text-[#796570]"
+          className="p-6 text-sm text-gr-muted"
         >
           Loading dispatch records…
         </p>
@@ -172,9 +172,9 @@ async function AuthorizedDispatch() {
 
       <section
         aria-label="Authorized dispatch locations"
-        className="rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-4"
+        className="rounded-2xl border border-gr-border bg-gr-surface p-4"
       >
-        <h2 className="font-semibold text-[#54213a]">
+        <h2 className="font-semibold text-gr-text">
           Authorized locations
         </h2>
 
@@ -183,7 +183,7 @@ async function AuthorizedDispatch() {
             {stores.map(store => (
               <span
                 key={store.id}
-                className="rounded-lg border border-[#eaded8] bg-white px-3 py-2 text-sm text-[#796570]"
+                className="rounded-lg border border-gr-border bg-gr-surface px-3 py-2 text-sm text-gr-muted"
               >
                 {store.name}
                 {' · '}
@@ -192,7 +192,7 @@ async function AuthorizedDispatch() {
             ))}
           </div>
         ) : (
-          <p className="mt-2 text-sm text-[#796570]">
+          <p className="mt-2 text-sm text-gr-muted">
             No active dispatch locations
             are assigned to this account.
           </p>

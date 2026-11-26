@@ -167,22 +167,22 @@ function MetricCard({
   icon: typeof BarChart3;
 }) {
   return (
-    <article className="min-w-0 rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-5">
+    <article className="min-w-0 rounded-2xl border border-gr-border bg-gr-surface p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-[#765d6b]">
+        <p className="text-sm font-semibold text-gr-muted">
           {title}
         </p>
 
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f9eddf] text-[#a4773e]">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
           <Icon size={20} aria-hidden="true" />
         </span>
       </div>
 
-      <p className="mt-3 break-words font-serif text-[clamp(1.5rem,3vw,2rem)] text-[#4d1e34]">
+      <p className="mt-3 break-words font-serif text-[clamp(1.5rem,3vw,2rem)] text-gr-text">
         {value}
       </p>
 
-      <p className="mt-2 text-xs leading-5 text-[#8b7782]">
+      <p className="mt-2 text-xs leading-5 text-gr-muted">
         {detail}
       </p>
     </article>
@@ -195,7 +195,7 @@ function SectionHeading({
   children: React.ReactNode;
 }) {
   return (
-    <h2 className="font-serif text-2xl text-[#512238]">
+    <h2 className="font-serif text-2xl text-gr-text">
       {children}
     </h2>
   );
@@ -207,7 +207,7 @@ export default function ReportsPage({
   return (
     <Suspense
       fallback={
-        <p role="status" className="p-6 text-sm text-[#765d6b]">
+        <p role="status" className="p-6 text-sm text-gr-muted">
           Loading financial reports…
         </p>
       }
@@ -364,7 +364,7 @@ async function AuthorizedReports({
         <div className="flex items-center gap-2">
           <CalendarDays
             size={20}
-            className="text-[#a4773e]"
+            className="text-gr-gold"
           />
 
           <SectionHeading>
@@ -400,7 +400,7 @@ async function AuthorizedReports({
           method="get"
           className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
         >
-          <label className="grid gap-2 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-2 text-sm font-semibold text-gr-text">
             From date
 
             <input
@@ -419,7 +419,7 @@ async function AuthorizedReports({
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-2 text-sm font-semibold text-gr-text">
             To date
 
             <input
@@ -434,7 +434,7 @@ async function AuthorizedReports({
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-2 text-sm font-semibold text-gr-text">
             Location
 
             <select
@@ -712,7 +712,7 @@ async function AuthorizedReports({
                 Recorded POS sales trend
               </SectionHeading>
 
-              <p className="mt-1 text-sm text-[#806d78]">
+              <p className="mt-1 text-sm text-gr-muted">
                 Daily intervals for shorter periods;
                 monthly intervals for longer periods.
                 Only completed POS transactions are included.
@@ -734,22 +734,22 @@ async function AuthorizedReports({
                     key={point.period}
                     className="grid grid-cols-[90px_minmax(0,1fr)_105px] items-center gap-3"
                   >
-                    <span className="text-xs tabular-nums text-[#795f6e]">
+                    <span className="text-xs tabular-nums text-gr-muted">
                       {point.period}
                     </span>
 
                     <div
-                      className="h-5 overflow-hidden rounded-md bg-[#f3e9e1]"
+                      className="h-5 overflow-hidden rounded-md bg-gr-surface-alt"
                       role="img"
                       aria-label={`${point.period}: ${formatPrice(point.totalMinor)}, ${point.transactions} transactions`}
                     >
                       <div
-                        className="h-full rounded-md bg-[#864c68]"
+                        className="h-full rounded-md bg-gr-strong"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
 
-                    <span className="text-right text-xs font-semibold tabular-nums text-[#552b41]">
+                    <span className="text-right text-xs font-semibold tabular-nums text-gr-text">
                       {formatPrice(point.totalMinor)}
                     </span>
                   </div>
@@ -757,7 +757,7 @@ async function AuthorizedReports({
               })}
             </div>
 
-            <p className="text-xs text-[#897680]">
+            <p className="text-xs text-gr-muted">
               Display values are based on stored POS records;
               no illustrative chart points have been generated.
             </p>
@@ -790,13 +790,13 @@ async function AuthorizedReports({
                 ].map(([name, value]) => (
                   <div
                     key={String(name)}
-                    className="flex justify-between gap-3 border-b border-[#efe4df] pb-3 text-sm"
+                    className="flex justify-between gap-3 border-b border-gr-border pb-3 text-sm"
                   >
-                    <dt className="text-[#786370]">
+                    <dt className="text-gr-muted">
                       {name}
                     </dt>
 
-                    <dd className="font-semibold tabular-nums text-[#54213a]">
+                    <dd className="font-semibold tabular-nums text-gr-text">
                       {Number(value).toLocaleString('en-NG')}
                     </dd>
                   </div>
@@ -833,13 +833,13 @@ async function AuthorizedReports({
                 ].map(([name, value]) => (
                   <div
                     key={String(name)}
-                    className="flex justify-between gap-3 border-b border-[#efe4df] pb-3 text-sm"
+                    className="flex justify-between gap-3 border-b border-gr-border pb-3 text-sm"
                   >
-                    <dt className="text-[#786370]">
+                    <dt className="text-gr-muted">
                       {name}
                     </dt>
 
-                    <dd className="font-semibold tabular-nums text-[#54213a]">
+                    <dd className="font-semibold tabular-nums text-gr-text">
                       {formatPrice(Number(value))}
                     </dd>
                   </div>
@@ -861,7 +861,7 @@ async function AuthorizedReports({
             </SectionHeading>
 
             {report.storeSales.length === 0 ? (
-              <p className="text-sm text-[#806d78]">
+              <p className="text-sm text-gr-muted">
                 No completed POS transactions were recorded
                 in the selected locations and period.
               </p>
@@ -869,7 +869,7 @@ async function AuthorizedReports({
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[420px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[#eaded8] text-[#7d6874]">
+                    <tr className="border-b border-gr-border text-gr-muted">
                       <th className="py-3 font-semibold">
                         Location
                       </th>
@@ -888,17 +888,17 @@ async function AuthorizedReports({
                     {report.storeSales.map(store => (
                       <tr
                         key={store.name}
-                        className="border-b border-[#f0e6e1]"
+                        className="border-b border-gr-border"
                       >
-                        <td className="py-3 text-[#54213a]">
+                        <td className="py-3 text-gr-text">
                           {store.name}
                         </td>
 
-                        <td className="py-3 text-right tabular-nums text-[#54213a]">
+                        <td className="py-3 text-right tabular-nums text-gr-text">
                           {formatPrice(store.totalMinor)}
                         </td>
 
-                        <td className="py-3 text-right tabular-nums text-[#54213a]">
+                        <td className="py-3 text-right tabular-nums text-gr-text">
                           {store.transactions.toLocaleString(
                             'en-NG',
                           )}

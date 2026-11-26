@@ -49,10 +49,10 @@ import { InventoryTable } from './inventory-table';
 import { stockState } from '@/src/lib/golden-rose/stock-evidence';
 
 const card =
-  'min-w-0 rounded-2xl border border-[#e9dcd5] bg-[#fffdfb] shadow-[0_4px_24px_rgba(61,18,37,0.035)]';
+  'min-w-0 rounded-2xl border border-gr-border bg-gr-surface shadow-[0_4px_24px_rgba(61,18,37,0.035)]';
 
 const heading =
-  'font-serif text-xl font-normal tracking-tight text-[#471a31] sm:text-2xl';
+  'font-serif text-xl font-normal tracking-tight text-gr-text sm:text-2xl';
 
 /**
  * One database-wide snapshot for every authorized active location.
@@ -151,21 +151,21 @@ function Metric({
     <div className={card + ' p-4 sm:p-5'}>
       <div className="flex items-start justify-between gap-3">
         <div className="grid min-w-0 gap-1">
-          <p className="text-xs font-semibold text-[#876e7a]">
+          <p className="text-xs font-semibold text-gr-muted">
             {label}
           </p>
 
-          <strong className="font-serif text-3xl font-normal tabular-nums text-[#46172f]">
+          <strong className="font-serif text-3xl font-normal tabular-nums text-gr-text">
             {value}
           </strong>
         </div>
 
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fbefdc] text-[#a77d42]">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
           {icon}
         </span>
       </div>
 
-      <p className="mt-3 text-xs leading-5 text-[#8c7781]">
+      <p className="mt-3 text-xs leading-5 text-gr-muted">
         {description}
       </p>
     </div>
@@ -181,7 +181,7 @@ export default function InventoryPage({
     <Suspense
       fallback={
         <p
-          className="p-5 text-sm text-[#6f5162]"
+          className="p-5 text-sm text-gr-muted"
           role="status"
         >
           Loading inventory…
@@ -286,17 +286,17 @@ async function InventoryWorkspace({
   return (
     <div className="grid min-w-0 gap-6 pb-10">
       {/* MAIN HEADING */}
-      <header className="flex min-w-0 flex-wrap items-end justify-between gap-4 border-b border-[#e7dad7] pb-5">
+      <header className="flex min-w-0 flex-wrap items-end justify-between gap-4 border-b border-gr-border pb-5">
         <div className="grid min-w-0 gap-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#a57839]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gr-gold">
             Operations / Inventory
           </p>
 
-          <h1 className="font-serif text-[clamp(2rem,4vw,3rem)] leading-tight tracking-tight text-[#46172f]">
+          <h1 className="font-serif text-[clamp(2rem,4vw,3rem)] leading-tight tracking-tight text-gr-text">
             Inventory &amp; Stock
           </h1>
 
-          <p className="max-w-2xl text-sm leading-6 text-[#806d77]">
+          <p className="max-w-2xl text-sm leading-6 text-gr-muted">
             Manage physical stores, receive fragrance
             deliveries and monitor available stock
             across Golden Rose locations.
@@ -397,10 +397,10 @@ async function InventoryWorkspace({
       {/* DISTINGUISH GLOBAL STOCK COVERAGE FROM PAGE-LOCAL EVIDENCE */}
       {summary ? (
         <div
-          className="rounded-xl border border-[#e5d8cc] bg-[#fbf7f1] px-4 py-3 text-xs leading-5 text-[#755e6a]"
+          className="rounded-xl border border-gr-border bg-gr-surface px-4 py-3 text-xs leading-5 text-gr-muted"
           role="status"
         >
-          <strong className="text-[#4b273b]">
+          <strong className="text-gr-text">
             Whole-inventory totals verified by the database.
           </strong>
           {' '}
@@ -458,7 +458,7 @@ async function InventoryWorkspace({
       {/* QUICK SECTION NAVIGATION */}
       <nav
         aria-label="Inventory sections"
-        className="flex flex-wrap gap-2 border-b border-[#e9dcd7] pb-4"
+        className="flex flex-wrap gap-2 border-b border-gr-border pb-4"
       >
         <a
           href="#inventory-locations"
@@ -523,7 +523,7 @@ async function InventoryWorkspace({
       >
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#a57839]">
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-gr-gold">
               Location management
             </p>
 
@@ -531,13 +531,13 @@ async function InventoryWorkspace({
               Stores &amp; warehouses
             </h2>
 
-            <p className="mt-2 text-sm text-[#816d78]">
+            <p className="mt-2 text-sm text-gr-muted">
               Every cashier and stock movement must
               be linked to the correct physical location.
             </p>
           </div>
 
-          <span className="rounded-full border border-[#ead8bb] bg-[#fff8ec] px-3 py-1.5 text-xs font-semibold text-[#956b36]">
+          <span className="rounded-full border border-gr-border bg-gr-surface px-3 py-1.5 text-xs font-semibold text-gr-gold">
             {inventory
               ? `${locations.length} configured`
               : 'Connection required'}
@@ -565,10 +565,10 @@ async function InventoryWorkspace({
             className="grid gap-4"
           >
             <details open={locations.length === 0}>
-              <summary className="cursor-pointer list-none rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a57839]">
+              <summary className="cursor-pointer list-none rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gr-gold">
                 <span className="flex flex-wrap items-center justify-between gap-3">
                   <span className="flex items-center gap-3">
-                    <span className="grid size-10 place-items-center rounded-xl bg-[#fbefdc] text-[#a57839]">
+                    <span className="grid size-10 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
                       <Building2
                         size={19}
                         aria-hidden="true"
@@ -578,25 +578,25 @@ async function InventoryWorkspace({
                     <span className="grid gap-1">
                       <strong
                         id="inventory-create-location-title"
-                        className="font-serif text-xl font-normal text-[#471a31]"
+                        className="font-serif text-xl font-normal text-gr-text"
                       >
                         Add a location
                       </strong>
 
-                      <small className="text-xs font-normal text-[#806d77]">
+                      <small className="text-xs font-normal text-gr-muted">
                         Register a real shop, warehouse
                         or stockroom
                       </small>
                     </span>
                   </span>
 
-                  <span className="rounded-lg border border-[#e6d6c6] px-3 py-2 text-xs font-semibold text-[#6e4156]">
+                  <span className="rounded-lg border border-gr-border px-3 py-2 text-xs font-semibold text-gr-text">
                     Open form
                   </span>
                 </span>
               </summary>
 
-              <div className="mt-5 border-t border-[#ecdfd8] pt-5">
+              <div className="mt-5 border-t border-gr-border pt-5">
                 <OperationForm
                   runAction={createLocation}
                   label="Save location"
@@ -646,7 +646,7 @@ async function InventoryWorkspace({
                   </label>
                 </OperationForm>
 
-                <p className="mt-4 text-xs leading-5 text-[#82727a]">
+                <p className="mt-4 text-xs leading-5 text-gr-muted">
                   Use Store for any location that
                   operates a cashier register.
                   You can create additional locations
@@ -664,7 +664,7 @@ async function InventoryWorkspace({
                 key={location.id}
                 className={card + ' flex min-w-0 gap-3 p-4'}
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f8eee2] text-[#a87d42]">
+                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
                   {location.type === 'store' ? (
                     <Building2
                       size={20}
@@ -679,11 +679,11 @@ async function InventoryWorkspace({
                 </span>
 
                 <div className="grid min-w-0 flex-1 content-start gap-1">
-                  <strong className="break-words text-sm text-[#43243a]">
+                  <strong className="break-words text-sm text-gr-text">
                     {location.name}
                   </strong>
 
-                  <span className="text-xs text-[#8b7781]">
+                  <span className="text-xs text-gr-muted">
                     {location.code}
                     {' · '}
                     {location.type}
@@ -694,8 +694,8 @@ async function InventoryWorkspace({
                   className={
                     'h-fit rounded-full px-2.5 py-1 text-[11px] font-semibold ' +
                     (location.active
-                      ? 'bg-[#e8f3e9] text-[#356b43]'
-                      : 'bg-[#f5e8eb] text-[#8e4656]')
+                      ? 'bg-gr-success-bg text-gr-success'
+                      : 'bg-gr-surface-alt text-gr-danger')
                   }
                 >
                   {location.active
@@ -715,7 +715,7 @@ async function InventoryWorkspace({
           className="grid min-w-0 scroll-mt-24 gap-4"
         >
           <div>
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#a57839]">
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-gr-gold">
               Stock operations
             </p>
 
@@ -723,7 +723,7 @@ async function InventoryWorkspace({
               Receive stock
             </h2>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#816d78]">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-gr-muted">
               Record incoming quantities against a
               product variant and its destination.
               Every confirmed receipt updates the
@@ -738,12 +738,12 @@ async function InventoryWorkspace({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3
                 id="inventory-receive-form-title"
-                className="font-serif text-xl text-[#471a31]"
+                className="font-serif text-xl text-gr-text"
               >
                 New stock receipt
               </h3>
 
-              <span className="inline-flex items-center gap-2 text-xs font-semibold text-[#34704b]">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold text-gr-success">
                 <ShieldCheck
                   size={16}
                   aria-hidden="true"
@@ -779,7 +779,7 @@ async function InventoryWorkspace({
       >
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#a57839]">
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-gr-gold">
               Stock monitoring
             </p>
 
@@ -787,13 +787,13 @@ async function InventoryWorkspace({
               Stock register
             </h2>
 
-            <p className="mt-2 text-sm text-[#816d78]">
+            <p className="mt-2 text-sm text-gr-muted">
               Check quantities by fragrance and
               physical location.
             </p>
           </div>
 
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#e8dcd7] bg-white px-3 py-1.5 text-xs text-[#806d77]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-gr-border bg-gr-surface px-3 py-1.5 text-xs text-gr-muted">
             <Barcode
               size={15}
               aria-hidden="true"
@@ -858,7 +858,7 @@ async function InventoryWorkspace({
         )}
       </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e8dcd7] pt-5 text-xs text-[#84737c]">
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-gr-border pt-5 text-xs text-gr-muted">
         <span>
           Golden Rose · Inventory operations
         </span>

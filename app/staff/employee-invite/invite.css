@@ -1,13 +1,13 @@
 /* Staff employee invitation — isolated from the customer and staff login forms. */
 .gr-auth.gr-auth--staff.gr-staff-invite {
-  --invite-bg: #f7f5f1;
-  --invite-paper: #fffdfa;
-  --invite-ink: #2f232b;
-  --invite-muted: #756b70;
-  --invite-accent: #8b3d53;
-  --invite-gold: #a67c46;
-  --invite-line: #e8e0dc;
-  --invite-input: #fff;
+  --invite-bg: var(--gr-theme-bg);
+  --invite-paper: var(--gr-theme-surface);
+  --invite-ink: var(--gr-theme-text);
+  --invite-muted: var(--gr-theme-muted);
+  --invite-accent: var(--gr-theme-gold);
+  --invite-gold: var(--gr-theme-gold);
+  --invite-line: var(--gr-theme-border);
+  --invite-input: var(--gr-theme-input);
   min-height: 100svh;
   padding: 0;
   border: 0;
@@ -42,7 +42,7 @@
   height: 47px;
   overflow: hidden;
   border-radius: 12px;
-  background: #1d1018;
+  background: var(--gr-theme-strong);
 }
 .gr-staff-invite .gr-invite-brand-mark img {
   width: auto;
@@ -68,7 +68,7 @@
   flex-direction: column;
   justify-content: center;
   padding: 28px 24px 16px;
-  background: radial-gradient(circle at 78% 20%, #f3e5e7 0, transparent 38%), var(--invite-bg);
+  background: radial-gradient(circle at 78% 20%, var(--gr-theme-surface-alt) 0, transparent 38%), var(--invite-bg);
 }
 .gr-staff-invite .gr-invite-shell {
   width: min(1160px, 100%);
@@ -93,8 +93,8 @@
   min-height: 650px;
   padding: 38px;
   overflow: hidden;
-  background: #38222d;
-  color: white;
+  background: var(--gr-theme-media);
+  color: var(--gr-theme-on-strong);
 }
 .gr-staff-invite .gr-invite-visual-photo {
   z-index: -2;
@@ -106,30 +106,30 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(30,16,26,.5), rgba(30,16,26,.2) 30%, rgba(25,13,22,.93));
+  background: linear-gradient(180deg, rgba(30,16,26,.5), rgba(30,16,26,.2) 30%, var(--gr-theme-media));
 }
 .gr-staff-invite .gr-invite-visual-top {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #f7d6bb;
+  color: var(--gr-theme-media-accent);
   font-size: 10px;
   font-weight: 750;
   letter-spacing: .15em;
 }
 .gr-staff-invite .gr-invite-visual-bottom { max-width: 380px; }
-.gr-staff-invite .gr-invite-visual-eyebrow { color: #f3c8a9; font-size: 10px; font-weight: 700; letter-spacing: .18em; }
+.gr-staff-invite .gr-invite-visual-eyebrow { color: var(--gr-theme-media-accent); font-size: 10px; font-weight: 700; letter-spacing: .18em; }
 .gr-staff-invite .gr-invite-visual-bottom h2 {
   margin: 18px 0;
-  color: white;
+  color: var(--gr-theme-on-strong);
   font: 400 clamp(42px, 4vw, 61px)/1.08 Georgia, 'Times New Roman', serif;
   letter-spacing: -.05em;
 }
-.gr-staff-invite .gr-invite-visual-bottom p { color: #f1e5e8; font-size: 14px; line-height: 1.8; }
+.gr-staff-invite .gr-invite-visual-bottom p { color: var(--gr-theme-on-strong); font-size: 14px; line-height: 1.8; }
 .gr-staff-invite .gr-invite-visual-signature {
   display: block;
   margin-top: 48px;
-  color: #f2d0bd;
+  color: var(--gr-theme-media-accent);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .22em;
@@ -175,7 +175,7 @@
   padding: 4px;
   border: 1px solid var(--invite-line);
   border-radius: 11px;
-  background: #f3efec;
+  background: var(--gr-theme-surface-alt);
 }
 .gr-staff-invite .gr-invite-mode button {
   min-height: 40px;
@@ -210,7 +210,7 @@
   left: 15px;
   transform: translateY(-50%);
   z-index: 1;
-  color: #8a737b;
+  color: var(--gr-theme-muted);
   pointer-events: none;
 }
 .gr-staff-invite .gr-invite-input-wrap input {
@@ -220,15 +220,15 @@
   height: 50px;
   min-height: 50px;
   padding: 12px 47px 12px 43px;
-  border: 1px solid #d8c9c7;
+  border: 1px solid var(--gr-theme-control-border);
   border-radius: 9px;
   background: var(--invite-input);
   color: var(--invite-ink);
   font: 400 14px/1.5 Arial, Helvetica, sans-serif;
   transition: border-color .18s ease, box-shadow .18s ease;
 }
-.gr-staff-invite .gr-invite-input-wrap input::placeholder { color: #a3989c; opacity: 1; }
-.gr-staff-invite .gr-invite-input-wrap input:hover { border-color: #b99d9e; }
+.gr-staff-invite .gr-invite-input-wrap input::placeholder { color: var(--gr-theme-muted); opacity: 1; }
+.gr-staff-invite .gr-invite-input-wrap input:hover { border-color: var(--gr-theme-control-border); }
 .gr-staff-invite .gr-invite-input-wrap input:focus {
   border-color: var(--invite-accent);
   outline: 0;
@@ -247,10 +247,10 @@
   border: 0;
   border-radius: 7px;
   background: transparent;
-  color: #74515d;
+  color: var(--gr-theme-muted);
   cursor: pointer;
 }
-.gr-staff-invite .gr-invite-reveal:hover { background: #f5e8eb; }
+.gr-staff-invite .gr-invite-reveal:hover { background: var(--gr-theme-surface-alt); }
 .gr-staff-invite .gr-invite-field small { color: var(--invite-muted); font-size: 11px; font-weight: 400; line-height: 1.5; }
 .gr-staff-invite .gr-invite-submit {
   display: flex;
@@ -259,15 +259,15 @@
   min-height: 50px;
   margin-top: 6px;
   padding: 13px 18px;
-  border: 1px solid #6a2e44;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 9px;
-  background: #6a2e44;
-  color: white;
+  background: var(--gr-theme-strong);
+  color: var(--gr-theme-on-strong);
   font-size: 13px;
   font-weight: 750;
   box-shadow: none;
 }
-.gr-staff-invite .gr-invite-submit:hover { background: #843d55; color: white; }
+.gr-staff-invite .gr-invite-submit:hover { background: var(--gr-theme-strong-hover); color: var(--gr-theme-on-strong); }
 .gr-staff-invite .gr-invite-submit:disabled { opacity: .58; cursor: wait; }
 .gr-staff-invite .gr-invite-switch-note {
   margin: 18px 0 0;
@@ -289,17 +289,17 @@
 }
 .gr-staff-invite .gr-invite-message {
   padding: 12px 13px;
-  border: 1px solid #b5d8ba;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 8px;
-  background: #e9f6ed;
-  color: #265738;
+  background: var(--gr-theme-success-bg);
+  color: var(--gr-theme-success);
   font-size: 12px;
   line-height: 1.6;
 }
-.gr-staff-invite .gr-invite-message.is-error { border-color: #edb8b8; background: #fff0ed; color: #983d37; }
-.gr-staff-invite .gr-invite-confirmed { margin-bottom: 20px; padding: 16px; border: 1px solid #d9e4d7; border-radius: 10px; background: #f1f8f0; }
-.gr-staff-invite .gr-invite-confirmed-title { display: flex; align-items: center; gap: 8px; color: #346345; font-size: 13px; font-weight: 750; }
-.gr-staff-invite .gr-invite-confirmed p { margin: 10px 0 14px; color: #49614e; font-size: 12px; line-height: 1.6; }
+.gr-staff-invite .gr-invite-message.is-error { border-color: var(--gr-theme-danger-border); background: var(--gr-theme-danger-bg); color: var(--gr-theme-danger); }
+.gr-staff-invite .gr-invite-confirmed { margin-bottom: 20px; padding: 16px; border: 1px solid var(--gr-theme-border); border-radius: 10px; background: var(--gr-theme-success-bg); }
+.gr-staff-invite .gr-invite-confirmed-title { display: flex; align-items: center; gap: 8px; color: var(--gr-theme-success); font-size: 13px; font-weight: 750; }
+.gr-staff-invite .gr-invite-confirmed p { margin: 10px 0 14px; color: var(--gr-theme-success); font-size: 12px; line-height: 1.6; }
 .gr-staff-invite .gr-invite-confirmed-button {
   display: flex;
   align-items: center;
@@ -307,7 +307,7 @@
   border: 0;
   padding: 0;
   background: transparent;
-  color: #2e6643;
+  color: var(--gr-theme-success);
   font-size: 12px;
   font-weight: 750;
   cursor: pointer;
@@ -316,7 +316,7 @@
 .gr-staff-invite .gr-invite-bottom-note svg { flex: none; margin-top: 1px; color: var(--invite-gold); }
 .gr-staff-invite .gr-invite-footer { display: flex; justify-content: space-between; gap: 16px; width: min(1160px, 100%); margin: 18px auto 0; padding: 2px 4px 10px; color: var(--invite-muted); font-size: 11px; line-height: 1.6; }
 .gr-staff-invite .gr-invite-footer a { display: inline-flex; align-items: center; gap: 5px; color: var(--invite-accent); font-weight: 750; }
-.gr-staff-invite .gr-invite-empty { padding: 20px; border: 1px solid var(--invite-line); border-radius: 12px; background: #f7f1eb; }
+.gr-staff-invite .gr-invite-empty { padding: 20px; border: 1px solid var(--invite-line); border-radius: 12px; background: var(--gr-theme-surface-alt); }
 .gr-staff-invite .gr-invite-empty > svg { color: var(--invite-accent); }
 .gr-staff-invite .gr-invite-empty h2 { margin: 10px 0; color: var(--invite-ink); font: 400 26px Georgia, serif; }
 .gr-staff-invite .gr-invite-empty p { margin: 0 0 16px; color: var(--invite-muted); font-size: 12px; line-height: 1.6; }

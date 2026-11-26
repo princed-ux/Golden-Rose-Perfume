@@ -29,7 +29,7 @@ export default function OrdersLayout({
       >
         <Link
           href="/workspace/orders"
-          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#e4d4cf] bg-white px-4 text-sm font-semibold text-[#582b43] hover:bg-[#fbf1eb]"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gr-border bg-gr-surface px-4 text-sm font-semibold text-gr-text hover:bg-gr-surface-alt"
         >
           <ClipboardList
             size={16}
@@ -41,7 +41,7 @@ export default function OrdersLayout({
 
         <Link
           href="/workspace/orders/whatsapp"
-          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#e4d4cf] bg-white px-4 text-sm font-semibold text-[#582b43] hover:bg-[#fbf1eb]"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gr-border bg-gr-surface px-4 text-sm font-semibold text-gr-text hover:bg-gr-surface-alt"
         >
           <MessageCircle
             size={16}

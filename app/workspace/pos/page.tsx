@@ -589,7 +589,7 @@ function LoadingRegister() {
       role="status"
       aria-live="polite"
     >
-      <p className="p-5 text-sm text-[#6f5162]">
+      <p className="p-5 text-sm text-gr-muted">
         Loading secure register…
       </p>
     </div>

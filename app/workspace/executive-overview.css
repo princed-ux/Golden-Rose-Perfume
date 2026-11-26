@@ -7,9 +7,9 @@
  */
 
 .gr-executive {
-  --gr-exec-wine: #4c1730;
-  --gr-exec-gold: #a8793e;
-  --gr-exec-line: #eadfe1;
+  --gr-exec-wine: var(--gr-theme-text);
+  --gr-exec-gold: var(--gr-theme-gold);
+  --gr-exec-line: var(--gr-theme-border);
 
   min-width: 0;
   display: grid;
@@ -70,7 +70,7 @@
 }
 
 .gr-executive-heading p:last-child {
-  color: #92828a;
+  color: var(--gr-theme-muted);
   font-size: 11px;
   line-height: 1.65;
 }
@@ -80,10 +80,10 @@
   align-items: center;
   gap: 7px;
   padding: 8px 12px;
-  border: 1px solid #e3d7c4;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 25px;
-  color: #916c3f;
-  background: #fff8ea;
+  color: var(--gr-theme-gold);
+  background: var(--gr-theme-surface);
   font-size: 10px;
   font-weight: 700;
 }
@@ -103,7 +103,7 @@
   padding: 17px;
   border: 1px solid var(--gr-exec-line);
   border-radius: 12px;
-  background: #fffefd;
+  background: var(--gr-theme-surface);
   box-shadow: 0 3px 14px #42152c08;
 }
 
@@ -114,7 +114,7 @@
   height: 39px;
   flex: 0 0 39px;
   color: var(--gr-exec-gold);
-  background: #fcf0dd;
+  background: var(--gr-theme-accent-soft);
   border-radius: 10px;
 }
 
@@ -126,19 +126,19 @@
 }
 
 .gr-executive-label {
-  color: #9a878e;
+  color: var(--gr-theme-muted);
   font-size: 10px;
   font-weight: 700;
 }
 
 .gr-executive-item strong {
-  color: #4b2237;
+  color: var(--gr-theme-text);
   font-size: 14px;
   overflow-wrap: anywhere;
 }
 
 .gr-executive-item small {
-  color: #96848b;
+  color: var(--gr-theme-muted);
   font-size: 10px;
   line-height: 1.5;
 }
@@ -149,24 +149,24 @@
   top: 12px;
   padding: 4px 7px;
   border-radius: 15px;
-  color: #8f7e84;
-  background: #f6f1f2;
+  color: var(--gr-theme-muted);
+  background: var(--gr-theme-surface-alt);
   font-size: 9px;
 }
 
 .gr-executive-state[data-state="ready"] {
-  color: #38734a;
-  background: #e8f5eb;
+  color: var(--gr-theme-success);
+  background: var(--gr-theme-success-bg);
 }
 
 .gr-executive-state[data-state="needs-setup"] {
-  color: #966b32;
-  background: #fff0d9;
+  color: var(--gr-theme-gold);
+  background: var(--gr-theme-surface-alt);
 }
 
 .gr-executive-state[data-state="unavailable"] {
-  color: #a33a4c;
-  background: #fff0f2;
+  color: var(--gr-theme-danger);
+  background: var(--gr-theme-surface-alt);
 }
 
 .gr-executive-workflow {
@@ -181,7 +181,7 @@
   padding: 18px;
   border: 1px solid var(--gr-exec-line);
   border-radius: 12px;
-  background: #fffefd;
+  background: var(--gr-theme-surface);
 }
 
 .gr-executive-panel-heading {
@@ -194,13 +194,13 @@
 }
 
 .gr-executive-panel-heading h3 {
-  color: #512a3f;
+  color: var(--gr-theme-text);
   font: 400 20px Georgia, serif;
 }
 
 .gr-executive-panel-heading p {
   margin-top: 3px;
-  color: #998a90;
+  color: var(--gr-theme-muted);
   font-size: 11px;
 }
 
@@ -215,10 +215,10 @@
   gap: 12px;
   min-height: 58px;
   padding: 10px 12px;
-  border: 1px solid #eee3e4;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 9px;
-  background: #fffdfa;
-  color: #a77d46;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-gold);
   text-decoration: none;
   transition:
     background 150ms ease,
@@ -226,8 +226,8 @@
 }
 
 .gr-executive-links a:hover {
-  border-color: #dfc39d;
-  background: #fff5e6;
+  border-color: var(--gr-theme-border);
+  background: var(--gr-theme-accent-soft);
 }
 
 .gr-executive-links a > span {
@@ -238,12 +238,12 @@
 }
 
 .gr-executive-links strong {
-  color: #573346;
+  color: var(--gr-theme-text);
   font-size: 12px;
 }
 
 .gr-executive-links small {
-  color: #95878d;
+  color: var(--gr-theme-muted);
   font-size: 10px;
 }
 
@@ -260,11 +260,11 @@
 
 .gr-executive-checks svg {
   flex: 0 0 19px;
-  color: #b28445;
+  color: var(--gr-theme-gold);
 }
 
 .gr-executive-checks svg.is-ready {
-  color: #438154;
+  color: var(--gr-theme-success);
 }
 
 .gr-executive-checks span {
@@ -273,12 +273,12 @@
 }
 
 .gr-executive-checks strong {
-  color: #624251;
+  color: var(--gr-theme-text);
   font-size: 12px;
 }
 
 .gr-executive-checks small {
-  color: #95848b;
+  color: var(--gr-theme-muted);
   font-size: 11px;
   line-height: 1.6;
 }
@@ -286,10 +286,10 @@
 .gr-executive-note {
   margin-top: 19px;
   padding: 13px;
-  border: 1px solid #eedfc7;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 9px;
-  background: #fff8ec;
-  color: #91734d;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-gold);
   font-size: 10px;
   line-height: 1.7;
 }

@@ -13,7 +13,7 @@ export function OwnerInviteForm() {
     <label className={workspaceLabel}>Confirmed recipient email<input className={workspaceInput} type="email" name="email" autoComplete="off" maxLength={254} required /></label>
     <ActionButton type="submit" className={workspacePrimary} disabled={pending}>{pending ? 'Creating invitation…' : 'Create owner invitation'}</ActionButton>
     <ActionNotice result={result} />
-    {result.message && <p className={'text-sm sm:col-span-2 ' + (result.status === 'error' ? 'text-[#8d263f]' : 'text-[#356249]')} role={result.status === 'error' ? 'alert' : 'status'}>{result.message}</p>}
+    {result.message && <p className={'text-sm sm:col-span-2 ' + (result.status === 'error' ? 'text-gr-danger' : 'text-gr-success')} role={result.status === 'error' ? 'alert' : 'status'}>{result.message}</p>}
     {result.code && <label className={workspaceLabel + ' sm:col-span-2'}>Invitation code<input className={workspaceInput} readOnly value={result.code} onFocus={event => event.currentTarget.select()} /></label>}
   </ActionStateForm>;
 }
@@ -25,6 +25,6 @@ export function OwnerAccessButton({ operation, id, label }: { operation: 'revoke
   }}>
     <input type="hidden" name="operation" value={operation} /><input type="hidden" name="id" value={id} />
     <ActionButton type="submit" className={workspaceSecondary} disabled={pending}>{pending ? 'Updating…' : label}</ActionButton>
-    {result.status === 'error' && <p className="text-sm break-words text-[#8d263f]" role="alert">{result.message}</p>}
+    {result.status === 'error' && <p className="text-sm break-words text-gr-danger" role="alert">{result.message}</p>}
   </ActionStateForm>;
 }

@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import Link from 'next/link';
@@ -71,28 +70,36 @@ const statuses: Record<
 > = {
   prepared: {
     name: 'Enquiry prepared',
+
     detail:
       'This request was saved, but the WhatsApp message still needs to be sent.',
   },
 
   contacted: {
     name: 'In conversation',
+
     detail:
       'The boutique has started reviewing your request. Check your WhatsApp chat.',
   },
 
   confirmed: {
     name: 'Confirmed by the boutique',
+
     detail:
       'The team confirmed the request. This does not establish that payment was received.',
   },
 
   cancelled: {
     name: 'Cancelled',
+
     detail:
       'This enquiry has been closed without being recorded as a purchase.',
   },
 };
+
+/* =========================================================
+   RESPONSE VALIDATION
+   ========================================================= */
 
 function validEnquiry(
   value: unknown,
@@ -106,16 +113,23 @@ function validEnquiry(
   return (
     typeof row.reference === 'string' &&
     /^GR-WA-\d+$/.test(row.reference) &&
+
     typeof row.createdAt === 'string' &&
     typeof row.updatedAt === 'string' &&
+
     typeof row.status === 'string' &&
     Object.hasOwn(statuses, row.status) &&
+
     row.currency === 'NGN' &&
+
     Number.isSafeInteger(row.totalMinor) &&
     (row.totalMinor ?? -1) >= 0 &&
+
     Array.isArray(row.items) &&
+
     row.items.every(
-      (item) =>
+      item =>
+        Boolean(item) &&
         typeof item.name === 'string' &&
         Number.isInteger(item.quantity) &&
         item.quantity > 0 &&
@@ -124,6 +138,10 @@ function validEnquiry(
     )
   );
 }
+
+/* =========================================================
+   AUTHENTICATED ENQUIRY HISTORY
+   ========================================================= */
 
 async function loadEnquiries(
   offset: number,
@@ -169,13 +187,104 @@ async function loadEnquiries(
   };
 }
 
-export default function AccountOrdersPage({
-  searchParams,
+/* =========================================================
+   ORDER CARD
+   ========================================================= */
+
+function EnquiryCard({
+  enquiry,
 }: {
-  searchParams: Promise<{
-    page?: string;
-  }>;
+  enquiry: Enquiry;
 }) {
+  const status = statuses[enquiry.status];
+
+  return (
+    <article className="min-w-0 rounded-2xl border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface)] p-4 shadow-sm sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gr-theme-gold)]">
+            Reference
+          </p>
+
+          <h3 className="mt-1 break-words font-serif text-xl text-[var(--gr-theme-text)]">
+            {enquiry.reference}
+          </h3>
+
+          <p className="mt-1 text-xs text-[var(--gr-theme-muted)]">
+            {new Date(enquiry.createdAt).toLocaleString(
+              'en-NG',
+              {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+                timeZone: 'Africa/Lagos',
+              },
+            )}
+          </p>
+        </div>
+
+        <span className="max-w-full rounded-lg border border-[var(--gr-theme-border)] bg-[var(--gr-theme-surface-alt)] px-3 py-2 text-xs font-semibold text-[var(--gr-theme-gold)]">
+          {status.name}
+        </span>
+      </div>
+
+      <p className="mt-3 text-sm leading-6 text-[var(--gr-theme-muted)]">
+        {status.detail}
+      </p>
+
+      <ul className="mt-4 grid gap-3 border-t border-[var(--gr-theme-border)] pt-4 text-sm text-[var(--gr-theme-text)]">
+        {enquiry.items.map((item, index) => (
+          <li
+            key={`${enquiry.reference}-${index}`}
+            className="flex min-w-0 flex-wrap justify-between gap-2 sm:flex-nowrap sm:gap-4"
+          >
+            <span className="min-w-0 break-words">
+              {item.name}
+
+              {item.sizeMl
+                ? ` · ${item.sizeMl} ml`
+                : ''}
+
+              {' × '}
+              {item.quantity}
+            </span>
+
+            <span className="shrink-0 font-semibold">
+              {formatPrice(
+                item.priceMinor * item.quantity,
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gr-theme-border)] pt-4">
+        <span className="text-sm text-[var(--gr-theme-muted)]">
+          Estimated product total · Not a paid receipt
+        </span>
+
+        <strong className="text-lg text-[var(--gr-theme-text)]">
+          {formatPrice(enquiry.totalMinor)}
+        </strong>
+      </div>
+
+      {enquiry.delivery && (
+        <p className="mt-3 break-words text-xs text-[var(--gr-theme-muted)]">
+          Requested delivery: {enquiry.delivery}
+        </p>
+      )}
+    </article>
+  );
+}
+
+/* =========================================================
+   CUSTOMER ORDER PAGE
+   ========================================================= */
+
+type Props = {
+  searchParams: Promise<{ page?: string }>;
+};
+
+export default function AccountOrdersPage(props: Props) {
   return (
     <Suspense
       fallback={
@@ -187,26 +296,18 @@ export default function AccountOrdersPage({
         </p>
       }
     >
-      <AccountOrders
-        searchParams={searchParams}
-      />
+      <AccountOrders {...props} />
     </Suspense>
   );
 }
 
 async function AccountOrders({
   searchParams,
-}: {
-  searchParams: Promise<{
-    page?: string;
-  }>;
-}) {
+}: Props) {
   const customer = await requireCustomer();
   const params = await searchParams;
 
-  const rawPage = Number(
-    params.page ?? '1',
-  );
+  const rawPage = Number(params.page ?? '1');
 
   const page =
     Number.isSafeInteger(rawPage) &&
@@ -222,6 +323,7 @@ async function AccountOrders({
 
   try {
     history = await loadEnquiries(offset);
+
   } catch (reason) {
     error =
       reason instanceof Error
@@ -234,7 +336,7 @@ async function AccountOrders({
       active="orders"
       name={customer.name}
     >
-      <div className="grc-page">
+      <div className="grc-page min-w-0">
         <header className="grc-page__heading">
           <p className="grc-eyebrow">
             YOUR FRAGRANCE JOURNEY
@@ -254,16 +356,12 @@ async function AccountOrders({
             className="grc-orders-empty"
             role="alert"
           >
-            <h2>
-              Enquiry history unavailable
-            </h2>
+            <h2>Enquiry history unavailable</h2>
 
-            <p>
-              {error}
-            </p>
+            <p>{error}</p>
 
             <Link
-              href="/account/orders"
+              href={`/account/orders?page=${page}`}
               className="grc-button grc-button--gold"
             >
               Try again
@@ -272,122 +370,30 @@ async function AccountOrders({
         ) : history?.items.length ? (
           <section
             aria-labelledby="grc-orders-title"
-            className="grid gap-4"
+            className="grid min-w-0 gap-4"
           >
             <h2
               id="grc-orders-title"
-              className="font-serif text-2xl text-[#481c32]"
+              className="font-serif text-2xl text-[var(--gr-theme-text)]"
             >
               Your WhatsApp enquiries
             </h2>
 
-            {history.items.map((enquiry) => {
-              const status =
-                statuses[enquiry.status];
-
-              return (
-                <article
-                  key={enquiry.reference}
-                  className="rounded-2xl border border-[#e8d8d2] bg-[#fffdfa] p-5 shadow-sm sm:p-6"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest text-[#a07842]">
-                        Reference
-                      </p>
-
-                      <h3 className="mt-1 font-serif text-xl text-[#4c2038]">
-                        {enquiry.reference}
-                      </h3>
-
-                      <p className="mt-1 text-xs text-[#78646d]">
-                        {new Date(
-                          enquiry.createdAt,
-                        ).toLocaleString(
-                          'en-NG',
-                          {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                            timeZone: 'Africa/Lagos',
-                          },
-                        )}
-                      </p>
-                    </div>
-
-                    <span className="rounded-full border border-[#e8d5c4] bg-[#fbefdf] px-3 py-2 text-xs font-semibold text-[#754628]">
-                      {status.name}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 text-sm text-[#715a66]">
-                    {status.detail}
-                  </p>
-
-                  <ul className="mt-4 grid gap-2 border-t border-[#eee2df] pt-4 text-sm text-[#593847]">
-                    {enquiry.items.map(
-                      (item, index) => (
-                        <li
-                          key={
-                            enquiry.reference +
-                            '-' +
-                            index
-                          }
-                          className="flex justify-between gap-4"
-                        >
-                          <span>
-                            {item.name}
-
-                            {item.sizeMl
-                              ? ` · ${item.sizeMl} ml`
-                              : ''}
-
-                            {' × '}
-                            {item.quantity}
-                          </span>
-
-                          <span className="shrink-0 font-semibold">
-                            {formatPrice(
-                              item.priceMinor *
-                                item.quantity,
-                            )}
-                          </span>
-                        </li>
-                      ),
-                    )}
-                  </ul>
-
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[#eee2df] pt-4">
-                    <span className="text-sm text-[#78646d]">
-                      Estimated product total · Not a paid receipt
-                    </span>
-
-                    <strong className="text-lg text-[#481c32]">
-                      {formatPrice(
-                        enquiry.totalMinor,
-                      )}
-                    </strong>
-                  </div>
-
-                  {enquiry.delivery && (
-                    <p className="mt-3 text-xs text-[#78646d]">
-                      Requested delivery:{' '}
-                      {enquiry.delivery}
-                    </p>
-                  )}
-                </article>
-              );
-            })}
+            {history.items.map(enquiry => (
+              <EnquiryCard
+                key={enquiry.reference}
+                enquiry={enquiry}
+              />
+            ))}
 
             <nav
-              className="flex justify-between gap-3"
+              className="flex flex-wrap justify-between gap-3"
               aria-label="Order history pages"
             >
               {page > 1 ? (
                 <Link
-                  className="grc-button"
-                  href={
-                    `/account/orders?page=${page - 1}`
-                  }
+                  className="grc-button grc-button--soft"
+                  href={`/account/orders?page=${page - 1}`}
                 >
                   <ArrowLeft size={16} />
                   Previous
@@ -396,17 +402,15 @@ async function AccountOrders({
                 <span />
               )}
 
-              {history.hasMore ? (
+              {history.hasMore && (
                 <Link
-                  className="grc-button"
-                  href={
-                    `/account/orders?page=${page + 1}`
-                  }
+                  className="grc-button grc-button--soft"
+                  href={`/account/orders?page=${page + 1}`}
                 >
                   Next
                   <ArrowRight size={16} />
                 </Link>
-              ) : null}
+              )}
             </nav>
           </section>
         ) : (
@@ -436,8 +440,9 @@ async function AccountOrders({
             </h2>
 
             <p>
-              No WhatsApp enquiries are attached
-              to this account yet.
+              {page > 1
+                ? 'No WhatsApp enquiries on this page.'
+                : 'No WhatsApp enquiries are attached to this account yet.'}
             </p>
 
             <p>
@@ -447,8 +452,17 @@ async function AccountOrders({
               confirmed sale or payment.
             </p>
 
+            {page > 1 && (
+              <Link
+                href={`/account/orders?page=${page - 1}`}
+                className="grc-text-link"
+              >
+                Previous page
+              </Link>
+            )}
+
             <Link
-              href="/cart"
+              href="/account/shop?view=bag"
               className="grc-button grc-button--gold"
             >
               Open my fragrance bag
@@ -461,15 +475,17 @@ async function AccountOrders({
           </section>
         )}
 
+        {/* CUSTOMER SHOPPING SHORTCUTS */}
+
         <div
           className="grc-quick-grid"
           style={{
             gridTemplateColumns:
-              'repeat(auto-fit, minmax(230px, 1fr))',
+              'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
           }}
         >
           <Link
-            href="/shop"
+            href="/account/shop"
             className="grc-quick-card"
           >
             <span className="grc-quick-card__icon">
@@ -477,9 +493,7 @@ async function AccountOrders({
             </span>
 
             <div>
-              <h2>
-                Discover perfumes
-              </h2>
+              <h2>Discover perfumes</h2>
 
               <p>
                 Explore the Golden Rose collection.
@@ -501,9 +515,7 @@ async function AccountOrders({
             </span>
 
             <div>
-              <h2>
-                Your account
-              </h2>
+              <h2>Your account</h2>
 
               <p>
                 Update your customer details and preferences.

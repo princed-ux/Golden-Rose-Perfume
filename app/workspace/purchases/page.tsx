@@ -80,7 +80,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
       ) : (
         <>
           <WorkspacePanel className="grid gap-4">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <ClipboardList size={20} />
               New purchase order
             </h2>
@@ -181,7 +181,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
                   />
                 </Field>
 
-                <p className="text-xs text-[#816e79]">
+                <p className="text-xs text-gr-muted">
                   Up to 40 distinct catalogue SKUs. The
                   submitted purchase cost is recorded
                   permanently as the purchase-order line cost.
@@ -201,7 +201,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
           </WorkspacePanel>
 
           <WorkspacePanel className="grid gap-4">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <PackageCheck size={20} />
               Purchase orders ({data.purchases.length})
             </h2>
@@ -216,17 +216,17 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
             {data.purchases.map((purchase) => (
               <article
                 key={purchase.id}
-                className="rounded-xl border border-[#eaddd5] bg-white p-4"
+                className="rounded-xl border border-gr-border bg-gr-surface p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-semibold text-[#512238]">
+                    <h3 className="font-semibold text-gr-text">
                       {purchase.supplierName}
                       {' · '}
                       {purchase.locationName}
                     </h3>
 
-                    <p className="mt-1 text-sm text-[#806d78]">
+                    <p className="mt-1 text-sm text-gr-muted">
                       {formatPrice(purchase.totalMinor)}
                       {' · '}
                       {purchase.status.replaceAll('_', ' ')}
@@ -237,13 +237,13 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
                     </p>
 
                     {purchase.expectedDate && (
-                      <p className="text-xs text-[#806d78]">
+                      <p className="text-xs text-gr-muted">
                         Expected: {purchase.expectedDate}
                       </p>
                     )}
 
                     {purchase.note && (
-                      <p className="mt-1 text-xs text-[#806d78]">
+                      <p className="mt-1 text-xs text-gr-muted">
                         {purchase.note}
                       </p>
                     )}
@@ -276,16 +276,16 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
                     return (
                       <div
                         key={line.id}
-                        className="rounded-lg bg-[#fbf6f1] p-3"
+                        className="rounded-lg bg-gr-surface p-3"
                       >
                         <div className="flex flex-wrap justify-between gap-2 text-sm">
-                          <strong className="text-[#512238]">
+                          <strong className="text-gr-text">
                             {line.productName}
                             {' · '}
                             {line.sku}
                           </strong>
 
-                          <span className="text-[#705563]">
+                          <span className="text-gr-muted">
                             {line.receivedQuantity}/
                             {line.quantity} received
                             {' · '}
@@ -316,7 +316,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
                                 value={randomUUID()}
                               />
 
-                              <label className="grid gap-1 text-xs font-semibold text-[#6d4d5e]">
+                              <label className="grid gap-1 text-xs font-semibold text-gr-muted">
                                 Quantity to receive
 
                                 <input

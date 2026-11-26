@@ -223,24 +223,24 @@ function AccessSwitch({
     <label
       className={
         'flex min-w-0 items-start justify-between gap-4 ' +
-        'rounded-xl border border-[#eaded8] bg-white p-4 ' +
+        'rounded-xl border border-gr-border bg-gr-surface p-4 ' +
         (
           disabled
             ? 'cursor-not-allowed opacity-60'
-            : 'cursor-pointer hover:bg-[#fffaf3]'
+            : 'cursor-pointer hover:bg-gr-surface-alt'
         )
       }
     >
       <div className="min-w-0 flex-1">
-        <strong className="text-sm text-[#54213a]">
+        <strong className="text-sm text-gr-text">
           {option.title}
         </strong>
 
-        <p className="mt-1 text-xs leading-5 text-[#796570]">
+        <p className="mt-1 text-xs leading-5 text-gr-muted">
           {option.description}
         </p>
 
-        <p className="mt-2 text-[11px] font-medium text-[#946a37]">
+        <p className="mt-2 text-[11px] font-medium text-gr-gold">
           {custom
             ? 'Individual permission'
             : 'Role default'}
@@ -263,23 +263,23 @@ function AccessSwitch({
           aria-hidden="true"
           className="
             relative block h-7 w-12 rounded-full
-            bg-[#c7bec3] transition-colors
+            bg-gr-surface-alt transition-colors
             after:absolute after:left-1 after:top-1
-            after:size-5 after:rounded-full after:bg-white
+            after:size-5 after:rounded-full after:bg-gr-surface
             after:shadow-sm after:transition-transform
-            peer-checked:bg-[#54213a]
+            peer-checked:bg-gr-strong
             peer-checked:after:translate-x-5
             peer-focus-visible:ring-2
-            peer-focus-visible:ring-[#b79052]
+            peer-focus-visible:ring-gr-gold
             peer-focus-visible:ring-offset-2
           "
         />
 
-        <span className="text-xs text-[#796570] peer-checked:hidden">
+        <span className="text-xs text-gr-muted peer-checked:hidden">
           Off
         </span>
 
-        <span className="hidden text-xs font-semibold text-[#54213a] peer-checked:block">
+        <span className="hidden text-xs font-semibold text-gr-text peer-checked:block">
           On
         </span>
       </div>
@@ -312,12 +312,12 @@ function CurrentRoleAccess({
   );
 
   return (
-    <details className="rounded-xl border border-[#eaded8] bg-[#faf5f1] p-4">
-      <summary className="cursor-pointer text-sm font-semibold text-[#54213a]">
+    <details className="rounded-xl border border-gr-border bg-gr-surface p-4">
+      <summary className="cursor-pointer text-sm font-semibold text-gr-text">
         Other operational modules
       </summary>
 
-      <p className="mt-3 text-xs leading-5 text-[#796570]">
+      <p className="mt-3 text-xs leading-5 text-gr-muted">
         These modules still use their existing role
         permissions. Their individual access controls
         are not connected yet.
@@ -327,20 +327,20 @@ function CurrentRoleAccess({
         {operational.map(item => (
           <div
             key={item.id}
-            className="flex items-center justify-between gap-3 rounded-lg border border-[#eaded8] bg-white p-3 text-xs"
+            className="flex items-center justify-between gap-3 rounded-lg border border-gr-border bg-gr-surface p-3 text-xs"
           >
-            <span className="font-medium text-[#54213a]">
+            <span className="font-medium text-gr-text">
               {item.label}
             </span>
 
             {employee.status === 'active' &&
             defaults.has(item.id) ? (
-              <span className="flex items-center gap-1 text-emerald-800">
+              <span className="flex items-center gap-1 text-gr-success">
                 <CheckCircle2 size={14} />
                 Active
               </span>
             ) : (
-              <span className="text-[#796570]">
+              <span className="text-gr-muted">
                 Not assigned
               </span>
             )}
@@ -376,21 +376,21 @@ function EmployeeCard({
     <WorkspacePanel className="grid min-w-0 gap-5">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="grid size-12 shrink-0 place-items-center rounded-xl border border-[#eaded8] bg-[#f7eee7] text-[#946a37]">
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl border border-gr-border bg-gr-surface-alt text-gr-gold">
             <UserRound size={24} />
           </span>
 
           <div className="min-w-0">
-            <h2 className="break-words font-serif text-xl text-[#54213a]">
+            <h2 className="break-words font-serif text-xl text-gr-text">
               {employee.displayName}
             </h2>
 
-            <p className="break-all text-sm text-[#796570]">
+            <p className="break-all text-sm text-gr-muted">
               {employee.email || 'Email unavailable'}
             </p>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="rounded-md bg-[#f5e9dc] px-2 py-1 text-xs font-semibold text-[#79532c]">
+              <span className="rounded-md bg-gr-surface-alt px-2 py-1 text-xs font-semibold text-gr-gold">
                 {roleLabels[employee.role]}
               </span>
 
@@ -399,8 +399,8 @@ function EmployeeCard({
                   'rounded-md px-2 py-1 text-xs font-semibold ' +
                   (
                     active
-                      ? 'bg-emerald-50 text-emerald-800'
-                      : 'bg-rose-50 text-rose-800'
+                      ? 'bg-gr-success-bg text-gr-success'
+                      : 'bg-gr-danger-bg text-gr-danger'
                   )
                 }
               >
@@ -410,13 +410,13 @@ function EmployeeCard({
           </div>
         </div>
 
-        <p className="text-xs text-[#796570]">
+        <p className="text-xs text-gr-muted">
           {grantedCount} individually configurable
           modules enabled
         </p>
       </header>
 
-      <div className="flex items-center gap-2 rounded-xl border border-[#eaded8] bg-white p-3 text-sm text-[#796570]">
+      <div className="flex items-center gap-2 rounded-xl border border-gr-border bg-gr-surface p-3 text-sm text-gr-muted">
         <Building2 size={17} className="shrink-0" />
 
         {employee.locationName ||
@@ -441,11 +441,11 @@ function EmployeeCard({
         />
 
         <div>
-          <h3 className="font-semibold text-[#54213a]">
+          <h3 className="font-semibold text-gr-text">
             Individual permissions
           </h3>
 
-          <p className="mt-1 text-sm text-[#796570]">
+          <p className="mt-1 text-sm text-gr-muted">
             Turn on the responsibilities this employee
             should have. Their assigned role will remain
             unchanged.
@@ -465,33 +465,33 @@ function EmployeeCard({
           ))}
         </div>
 
-        <div className="flex items-start justify-between gap-3 rounded-xl border border-[#eaded8] bg-[#fffaf3] p-4">
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-gr-border bg-gr-surface p-4">
           <div className="flex min-w-0 items-start gap-3">
             <Sparkles
               size={21}
-              className="mt-0.5 shrink-0 text-[#a17940]"
+              className="mt-0.5 shrink-0 text-gr-gold"
             />
 
             <div>
-              <h3 className="text-sm font-semibold text-[#54213a]">
+              <h3 className="text-sm font-semibold text-gr-text">
                 Amara Assistant
               </h3>
 
-              <p className="mt-1 text-xs leading-5 text-[#796570]">
+              <p className="mt-1 text-xs leading-5 text-gr-muted">
                 Guided operational assistance for
                 every active employee.
               </p>
             </div>
           </div>
 
-          <span className="shrink-0 text-xs font-semibold text-[#54213a]">
+          <span className="shrink-0 text-xs font-semibold text-gr-text">
             {active ? 'Enabled' : 'Suspended'}
           </span>
         </div>
 
         <CurrentRoleAccess employee={employee} />
 
-        <div className="flex items-start gap-2 rounded-xl bg-[#faf5f1] p-4 text-xs leading-5 text-[#796570]">
+        <div className="flex items-start gap-2 rounded-xl bg-gr-surface p-4 text-xs leading-5 text-gr-gold">
           <LockKeyhole
             size={17}
             className="mt-0.5 shrink-0"
@@ -506,7 +506,7 @@ function EmployeeCard({
           </p>
         </div>
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#eaded8] pt-4">
+        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-gr-border pt-4">
           <button
             type="submit"
             name="reset"
@@ -540,7 +540,7 @@ export default function PermissionsPage(props: Props) {
   return (
     <Suspense
       fallback={
-        <p role="status" className="p-6 text-sm text-[#796570]">
+        <p role="status" className="p-6 text-sm text-gr-muted">
           Verifying owner access…
         </p>
       }
@@ -652,7 +652,7 @@ async function AuthorizedPermissions({
       {params.result === 'saved' && (
         <div
           role="status"
-          className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900"
+          className="flex items-start gap-3 rounded-xl border border-gr-success-border bg-gr-success-bg p-4 text-sm text-gr-success"
         >
           <CheckCircle2 size={20} className="shrink-0" />
 
@@ -694,13 +694,13 @@ async function AuthorizedPermissions({
           {metrics.map(metric => (
             <article
               key={metric.title}
-              className="rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-4"
+              className="rounded-2xl border border-gr-border bg-gr-surface p-4"
             >
-              <p className="text-xs font-semibold text-[#796570]">
+              <p className="text-xs font-semibold text-gr-muted">
                 {metric.title}
               </p>
 
-              <strong className="mt-2 block font-serif text-3xl tabular-nums text-[#54213a]">
+              <strong className="mt-2 block font-serif text-3xl tabular-nums text-gr-text">
                 {metric.value}
               </strong>
             </article>
@@ -741,7 +741,7 @@ async function AuthorizedPermissions({
         </form>
 
         {directory.ok && (
-          <p className="text-xs text-[#796570]">
+          <p className="text-xs text-gr-muted">
             Showing {filtered.length} of {employees.length} employees
           </p>
         )}

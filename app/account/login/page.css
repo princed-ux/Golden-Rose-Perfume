@@ -2,13 +2,13 @@
 /* GOLDEN ROSE — SCENT OF ELEGANCE LOGIN */
 
 .gr-login {
-  --login-gold: #dbb978;
-  --login-gold-light: #f2daa7;
-  --login-background: #0d0b09;
-  --login-surface: rgba(20, 18, 15, 0.88);
-  --login-text: #faf4e8;
-  --login-muted: #a99d8c;
-  --login-border: rgba(219, 185, 120, 0.26);
+  --login-gold: var(--gr-theme-gold);
+  --login-gold-light: var(--gr-theme-gold);
+  --login-background: var(--gr-theme-bg);
+  --login-surface: var(--gr-theme-input);
+  --login-text: var(--gr-theme-text);
+  --login-muted: var(--gr-theme-muted);
+  --login-border: var(--gr-theme-control-border);
 
   position: relative;
   display: block;
@@ -59,7 +59,7 @@
   display: flex;
   align-items: center;
   gap: 13px;
-  color: #efd4a0;
+  color: var(--gr-theme-media-accent);
 }
 
 .gr-login__logo {
@@ -80,7 +80,7 @@
 .gr-login__brand small {
   font: 600 8px Arial, sans-serif;
   letter-spacing: 0.24em;
-  color: #c5a877;
+  color: var(--gr-theme-media-accent);
 }
 
 .gr-login__back {
@@ -88,13 +88,13 @@
   align-items: center;
   gap: 13px;
 
-  color: #decaab;
+  color: var(--gr-theme-media-accent);
   font-size: 12px;
   transition: color 250ms ease;
 }
 
 .gr-login__back:hover {
-  color: #fff1d1;
+  color: var(--gr-theme-media-accent);
 }
 
 /* MAIN LAYOUT */
@@ -112,7 +112,7 @@
   position: relative;
   min-height: 740px;
   overflow: hidden;
-  background: #090705;
+  background: var(--gr-theme-media);
 }
 
 .gr-login__photography {
@@ -157,7 +157,7 @@
 .gr-login__eyebrow {
   margin: 0 0 25px;
 
-  color: #e8c68d;
+  color: var(--gr-theme-media-accent);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.34em;
@@ -504,7 +504,7 @@
 }
 
 .gr-login__form input::placeholder {
-  color: #8b8071;
+  color: var(--gr-theme-muted);
 }
 
 .gr-login__form input:focus {
@@ -520,12 +520,12 @@
 
   margin-top: 10px;
 
-  color: #18110a;
+  color: var(--gr-theme-on-gold);
   background: linear-gradient(
     110deg,
-    #c79a52,
-    #f3dba7 50%,
-    #d4ac68
+    var(--gr-theme-button),
+    var(--gr-theme-button-hover) 50%,
+    var(--gr-theme-button-hover)
   );
 
   border: 0;
@@ -593,7 +593,7 @@
 
   margin-top: 60px;
 
-  color: #9b835f;
+  color: var(--gr-theme-gold);
   font-size: 9px;
   letter-spacing: 0.19em;
 }
@@ -610,7 +610,7 @@
   display: flex;
   gap: 25px;
 
-  color: #8e7d65;
+  color: var(--gr-theme-on-strong);
   font-size: 10px;
 }
 
@@ -677,32 +677,6 @@
 }
 
 /* LIGHT MODE */
-
-html[data-theme="light"] .gr-login,
-html.light .gr-login {
-  --login-background: #f7f2e9;
-  --login-surface: #ffffff;
-  --login-text: #272019;
-  --login-muted: #736858;
-  --login-border: rgba(130, 100, 58, 0.25);
-  --login-gold: #986d36;
-  --login-gold-light: #8b5a22;
-}
-
-html[data-theme="light"] .gr-login__entry,
-html.light .gr-login__entry {
-  background: var(--login-background);
-}
-
-html[data-theme="light"] .gr-login__form input::placeholder,
-html.light .gr-login__form input::placeholder {
-  color: #968a7e;
-}
-
-html[data-theme="light"] .gr-login__back,
-html.light .gr-login__back {
-  color: #e6c48a;
-}
 
 /* TABLET */
 

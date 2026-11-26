@@ -292,8 +292,8 @@ export function ReceivingForm({
       className="grid min-w-0 gap-5"
     >
       {retry ? (
-        <div className="grid gap-3 rounded-xl border border-[#e9d2aa] bg-[#fff8e9] p-4">
-          <div className="flex items-center gap-2 font-semibold text-[#704c26]">
+        <div className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-4">
+          <div className="flex items-center gap-2 font-semibold text-gr-gold">
             <RotateCcw
               size={18}
               aria-hidden="true"
@@ -301,7 +301,7 @@ export function ReceivingForm({
             Pending receipt
           </div>
 
-          <p className="text-sm leading-6 text-[#725b48]">
+          <p className="text-sm leading-6 text-gr-gold">
             {variants.find(
               variant =>
                 variant.id === retry.variantId,
@@ -316,12 +316,12 @@ export function ReceivingForm({
           </p>
 
           {retry.referenceId && (
-            <p className="text-xs text-[#806852]">
+            <p className="text-xs text-gr-gold">
               Reference: {retry.referenceId}
             </p>
           )}
 
-          <p className="text-xs leading-5 text-[#806852]">
+          <p className="text-xs leading-5 text-gr-gold">
             The system retained the original transaction
             identifier. Retrying will use the same details
             rather than creating a new stock receipt.
@@ -340,7 +340,7 @@ export function ReceivingForm({
                 <Search
                   size={17}
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-3 top-3.5 text-[#a57839]"
+                  className="pointer-events-none absolute left-3 top-3.5 text-gr-gold"
                 />
 
                 <input
@@ -357,7 +357,7 @@ export function ReceivingForm({
               </span>
             </label>
 
-            <p className="text-xs leading-5 text-[#887480]">
+            <p className="text-xs leading-5 text-gr-muted">
               {matches.length} matching options displayed.
               For large catalogues, search to narrow
               the product list. A scanner configured
@@ -452,7 +452,7 @@ export function ReceivingForm({
       {!retry && !canStart && (
         <div
           role="status"
-          className="rounded-xl border border-[#e9d2aa] bg-[#fff8e9] p-4 text-sm leading-6 text-[#74542d]"
+          className="rounded-xl border border-gr-border bg-gr-surface p-4 text-sm leading-6 text-gr-gold"
         >
           A product variant and active location
           are required before receiving stock.
@@ -461,7 +461,7 @@ export function ReceivingForm({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-[#eaded7] pt-4">
+      <div className="flex flex-wrap items-center gap-3 border-t border-gr-border pt-4">
         <ActionButton pending={pending} pendingLabel="Saving…"
           type="submit"
           className={workspacePrimary}
@@ -492,7 +492,7 @@ export function ReceivingForm({
         )}
 
         {!retry && (
-          <span className="inline-flex items-center gap-2 text-xs text-[#887480]">
+          <span className="inline-flex items-center gap-2 text-xs text-gr-muted">
             <Barcode
               size={15}
               aria-hidden="true"
@@ -512,8 +512,8 @@ export function ReceivingForm({
           className={
             'rounded-xl border p-4 text-sm leading-6 ' +
             (result.status === 'error'
-              ? 'border-[#e8c4ca] bg-[#fff1f3] text-[#8d324b]'
-              : 'border-[#c9e3d0] bg-[#edf8ef] text-[#27643b]')
+              ? 'border-gr-border bg-gr-surface-alt text-gr-danger'
+              : 'border-gr-border bg-gr-success-bg text-gr-success')
           }
         >
           {result.message}

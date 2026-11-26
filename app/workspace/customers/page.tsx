@@ -84,15 +84,15 @@ export default async function CustomersPage({
         { label: 'Directory status', value: directory ? 'Connected' : 'Unavailable',
           detail: 'Live private Supabase CRM', Icon: ShieldCheck },
       ].map(({ label, value, detail, Icon }) =>
-        <article key={label} className="min-w-0 rounded-2xl border border-[#e9dbd5] bg-[#fffdf9] p-5 shadow-[0_4px_24px_rgba(68,25,45,0.035)]">
+        <article key={label} className="min-w-0 rounded-2xl border border-gr-border bg-gr-surface p-5 shadow-[0_4px_24px_rgba(68,25,45,0.035)]">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-[#846e7a]">{label}</span>
-            <span className="grid size-9 place-items-center rounded-xl bg-[#f7ead9] text-[#9e7440]">
+            <span className="text-xs font-semibold text-gr-muted">{label}</span>
+            <span className="grid size-9 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
               <Icon size={18} aria-hidden="true" />
             </span>
           </div>
-          <p className="mt-3 font-serif text-2xl text-[#46172f]">{value}</p>
-          <p className="mt-1 text-xs text-[#887783]">{detail}</p>
+          <p className="mt-3 font-serif text-2xl text-gr-text">{value}</p>
+          <p className="mt-1 text-xs text-gr-muted">{detail}</p>
         </article>)}
     </section>
 
@@ -106,14 +106,14 @@ export default async function CustomersPage({
     <WorkspacePanel label="gr-crm-filters" className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="gr-crm-filters" className="font-serif text-2xl text-[#4d1c35]">
+          <h2 id="gr-crm-filters" className="font-serif text-2xl text-gr-text">
             Customer directory
           </h2>
-          <p className="mt-1 text-xs text-[#86737d]">
+          <p className="mt-1 text-xs text-gr-muted">
             Search name, telephone or email. Customer details are visible only to authorized staff.
           </p>
         </div>
-        <ContactRound size={22} className="text-[#ad8047]" aria-hidden="true" />
+        <ContactRound size={22} className="text-gr-gold" aria-hidden="true" />
       </div>
 
       <form method="get" action="/workspace/customers"
@@ -121,7 +121,7 @@ export default async function CustomersPage({
         <label className={workspaceLabel}>Search customers
           <span className="relative">
             <Search size={17} aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-3.5 text-[#a67c47]" />
+              className="pointer-events-none absolute left-3 top-3.5 text-gr-gold" />
             <input name="search" type="search" maxLength={100}
               className={workspaceInput + ' pl-10'} defaultValue={filters.search}
               placeholder="Name, phone or email" />
@@ -155,31 +155,31 @@ export default async function CustomersPage({
     <WorkspacePanel label="gr-crm-records" className="grid gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 id="gr-crm-records" className="font-serif text-2xl text-[#4d1c35]">
+          <h2 id="gr-crm-records" className="font-serif text-2xl text-gr-text">
             Customer profiles
           </h2>
-          <p className="mt-1 text-xs text-[#86737d]">
+          <p className="mt-1 text-xs text-gr-muted">
             {directory ? 'Live records · Most recently created first' : 'Waiting for the CRM connection'}
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 text-xs text-[#8d7780]">
+        <span className="inline-flex items-center gap-2 text-xs text-gr-muted">
           <ShieldCheck size={16} aria-hidden="true" />
           Private business records
         </span>
       </div>
 
-      {!directory ? <p className="rounded-xl bg-[#fbf5ef] p-6 text-sm text-[#806d78]">
+      {!directory ? <p className="rounded-xl bg-gr-surface p-6 text-sm text-gr-muted">
         The directory could not be loaded. Use Retry above to reconnect.
       </p> : customers.length === 0 ? (
-        <div className="grid justify-items-center gap-3 rounded-xl border border-dashed border-[#e8dad2] bg-[#fffcf8] px-5 py-12 text-center">
-          <span className="grid size-14 place-items-center rounded-2xl bg-[#f8ecdd] text-[#ac7a3d]">
+        <div className="grid justify-items-center gap-3 rounded-xl border border-dashed border-gr-border bg-gr-surface px-5 py-12 text-center">
+          <span className="grid size-14 place-items-center rounded-2xl bg-gr-surface-alt text-gr-gold">
             <UsersRound size={26} aria-hidden="true" />
           </span>
-          <h3 className="font-serif text-xl text-[#4c1d35]">
+          <h3 className="font-serif text-xl text-gr-text">
             {filters.search || filters.status !== 'active' || filters.locationId
               ? 'No customers match these filters' : 'No customer profiles yet'}
           </h3>
-          <p className="max-w-md text-sm leading-6 text-[#887783]">
+          <p className="max-w-md text-sm leading-6 text-gr-muted">
             {filters.search || filters.status !== 'active' || filters.locationId
               ? 'Try another search or clear the filters.'
               : 'Use Add customer to record your first actual customer. No sample names are displayed.'}
@@ -189,32 +189,32 @@ export default async function CustomersPage({
         <div className="grid gap-3">
           {customers.map(customer =>
             <article key={customer.id}
-              className="grid min-w-0 gap-4 rounded-xl border border-[#ebddd7] bg-white p-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(260px,1fr)] lg:items-start">
+              className="grid min-w-0 gap-4 rounded-xl border border-gr-border bg-gr-surface p-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(260px,1fr)] lg:items-start">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <strong className="break-words text-base text-[#482238]">{customer.fullName}</strong>
+                  <strong className="break-words text-base text-gr-text">{customer.fullName}</strong>
                   <span className={'rounded-full px-2.5 py-1 text-[10px] font-semibold ' +
                     (customer.status === 'active'
-                      ? 'bg-[#e7f4e9] text-[#326c43]'
-                      : 'bg-[#f4edf1] text-[#8e6577]')}>
+                      ? 'bg-gr-success-bg text-gr-success'
+                      : 'bg-gr-surface-alt text-gr-danger')}>
                     {customer.status === 'active' ? 'Active' : 'Archived'}
                   </span>
                 </div>
-                <p className="mt-2 text-xs text-[#927e86]">{customer.locationName}</p>
-                <p className="mt-1 text-xs text-[#927e86]">
+                <p className="mt-2 text-xs text-gr-muted">{customer.locationName}</p>
+                <p className="mt-1 text-xs text-gr-muted">
                   Added {new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium', timeZone: 'Africa/Lagos' }).format(new Date(customer.createdAt))}
                 </p>
               </div>
-              <div className="grid min-w-0 gap-2 text-sm text-[#6d5963]">
+              <div className="grid min-w-0 gap-2 text-sm text-gr-muted">
                 {customer.email && <p className="flex min-w-0 items-center gap-2">
-                  <Mail size={16} className="shrink-0 text-[#a57b48]" aria-hidden="true" />
+                  <Mail size={16} className="shrink-0 text-gr-gold" aria-hidden="true" />
                   <span className="break-all">{customer.email}</span>
                 </p>}
                 {customer.phone && <p className="flex min-w-0 items-center gap-2">
-                  <Phone size={16} className="shrink-0 text-[#a57b48]" aria-hidden="true" />
+                  <Phone size={16} className="shrink-0 text-gr-gold" aria-hidden="true" />
                   <span className="break-words">{customer.phone}</span>
                 </p>}
-                {customer.notes && <p className="line-clamp-3 whitespace-pre-wrap text-xs text-[#897780]">{customer.notes}</p>}
+                {customer.notes && <p className="line-clamp-3 whitespace-pre-wrap text-xs text-gr-muted">{customer.notes}</p>}
               </div>
               <EditCustomer customer={customer} locations={locations} canArchive={canArchive} />
               {canViewModule(role, 'invoices') && <CustomerHistory customerId={customer.id} storeId={customer.locationId} />}
@@ -223,9 +223,9 @@ export default async function CustomersPage({
       )}
 
       {directory && (directory.hasMore || filters.offset > 0) &&
-        <nav className="flex flex-wrap items-center justify-between gap-3 border-t border-[#eee3dd] pt-4"
+        <nav className="flex flex-wrap items-center justify-between gap-3 border-t border-gr-border pt-4"
           aria-label="Customer directory pages">
-          <span className="text-xs text-[#8b7780]">
+          <span className="text-xs text-gr-muted">
             Page {Math.floor(filters.offset / directory.limit) + 1} · {customers.length} profiles shown
           </span>
           <div className="flex gap-2">
@@ -239,7 +239,7 @@ export default async function CustomersPage({
         </nav>}
     </WorkspacePanel>
 
-    <p className="text-xs leading-6 text-[#8b7780]">
+    <p className="text-xs leading-6 text-gr-muted">
       Customer profiles are private CRM records, not automatically authenticated
       shopping accounts. Billing history links use customer IDs; names alone never link purchases.
     </p>

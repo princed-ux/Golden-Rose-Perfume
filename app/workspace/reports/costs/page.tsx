@@ -98,16 +98,16 @@ function Metric({
   description: string;
 }) {
   return (
-    <article className="rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-5">
-      <p className="text-sm font-semibold text-[#806a77]">
+    <article className="rounded-2xl border border-gr-border bg-gr-surface p-5">
+      <p className="text-sm font-semibold text-gr-muted">
         {title}
       </p>
 
-      <p className="mt-3 break-words font-serif text-3xl text-[#4c1c32]">
+      <p className="mt-3 break-words font-serif text-3xl text-gr-text">
         {value}
       </p>
 
-      <p className="mt-2 text-xs leading-5 text-[#8b7681]">
+      <p className="mt-2 text-xs leading-5 text-gr-muted">
         {description}
       </p>
     </article>
@@ -120,7 +120,7 @@ export default function CostIntegrityPage({
   return (
     <Suspense
       fallback={
-        <p role="status" className="p-5 text-sm text-[#806a77]">
+        <p role="status" className="p-5 text-sm text-gr-muted">
           Loading cost integrity records…
         </p>
       }
@@ -218,7 +218,7 @@ async function CostIntegrityContent({
         actions={
           <Link
             href="/workspace/reports"
-            className="inline-flex min-h-11 items-center rounded-xl border border-[#e4d5ce] bg-white px-4 text-sm font-semibold text-[#54213a]"
+            className="inline-flex min-h-11 items-center rounded-xl border border-gr-border bg-gr-surface px-4 text-sm font-semibold text-gr-text"
           >
             Back to financial reports
           </Link>
@@ -229,10 +229,10 @@ async function CostIntegrityContent({
         <div className="flex items-center gap-2">
           <FileSearch
             size={19}
-            className="text-[#a4773e]"
+            className="text-gr-gold"
           />
 
-          <h2 className="font-serif text-xl text-[#54213a]">
+          <h2 className="font-serif text-xl text-gr-text">
             Reporting period
           </h2>
         </div>
@@ -242,7 +242,7 @@ async function CostIntegrityContent({
           action="/workspace/reports/costs"
           className="grid gap-3 sm:grid-cols-3"
         >
-          <label className="grid gap-2 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-2 text-sm font-semibold text-gr-text">
             From
 
             <input
@@ -254,7 +254,7 @@ async function CostIntegrityContent({
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-2 text-sm font-semibold text-gr-text">
             To
 
             <input
@@ -336,28 +336,28 @@ async function CostIntegrityContent({
               {coverage === 100 ? (
                 <CheckCircle2
                   size={22}
-                  className="text-[#34784c]"
+                  className="text-gr-success"
                 />
               ) : (
                 <AlertTriangle
                   size={22}
-                  className="text-[#a36d33]"
+                  className="text-gr-gold"
                 />
               )}
 
-              <h2 className="font-serif text-2xl text-[#54213a]">
+              <h2 className="font-serif text-2xl text-gr-text">
                 Cost snapshot coverage
               </h2>
             </div>
 
-            <p className="font-serif text-3xl text-[#54213a]">
+            <p className="font-serif text-3xl text-gr-text">
               {coverage === null
                 ? 'No sale lines'
                 : `${coverage.toFixed(1)}%`}
             </p>
 
             <div
-              className="h-3 overflow-hidden rounded-full bg-[#f1e5de]"
+              className="h-3 overflow-hidden rounded-full bg-gr-surface-alt"
               role="progressbar"
               aria-label="Cost snapshot coverage"
               aria-valuemin={0}
@@ -365,14 +365,14 @@ async function CostIntegrityContent({
               aria-valuenow={coverage ?? 0}
             >
               <div
-                className="h-full rounded-full bg-[#8b5b76]"
+                className="h-full rounded-full bg-gr-strong"
                 style={{
                   width: `${coverage ?? 0}%`,
                 }}
               />
             </div>
 
-            <p className="text-sm leading-6 text-[#806a77]">
+            <p className="text-sm leading-6 text-gr-muted">
               A complete snapshot set only confirms
               that the catalogue costs were preserved.
               Actual acquisition-cost accuracy still
@@ -386,14 +386,14 @@ async function CostIntegrityContent({
               <div className="flex items-center gap-2">
                 <BarChart3
                   size={20}
-                  className="text-[#a4773e]"
+                  className="text-gr-gold"
                 />
-                <h2 className="font-serif text-xl text-[#54213a]">
+                <h2 className="font-serif text-xl text-gr-text">
                   Provisional margin
                 </h2>
               </div>
 
-              <p className="font-serif text-3xl text-[#54213a]">
+              <p className="font-serif text-3xl text-gr-text">
                 {report.provisionalGrossMarginMinor !== null
                   ? formatPrice(
                       report.provisionalGrossMarginMinor,
@@ -401,7 +401,7 @@ async function CostIntegrityContent({
                   : 'Unavailable'}
               </p>
 
-              <p className="text-sm leading-6 text-[#806a77]">
+              <p className="text-sm leading-6 text-gr-muted">
                 Displayed only when every selected
                 sale line has a cost snapshot and
                 there are no QA-labelled transactions.
@@ -413,20 +413,20 @@ async function CostIntegrityContent({
               <div className="flex items-center gap-2">
                 <Package
                   size={20}
-                  className="text-[#a4773e]"
+                  className="text-gr-gold"
                 />
-                <h2 className="font-serif text-xl text-[#54213a]">
+                <h2 className="font-serif text-xl text-gr-text">
                   Historical import readiness
                 </h2>
               </div>
 
-              <p className="text-sm text-[#806a77]">
+              <p className="text-sm text-gr-muted">
                 {report.historicalBackfillApplied
                   ? 'Historical import metadata is present.'
                   : 'Historical sale-cost import has not been applied.'}
               </p>
 
-              <p className="text-sm leading-6 text-[#806a77]">
+              <p className="text-sm leading-6 text-gr-muted">
                 Importing Odoo sale, purchase and
                 inventory valuation records will
                 require reconciled product identifiers,

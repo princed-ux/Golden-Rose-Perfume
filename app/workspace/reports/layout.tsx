@@ -13,14 +13,14 @@ export default function ReportsLayout({ children }: { children: ReactNode }) {
       <nav aria-label="Financial report views" className="flex flex-wrap gap-2">
         <Link
           href="/workspace/reports"
-          className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dfd0c3] bg-white px-4 text-sm font-semibold text-[#54213a] hover:bg-[#fff8ef]"
+          className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-gr-border bg-gr-surface px-4 text-sm font-semibold text-gr-text hover:bg-gr-surface-alt"
         >
           <BarChart3 size={17} aria-hidden="true" />
           Reports &amp; Analytics
         </Link>
         <Link
           href="/workspace/reports/reconciliation"
-          className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dfd0c3] bg-white px-4 text-sm font-semibold text-[#54213a] hover:bg-[#fff8ef]"
+          className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-gr-border bg-gr-surface px-4 text-sm font-semibold text-gr-text hover:bg-gr-surface-alt"
         >
           <ClipboardCheck size={17} aria-hidden="true" />
           Financial reconciliation

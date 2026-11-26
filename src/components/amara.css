@@ -8,10 +8,10 @@
   gap: 8px;
   min-height: 46px;
   padding: 0 15px;
-  border: 1px solid #c6a26b;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 24px;
-  background: #31151e;
-  color: #f5d9a8;
+  background: var(--gr-theme-strong);
+  color: var(--gr-theme-media-accent);
   box-shadow: 0 4px 18px #22101638;
   font: 600 14px Georgia, serif;
 }
@@ -30,8 +30,8 @@
 }
 
 .gr-amara-drawer[open] { display: flex; flex-direction: column; overflow: hidden; }
-.gr-amara-drawer::backdrop { background: #170d1466; }
-.gr-amara-drawer header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px; background: #31151e; color: #f5d9a8; }
+.gr-amara-drawer::backdrop { background: var(--gr-theme-scrim); }
+.gr-amara-drawer header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px; background: var(--gr-theme-strong); color: var(--gr-theme-media-accent); }
 .gr-amara-drawer h2 { font: 25px Georgia, serif; margin: 0 0 4px; }
 .gr-amara-drawer p { margin: 0; }
 .gr-amara-drawer header p, .gr-amara-detail { font-size: 12px; }
@@ -46,6 +46,6 @@
 .gr-amara-actions form { display: grid; gap: 5px; font-size: 12px; }
 .gr-amara-actions form > div { display: flex; gap: 6px; }
 .gr-amara-actions input { min-width: 0; flex: 1; min-height: 44px; padding: 6px 8px; font-size: 16px; background: var(--gr-theme-bg); border: 1px solid var(--gr-theme-border); border-radius: 7px; }
-.gr-amara-actions form button { background: #31151e; color: #f5d9a8; }
-.gr-amara-launcher:focus-visible, .gr-amara-drawer :is(a, button, input, [tabindex]):focus-visible { outline: 2px solid #c6a26b; outline-offset: 2px; }
+.gr-amara-actions form button { background: var(--gr-theme-strong); color: var(--gr-theme-media-accent); }
+.gr-amara-launcher:focus-visible, .gr-amara-drawer :is(a, button, input, [tabindex]):focus-visible { outline: 2px solid var(--gr-theme-gold); outline-offset: 2px; }
 @media (max-height: 520px) { .gr-amara-drawer[open] { overflow-y: auto; } .gr-amara-history { min-height: 90px; } }

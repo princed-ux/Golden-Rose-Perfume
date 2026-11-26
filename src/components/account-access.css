@@ -99,9 +99,9 @@
 }
 
 .gr-auth .gr-access-tabs a[aria-current="page"] {
-  background: #d8b575;
-  border-color: #d8b575;
-  color: #24180e;
+  background: var(--gr-theme-button);
+  border-color: var(--gr-theme-border);
+  color: var(--gr-theme-on-gold);
 }
 
 .gr-auth .gr-access-tabs a:focus-visible {
@@ -494,9 +494,9 @@
 }
 
 .gr-site-header .gr-site-mobile__account-actions a:last-child {
-  border-color: #963b59;
-  background: #963b59;
-  color: #ffffff;
+  border-color: var(--gr-theme-border);
+  background: var(--gr-theme-strong);
+  color: var(--gr-theme-on-strong);
 }
 
 .gr-site-header .gr-site-mobile__staff-link {

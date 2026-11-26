@@ -1099,17 +1099,17 @@ export function FloatingCalculator({
 
 const calculatorStyles = `
 .gr-floating-calculator {
-  --gr-calc-bg: #fffdf9;
-  --gr-calc-panel: #ffffff;
-  --gr-calc-border: #e5d8cf;
-  --gr-calc-text: #482539;
-  --gr-calc-muted: #826d78;
-  --gr-calc-accent: #54213a;
-  --gr-calc-gold: #a67c45;
-  --gr-calc-soft: #f6eee7;
-  --gr-calc-operator: #f2e5d4;
-  --gr-calc-display: #faf5f0;
-  --gr-calc-error: #a3324b;
+  --gr-calc-bg: var(--gr-theme-surface);
+  --gr-calc-panel: var(--gr-theme-surface);
+  --gr-calc-border: var(--gr-theme-border);
+  --gr-calc-text: var(--gr-theme-text);
+  --gr-calc-muted: var(--gr-theme-muted);
+  --gr-calc-accent: var(--gr-theme-strong);
+  --gr-calc-gold: var(--gr-theme-gold);
+  --gr-calc-soft: var(--gr-theme-surface-alt);
+  --gr-calc-operator: var(--gr-theme-accent-soft);
+  --gr-calc-display: var(--gr-theme-input);
+  --gr-calc-error: var(--gr-theme-danger);
 
   position: fixed;
 
@@ -1167,13 +1167,13 @@ const calculatorStyles = `
 
   place-items: center;
 
-  border: 1px solid #c4a477;
+  border: 1px solid var(--gr-theme-border);
 
   border-radius: 15px;
 
   background: var(--gr-calc-accent);
 
-  color: #f2d9ae;
+  color: var(--gr-theme-media-accent);
 
   box-shadow: 0 7px 25px rgba(61, 22, 43, .22);
 
@@ -1403,7 +1403,7 @@ const calculatorStyles = `
 
   background: var(--gr-calc-accent);
 
-  color: #ffffff;
+  color: var(--gr-theme-on-strong);
 }
 
 .gr-calc-key[data-selected="true"] {
@@ -1470,41 +1470,9 @@ const calculatorStyles = `
    EXPLICIT DARK THEME
    ======================================================= */
 
-.gr-theme-root[data-theme="dark"]
-.gr-floating-calculator {
-  --gr-calc-bg: #231923;
-  --gr-calc-panel: #30232e;
-  --gr-calc-border: #513c4c;
-  --gr-calc-text: #f4e8ee;
-  --gr-calc-muted: #c8b5bf;
-  --gr-calc-accent: #8c4564;
-  --gr-calc-gold: #dfbd81;
-  --gr-calc-soft: #40303b;
-  --gr-calc-operator: #503846;
-  --gr-calc-display: #1c141c;
-  --gr-calc-error: #ffafbe;
-}
-
 /* =======================================================
    SYSTEM THEME
    ======================================================= */
-
-@media (prefers-color-scheme: dark) {
-  .gr-theme-root[data-theme="system"]
-  .gr-floating-calculator {
-    --gr-calc-bg: #231923;
-    --gr-calc-panel: #30232e;
-    --gr-calc-border: #513c4c;
-    --gr-calc-text: #f4e8ee;
-    --gr-calc-muted: #c8b5bf;
-    --gr-calc-accent: #8c4564;
-    --gr-calc-gold: #dfbd81;
-    --gr-calc-soft: #40303b;
-    --gr-calc-operator: #503846;
-    --gr-calc-display: #1c141c;
-    --gr-calc-error: #ffafbe;
-  }
-}
 
 /* =======================================================
    MOBILE WORKSPACE

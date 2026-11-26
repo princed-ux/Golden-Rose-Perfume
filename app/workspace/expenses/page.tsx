@@ -98,28 +98,28 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
         <>
           <div className="grid gap-3 sm:grid-cols-2">
             <WorkspacePanel>
-              <p className="text-sm text-[#806d78]">
+              <p className="text-sm text-gr-muted">
                 Approved expense commitments
               </p>
 
-              <strong className="mt-2 block font-serif text-3xl text-[#512238]">
+              <strong className="mt-2 block font-serif text-3xl text-gr-text">
                 {formatPrice(approvedTotal)}
               </strong>
             </WorkspacePanel>
 
             <WorkspacePanel>
-              <p className="text-sm text-[#806d78]">
+              <p className="text-sm text-gr-muted">
                 Payments manually recorded
               </p>
 
-              <strong className="mt-2 block font-serif text-3xl text-[#512238]">
+              <strong className="mt-2 block font-serif text-3xl text-gr-text">
                 {formatPrice(recordedPaidTotal)}
               </strong>
             </WorkspacePanel>
           </div>
 
           <WorkspacePanel className="grid gap-4">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <Receipt size={20} />
               Record an expense
             </h2>
@@ -224,7 +224,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
           </WorkspacePanel>
 
           <WorkspacePanel className="grid gap-4">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <WalletCards size={20} />
               Expense ledger ({data.expenses.length})
             </h2>
@@ -239,21 +239,21 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
             {data.expenses.map((expense) => (
               <article
                 key={expense.id}
-                className="rounded-xl border border-[#eaddd5] bg-white p-4"
+                className="rounded-xl border border-gr-border bg-gr-surface p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-semibold text-[#512238]">
+                    <h3 className="font-semibold text-gr-text">
                       {expense.category}
                       {' · '}
                       {formatPrice(expense.amountMinor)}
                     </h3>
 
-                    <p className="mt-1 text-sm text-[#806d78]">
+                    <p className="mt-1 text-sm text-gr-muted">
                       {expense.description}
                     </p>
 
-                    <p className="mt-1 text-xs text-[#806d78]">
+                    <p className="mt-1 text-xs text-gr-muted">
                       {expense.locationName}
                       {' · '}
                       {expense.expenseDate}
@@ -262,7 +262,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
                     </p>
 
                     {expense.paymentReference && (
-                      <p className="mt-1 text-xs text-[#806d78]">
+                      <p className="mt-1 text-xs text-gr-muted">
                         Manual payment reference:{' '}
                         {expense.paymentReference}
                       </p>
@@ -300,7 +300,7 @@ async function OperationsContent({ searchParams }: { searchParams: Promise<{ res
                         value={expense.id}
                       />
 
-                      <label className="grid gap-1 text-xs font-semibold text-[#6d4d5e]">
+                      <label className="grid gap-1 text-xs font-semibold text-gr-muted">
                         Actual payment/bank reference
 
                         <input

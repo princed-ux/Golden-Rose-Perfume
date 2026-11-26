@@ -193,8 +193,8 @@ function CatalogueForm({
             'm-0 break-words text-sm ' +
             (
               result.status === 'error'
-                ? 'text-[#8e3147]'
-                : 'text-[#2b6041]'
+                ? 'text-gr-danger'
+                : 'text-gr-success'
             )
           }
           role={
@@ -470,19 +470,19 @@ export function AddProductForm({
 
   return (
     <section
-      className="grid min-w-0 gap-5 rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-4 sm:p-6"
+      className="grid min-w-0 gap-5 rounded-2xl border border-gr-border bg-gr-surface p-4 sm:p-6"
       aria-labelledby="add-product"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2
             id="add-product"
-            className="m-0 font-serif text-2xl text-[#4b1f38]"
+            className="m-0 font-serif text-2xl text-gr-text"
           >
             Add product
           </h2>
 
-          <p className="m-0 mt-1 text-sm text-[#796570]">
+          <p className="m-0 mt-1 text-sm text-gr-muted">
             New products start as drafts
             with no stock. Publish when
             the listing is ready.
@@ -513,7 +513,7 @@ export function AddProductForm({
       >
         <ProductFields />
 
-        <h3 className="m-0 font-serif text-lg text-[#4b1f38]">
+        <h3 className="m-0 font-serif text-lg text-gr-text">
           First variant
         </h3>
 
@@ -603,19 +603,19 @@ export function ProductEditor({
 
   return (
     <section
-      className="grid min-w-0 gap-5 rounded-2xl border border-[#eaded8] bg-[#fffdf9] p-4 sm:p-6"
+      className="grid min-w-0 gap-5 rounded-2xl border border-gr-border bg-gr-surface p-4 sm:p-6"
       aria-labelledby="manage-product"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 break-words">
           <h2
             id="manage-product"
-            className="m-0 font-serif text-2xl text-[#4b1f38]"
+            className="m-0 font-serif text-2xl text-gr-text"
           >
             Manage {product.name}
           </h2>
 
-          <p className="m-0 mt-1 text-sm text-[#796570]">
+          <p className="m-0 mt-1 text-sm text-gr-muted">
             {product.published
               ? 'Published in the storefront.'
               : 'Draft listing.'}
@@ -651,7 +651,7 @@ export function ProductEditor({
         <>
           <div className="grid min-w-0 gap-6 xl:grid-cols-2">
             <div className="grid min-w-0 content-start gap-3">
-              <h3 className="m-0 font-serif text-xl text-[#4b1f38]">
+              <h3 className="m-0 font-serif text-xl text-gr-text">
                 Product details
               </h3>
 
@@ -669,7 +669,7 @@ export function ProductEditor({
             </div>
 
             <div className="grid min-w-0 content-start gap-3">
-              <h3 className="m-0 font-serif text-xl text-[#4b1f38]">
+              <h3 className="m-0 font-serif text-xl text-gr-text">
                 Variants
               </h3>
 
@@ -722,7 +722,7 @@ export function ProductEditor({
 
               {variant &&
               variant.currency !== 'NGN' ? (
-                <p className="text-sm text-[#8e3147]">
+                <p className="text-sm text-gr-danger">
                   This variant uses{' '}
                   {variant.currency}.
                   Its existing price
@@ -776,7 +776,7 @@ export function ProductEditor({
                     </select>
                   </label>
 
-                  <p className="m-0 text-xs text-[#796570]">
+                  <p className="m-0 text-xs text-gr-muted">
                     Inactive variants leave
                     the storefront and POS.
                     Their stock and sale
@@ -809,7 +809,7 @@ export function ProductEditor({
           />
         </>
       ) : (
-        <p className="text-sm text-[#796570]">
+        <p className="text-sm text-gr-muted">
           This inactive product is read-only.
         </p>
       )}

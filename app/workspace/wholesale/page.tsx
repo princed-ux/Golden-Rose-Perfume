@@ -44,7 +44,7 @@ export default function WholesalePage() {
       fallback={
         <p
           role="status"
-          className="p-6 text-sm text-[#796570]"
+          className="p-6 text-sm text-gr-muted"
         >
           Loading wholesale sales…
         </p>

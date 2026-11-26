@@ -57,7 +57,7 @@ export default function InvoicesPage({
       fallback={
         <p
           role="status"
-          className="p-5 text-sm text-[#6f5162]"
+          className="p-5 text-sm text-gr-muted"
         >
           Loading Invoice Studio…
         </p>

@@ -222,7 +222,7 @@ export default function AuditPage({
       fallback={
         <p
           role="status"
-          className="p-6 text-sm text-[#786371]"
+          className="p-6 text-sm text-gr-muted"
         >
           Loading the audit log…
         </p>
@@ -480,7 +480,7 @@ async function AuditContent({
           ================================================= */}
 
       <WorkspacePanel className="grid gap-4">
-        <h2 className="flex items-center gap-2 font-serif text-xl text-[#54213a]">
+        <h2 className="flex items-center gap-2 font-serif text-xl text-gr-text">
           <ShieldCheck
             size={20}
             aria-hidden="true"
@@ -494,7 +494,7 @@ async function AuditContent({
           action="/workspace/audit"
           className="grid gap-3 md:grid-cols-2 xl:grid-cols-5"
         >
-          <label className="grid gap-1.5 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-1.5 text-sm font-semibold text-gr-text">
             Module
 
             <select
@@ -513,7 +513,7 @@ async function AuditContent({
             </select>
           </label>
 
-          <label className="grid gap-1.5 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-1.5 text-sm font-semibold text-gr-text">
             Staff member
 
             <select
@@ -538,7 +538,7 @@ async function AuditContent({
             </select>
           </label>
 
-          <label className="grid gap-1.5 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-1.5 text-sm font-semibold text-gr-text">
             From
 
             <input
@@ -550,7 +550,7 @@ async function AuditContent({
             />
           </label>
 
-          <label className="grid gap-1.5 text-sm font-semibold text-[#54213a]">
+          <label className="grid gap-1.5 text-sm font-semibold text-gr-text">
             To
 
             <input
@@ -596,7 +596,7 @@ async function AuditContent({
       {report && (
         <WorkspacePanel className="grid gap-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <Activity
                 size={20}
                 aria-hidden="true"
@@ -605,7 +605,7 @@ async function AuditContent({
               Activity history
             </h2>
 
-            <span className="text-sm text-[#806b77]">
+            <span className="text-sm text-gr-muted">
               {report.total.toLocaleString(
                 'en-NG',
               )}
@@ -614,7 +614,7 @@ async function AuditContent({
           </div>
 
           {report.events.length === 0 && (
-            <p className="rounded-xl bg-[#faf4ed] p-4 text-sm text-[#806b77]">
+            <p className="rounded-xl bg-gr-surface-alt p-4 text-sm text-gr-muted">
               No recorded events match the
               selected filters.
             </p>
@@ -624,9 +624,9 @@ async function AuditContent({
             {report.events.map(event => (
               <article
                 key={event.id}
-                className="grid gap-2 rounded-xl border border-[#e9ddd5] bg-white p-4 sm:grid-cols-[170px_minmax(0,1fr)]"
+                className="grid gap-2 rounded-xl border border-gr-border bg-gr-surface p-4 sm:grid-cols-[170px_minmax(0,1fr)]"
               >
-                <p className="text-xs tabular-nums text-[#806b77]">
+                <p className="text-xs tabular-nums text-gr-muted">
                   {formatTime(
                     event.occurredAt,
                   )}
@@ -634,20 +634,20 @@ async function AuditContent({
 
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <strong className="text-sm capitalize text-[#54213a]">
+                    <strong className="text-sm capitalize text-gr-text">
                       {actionFor(
                         event.action,
                       )}
                     </strong>
 
-                    <span className="rounded-md bg-[#f5ebdf] px-2 py-1 text-xs font-medium text-[#80572c]">
+                    <span className="rounded-md bg-gr-surface-alt px-2 py-1 text-xs font-medium text-gr-gold">
                       {labelFor(
                         event.module,
                       )}
                     </span>
                   </div>
 
-                  <p className="mt-1 break-words text-sm text-[#806b77]">
+                  <p className="mt-1 break-words text-sm text-gr-muted">
                     Actor:{' '}
 
                     {event.actorId
@@ -661,7 +661,7 @@ async function AuditContent({
                   </p>
 
                   {event.subject && (
-                    <p className="mt-1 break-all text-xs text-[#947e89]">
+                    <p className="mt-1 break-all text-xs text-gr-muted">
                       Record:{' '}
 
                       {event.subject}
@@ -676,8 +676,8 @@ async function AuditContent({
               AUDIT HISTORY PAGINATION
               ============================================= */}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#eaded5] pt-4">
-            <span className="text-sm text-[#806b77]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gr-border pt-4">
+            <span className="text-sm text-gr-muted">
               Page {page} of {totalPages}
             </span>
 

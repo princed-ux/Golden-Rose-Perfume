@@ -131,7 +131,7 @@ function FinancialMetric({
   attention?: boolean;
 }) {
   return (
-    <article className="grid min-w-0 content-start gap-3 rounded-xl border border-[#eaded8] bg-white p-4">
+    <article className="grid min-w-0 content-start gap-3 rounded-xl border border-gr-border bg-gr-surface p-4">
       <div
         className={
           'grid size-10 place-items-center rounded-xl ' +
@@ -139,9 +139,9 @@ function FinancialMetric({
           (
             attention
 
-              ? 'bg-[#fff1db] text-[#96632c]'
+              ? 'bg-gr-surface-alt text-gr-gold'
 
-              : 'bg-[#f6ece1] text-[#a17940]'
+              : 'bg-gr-surface-alt text-gr-gold'
           )
         }
       >
@@ -153,15 +153,15 @@ function FinancialMetric({
       </div>
 
       <div className="grid min-w-0 gap-2">
-        <p className="text-xs font-semibold text-[#796570]">
+        <p className="text-xs font-semibold text-gr-muted">
           {title}
         </p>
 
-        <strong className="break-words font-serif text-[clamp(1.25rem,2vw,1.9rem)] font-normal leading-tight tabular-nums text-[#54213a]">
+        <strong className="break-words font-serif text-[clamp(1.25rem,2vw,1.9rem)] font-normal leading-tight tabular-nums text-gr-text">
           {value}
         </strong>
 
-        <p className="text-xs leading-5 text-[#796570]">
+        <p className="text-xs leading-5 text-gr-muted">
           {description}
         </p>
       </div>
@@ -214,19 +214,19 @@ function PaymentBreakdown({
   ];
 
   return (
-    <section className="grid min-w-0 gap-4 rounded-xl border border-[#eaded8] bg-white p-4 sm:p-5">
+    <section className="grid min-w-0 gap-4 rounded-xl border border-gr-border bg-gr-surface p-4 sm:p-5">
       <div>
-        <h3 className="font-serif text-xl text-[#54213a]">
+        <h3 className="font-serif text-xl text-gr-text">
           Wholesale payments received
         </h3>
 
-        <p className="mt-1 text-xs leading-5 text-[#796570]">
+        <p className="mt-1 text-xs leading-5 text-gr-muted">
           Confirmed payment records within
           the selected reporting period.
         </p>
       </div>
 
-      <strong className="break-words font-serif text-2xl tabular-nums text-[#54213a]">
+      <strong className="break-words font-serif text-2xl tabular-nums text-gr-text">
         {money(
           report.payments.totalMinor,
         )}
@@ -234,7 +234,7 @@ function PaymentBreakdown({
 
       {report.payments.totalMinor > 0 ? (
         <div
-          className="flex h-3 overflow-hidden rounded-full bg-[#eee6df]"
+          className="flex h-3 overflow-hidden rounded-full bg-gr-surface-alt"
           aria-hidden="true"
         >
           {methods.map(method => (
@@ -257,7 +257,7 @@ function PaymentBreakdown({
         </div>
 
       ) : (
-        <p className="rounded-lg bg-[#faf5f1] p-3 text-xs text-[#796570]">
+        <p className="rounded-lg bg-gr-surface p-3 text-xs text-gr-muted">
           No wholesale payments recorded during
           the selected period.
         </p>
@@ -280,10 +280,10 @@ function PaymentBreakdown({
             <div
               key={method.name}
 
-              className="flex min-w-0 items-center justify-between gap-3 border-b border-[#f0e5df] pb-3 last:border-0 last:pb-0"
+              className="flex min-w-0 items-center justify-between gap-3 border-b border-gr-border pb-3 last:border-0 last:pb-0"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#f7eee7] text-[#946a37]">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gr-surface-alt text-gr-gold">
                   <Icon
                     size={18}
                     aria-hidden="true"
@@ -291,18 +291,18 @@ function PaymentBreakdown({
                 </span>
 
                 <div className="min-w-0">
-                  <strong className="text-sm text-[#54213a]">
+                  <strong className="text-sm text-gr-text">
                     {method.name}
                   </strong>
 
-                  <p className="text-xs text-[#796570]">
+                  <p className="text-xs text-gr-muted">
                     {percentage.toFixed(1)}
                     %
                   </p>
                 </div>
               </div>
 
-              <strong className="break-all text-right text-sm tabular-nums text-[#54213a]">
+              <strong className="break-all text-right text-sm tabular-nums text-gr-text">
                 {money(method.amount)}
               </strong>
             </div>
@@ -310,7 +310,7 @@ function PaymentBreakdown({
         })}
       </div>
 
-      <p className="text-xs leading-5 text-[#796570]">
+      <p className="text-xs leading-5 text-gr-muted">
         These are recorded receipts of payment,
         not independent confirmation of bank settlement.
       </p>
@@ -344,7 +344,7 @@ function OutstandingSummary({
 
       value: data.unpaidCount,
 
-      style: 'bg-[#a45c66]',
+      style: 'bg-gr-strong',
     },
 
     {
@@ -352,7 +352,7 @@ function OutstandingSummary({
 
       value: data.partiallyPaidCount,
 
-      style: 'bg-[#c49b5d]',
+      style: 'bg-gr-button',
     },
 
     {
@@ -360,30 +360,30 @@ function OutstandingSummary({
 
       value: data.paidCount,
 
-      style: 'bg-[#698a72]',
+      style: 'bg-gr-strong',
     },
   ];
 
   return (
-    <section className="grid min-w-0 gap-4 rounded-xl border border-[#eaded8] bg-white p-4 sm:p-5">
+    <section className="grid min-w-0 gap-4 rounded-xl border border-gr-border bg-gr-surface p-4 sm:p-5">
       <div>
-        <h3 className="font-serif text-xl text-[#54213a]">
+        <h3 className="font-serif text-xl text-gr-text">
           Customer balances
         </h3>
 
-        <p className="mt-1 text-xs leading-5 text-[#796570]">
+        <p className="mt-1 text-xs leading-5 text-gr-muted">
           Current outstanding wholesale balances
           across all recorded orders.
         </p>
       </div>
 
-      <strong className="break-words font-serif text-2xl tabular-nums text-[#946a37]">
+      <strong className="break-words font-serif text-2xl tabular-nums text-gr-gold">
         {money(data.totalMinor)}
       </strong>
 
       {allOrders > 0 && (
         <div
-          className="flex h-3 overflow-hidden rounded-full bg-[#eee6df]"
+          className="flex h-3 overflow-hidden rounded-full bg-gr-surface-alt"
           aria-hidden="true"
         >
           {rows.map(row => (
@@ -410,9 +410,9 @@ function OutstandingSummary({
           <div
             key={row.label}
 
-            className="flex justify-between gap-3 border-b border-[#f0e5df] pb-3"
+            className="flex justify-between gap-3 border-b border-gr-border pb-3"
           >
-            <dt className="flex items-center gap-2 text-[#796570]">
+            <dt className="flex items-center gap-2 text-gr-muted">
               <span
                 className={
                   'size-2.5 shrink-0 rounded-full ' +
@@ -425,18 +425,18 @@ function OutstandingSummary({
               {row.label}
             </dt>
 
-            <dd className="font-semibold tabular-nums text-[#54213a]">
+            <dd className="font-semibold tabular-nums text-gr-text">
               {count(row.value)}
             </dd>
           </div>
         ))}
 
         <div className="flex justify-between gap-3">
-          <dt className="text-[#796570]">
+          <dt className="text-gr-muted">
             Outstanding on dispatched goods
           </dt>
 
-          <dd className="break-all text-right font-semibold tabular-nums text-[#54213a]">
+          <dd className="break-all text-right font-semibold tabular-nums text-gr-text">
             {money(
               data.dispatchedOutstandingMinor,
             )}
@@ -472,11 +472,11 @@ function LocationReport({
   return (
     <section className="grid min-w-0 gap-4">
       <div>
-        <h3 className="font-serif text-xl text-[#54213a]">
+        <h3 className="font-serif text-xl text-gr-text">
           Wholesale performance by location
         </h3>
 
-        <p className="mt-1 text-xs leading-5 text-[#796570]">
+        <p className="mt-1 text-xs leading-5 text-gr-muted">
           Activity follows the selected reporting
           period. Outstanding balances are current
           across all recorded transactions.
@@ -492,9 +492,9 @@ function LocationReport({
         </WorkspaceNotice>
 
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-[#eaded8]">
+        <div className="overflow-x-auto rounded-xl border border-gr-border">
           <table className="w-full min-w-[850px] text-left text-sm">
-            <thead className="bg-[#f7efe9] text-[#54213a]">
+            <thead className="bg-gr-surface-alt text-gr-text">
               <tr>
                 <th className="p-3">
                   Location
@@ -527,14 +527,14 @@ function LocationReport({
                 <tr
                   key={location.id}
 
-                  className="border-t border-[#eaded8] bg-white"
+                  className="border-t border-gr-border bg-gr-surface"
                 >
                   <td className="p-3">
-                    <strong className="text-[#54213a]">
+                    <strong className="text-gr-text">
                       {location.name}
                     </strong>
 
-                    <p className="text-xs text-[#796570]">
+                    <p className="text-xs text-gr-muted">
                       {location.active
                         ? 'Active location'
                         : 'Inactive location'}
@@ -565,7 +565,7 @@ function LocationReport({
                     )}
                   </td>
 
-                  <td className="p-3 text-right font-semibold tabular-nums text-[#946a37]">
+                  <td className="p-3 text-right font-semibold tabular-nums text-gr-gold">
                     {money(
                       location.outstandingMinor,
                     )}
@@ -574,7 +574,7 @@ function LocationReport({
               ))}
             </tbody>
 
-            <tfoot className="border-t border-[#eaded8] bg-[#faf5f1] font-semibold text-[#54213a]">
+            <tfoot className="border-t border-gr-border bg-gr-surface font-semibold text-gr-text">
               <tr>
                 <th className="p-3">
                   Business total
@@ -657,7 +657,7 @@ function ReportContent({
 
   return (
     <div className="grid min-w-0 gap-5">
-      <p className="text-xs leading-5 text-[#796570]">
+      <p className="text-xs leading-5 text-gr-muted">
         Reporting period: {report.from} to {report.to}
         {' · '}
         Africa/Lagos
@@ -730,9 +730,9 @@ function ReportContent({
 
       {/* Operational dispatch overview */}
 
-      <section className="grid gap-3 rounded-xl border border-[#eaded8] bg-[#faf5f1] p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <section className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white text-[#a17940]">
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gr-surface text-gr-gold">
             <Truck
               size={22}
               aria-hidden="true"
@@ -740,14 +740,14 @@ function ReportContent({
           </span>
 
           <div>
-            <h3 className="font-semibold text-[#54213a]">
+            <h3 className="font-semibold text-gr-text">
               {count(
                 report.outstanding.pendingDispatchCount,
               )}
               {' '}orders awaiting dispatch
             </h3>
 
-            <p className="mt-1 text-xs leading-5 text-[#796570]">
+            <p className="mt-1 text-xs leading-5 text-gr-muted">
               All outstanding dispatches, including
               orders from earlier reporting periods.
             </p>
@@ -915,21 +915,21 @@ function WholesaleFinancePanel() {
 
         className="grid min-w-0 gap-5"
       >
-        <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#eaded8] pb-4">
+        <header className="flex flex-wrap items-start justify-between gap-4 border-b border-gr-border pb-4">
           <div className="grid min-w-0 gap-2">
-            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#a17940]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gr-gold">
               Executive finance / wholesale
             </p>
 
             <h2
               id="gr-wholesale-finance-title"
 
-              className="font-serif text-[clamp(1.5rem,3vw,2.1rem)] font-normal text-[#54213a]"
+              className="font-serif text-[clamp(1.5rem,3vw,2.1rem)] font-normal text-gr-text"
             >
               Wholesale &amp; Distribution
             </h2>
 
-            <p className="max-w-3xl text-sm leading-6 text-[#796570]">
+            <p className="max-w-3xl text-sm leading-6 text-gr-muted">
               Business customer sales, goods dispatched,
               payment collections and outstanding balances.
             </p>
@@ -972,14 +972,14 @@ function WholesaleFinancePanel() {
                   aria-pressed={active}
 
                   className={
-                    'min-h-10 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[#a17940] ' +
+                    'min-h-10 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-gr-gold ' +
 
                     (
                       active
 
-                        ? 'border-[#54213a] bg-[#54213a] text-white'
+                        ? 'border-gr-border bg-gr-strong text-gr-on-strong'
 
-                        : 'border-[#eaded8] bg-white text-[#54213a] hover:bg-[#fff8ef]'
+                        : 'border-gr-border bg-gr-surface text-gr-text hover:bg-gr-surface-alt'
                     )
                   }
 

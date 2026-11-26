@@ -6,7 +6,7 @@
   padding: 18px;
   display: grid;
   place-items: center;
-  background: rgba(31, 19, 28, .56);
+  background: var(--gr-theme-scrim);
 }
 
 .gr-pay-panel {
@@ -14,9 +14,9 @@
   max-height: calc(100dvh - 36px);
   overflow-y: auto;
   border-radius: 18px;
-  background: #fffdfb;
-  color: #381d2b;
-  border: 1px solid #e9dfe1;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
+  border: 1px solid var(--gr-theme-border);
   box-shadow: 0 28px 90px rgba(23, 12, 18, .2);
   font-family: Inter, system-ui, sans-serif;
 }
@@ -38,14 +38,14 @@
   font-size: 10px;
   letter-spacing: .14em;
   font-weight: 800;
-  color: #966e4c;
+  color: var(--gr-theme-gold);
 }
 
 .gr-pay-icon-button {
-  border: 1px solid #e9dfe1;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 9px;
-  background: white;
-  color: #6a4054;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
   width: 34px;
   height: 34px;
   font-size: 25px;
@@ -58,15 +58,15 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 14px;
-  background: #f7eff2;
+  background: var(--gr-theme-surface-alt);
   padding: 17px 24px;
-  border-top: 1px solid #eee3e7;
-  border-bottom: 1px solid #eee3e7;
+  border-top: 1px solid var(--gr-theme-border);
+  border-bottom: 1px solid var(--gr-theme-border);
 }
 
 .gr-pay-total span {
   font-size: 13px;
-  color: #675461;
+  color: var(--gr-theme-muted);
 }
 
 .gr-pay-total strong {
@@ -82,7 +82,7 @@
 .gr-pay-help {
   margin: 0 0 17px;
   font-size: 12px;
-  color: #746771;
+  color: var(--gr-theme-muted);
   line-height: 1.65;
 }
 
@@ -98,17 +98,17 @@
   gap: 12px;
   width: 100%;
   padding: 16px;
-  border: 1px solid #e6d8df;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 11px;
-  background: white;
-  color: #46263a;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
   cursor: pointer;
   text-align: left;
 }
 
 .gr-pay-method:hover {
-  background: #faf3f5;
-  border-color: #a47f91;
+  background: var(--gr-theme-surface-alt);
+  border-color: var(--gr-theme-border);
 }
 
 .gr-pay-method span {
@@ -122,7 +122,7 @@
 
 .gr-pay-method small {
   font-size: 12px;
-  color: #806d76;
+  color: var(--gr-theme-muted);
 }
 
 .gr-pay-method b {
@@ -141,21 +141,21 @@
   display: flex;
   align-items: center;
   height: 52px;
-  border: 1px solid #d8bfc9;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 9px;
-  background: white;
+  background: var(--gr-theme-surface);
   overflow: hidden;
 }
 
 .gr-pay-input-wrap:focus-within {
-  outline: 3px solid #eee0e8;
-  border-color: #7a3c59;
+  outline: 3px solid var(--gr-theme-gold);
+  border-color: var(--gr-theme-gold);
 }
 
 .gr-pay-input-wrap span {
   padding: 0 12px 0 15px;
   font-size: 19px;
-  color: #775b68;
+  color: var(--gr-theme-muted);
 }
 
 .gr-pay-input-wrap input {
@@ -165,7 +165,7 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #3b202e;
+  color: var(--gr-theme-text);
   font: 750 21px/1.2 system-ui, sans-serif;
 }
 
@@ -179,17 +179,17 @@
 .gr-pay-quick button {
   min-width: 0;
   min-height: 42px;
-  border: 1px solid #e9dce1;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 7px;
-  background: #fff;
-  color: #633b50;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
   font-weight: 700;
   font-size: 11px;
   cursor: pointer;
 }
 
 .gr-pay-quick button:hover {
-  background: #f8eef3;
+  background: var(--gr-theme-surface-alt);
 }
 
 .gr-pay-change {
@@ -198,24 +198,24 @@
   align-items: baseline;
   justify-content: space-between;
   padding: 15px;
-  background: #eff7f0;
+  background: var(--gr-theme-success-bg);
   border-radius: 9px;
 }
 
 .gr-pay-change span {
   font-size: 12px;
-  color: #49634d;
+  color: var(--gr-theme-success);
 }
 
 .gr-pay-change strong {
   font-size: 22px;
-  color: #286438;
+  color: var(--gr-theme-success);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 .gr-pay-change strong.gr-pay-negative {
-  color: #a8453c;
+  color: var(--gr-theme-danger);
 }
 
 .gr-pay-actions {
@@ -241,23 +241,23 @@
 }
 
 .gr-pay-back {
-  background: white;
-  color: #653c50;
-  border: 1px solid #e0d0d8;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-text);
+  border: 1px solid var(--gr-theme-border);
 }
 
 .gr-pay-submit {
-  background: #6f2d4b;
-  color: white;
-  border: 1px solid #6f2d4b;
+  background: var(--gr-theme-strong);
+  color: var(--gr-theme-on-strong);
+  border: 1px solid var(--gr-theme-border);
 }
 
 .gr-pay-error {
   margin-top: 14px;
   padding: 12px;
-  background: #fff0ee;
-  color: #9a382e;
-  border: 1px solid #f3c8c2;
+  background: var(--gr-theme-danger-bg);
+  color: var(--gr-theme-danger);
+  border: 1px solid var(--gr-theme-danger-border);
   border-radius: 8px;
   font-size: 12px;
 }
@@ -266,12 +266,12 @@
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1px solid #eee3e6;
+  border-bottom: 1px solid var(--gr-theme-border);
   padding: 14px 0;
 }
 
 .gr-pay-bank-row span {
-  color: #75656d;
+  color: var(--gr-theme-muted);
   font-size: 12px;
 }
 
@@ -283,9 +283,9 @@
 
 .gr-pay-copy {
   margin-top: 12px;
-  background: #f5edf0;
-  border: 1px solid #e6d5dc;
-  color: #66384f;
+  background: var(--gr-theme-surface-alt);
+  border: 1px solid var(--gr-theme-border);
+  color: var(--gr-theme-text);
   padding: 11px;
   border-radius: 8px;
   font-weight: 750;
@@ -296,9 +296,9 @@
 .gr-pay-warning {
   margin: 16px 0 0;
   padding: 12px;
-  background: #fff7e7;
-  color: #725027;
-  border: 1px solid #f0d7a9;
+  background: var(--gr-theme-surface);
+  color: var(--gr-theme-gold);
+  border: 1px solid var(--gr-theme-border);
   border-radius: 8px;
   font-size: 12px;
   line-height: 1.7;

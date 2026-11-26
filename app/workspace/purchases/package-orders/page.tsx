@@ -92,7 +92,7 @@ export default function PackagedOrdersPage({
   return (
     <Suspense
       fallback={
-        <p role="status" className="p-5 text-sm text-[#806d78]">
+        <p role="status" className="p-5 text-sm text-gr-muted">
           Loading purchasing records…
         </p>
       }
@@ -196,7 +196,7 @@ async function PackagedOrdersContent({
       </WorkspaceNotice>
 
       <WorkspacePanel className="grid gap-4">
-        <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+        <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
           <Boxes size={21} />
           Find catalogue products
         </h2>
@@ -206,7 +206,7 @@ async function PackagedOrdersContent({
           method="get"
           className="flex flex-wrap items-end gap-3"
         >
-          <label className="grid min-w-60 flex-1 gap-2 text-sm font-semibold text-[#54213a]">
+          <label className="grid min-w-60 flex-1 gap-2 text-sm font-semibold text-gr-text">
             Search by SKU or product name
 
             <input
@@ -227,14 +227,14 @@ async function PackagedOrdersContent({
           </button>
         </form>
 
-        <p className="text-xs text-[#806d78]">
+        <p className="text-xs text-gr-muted">
           Search the catalogue before filling the purchase
           form to see the product&apos;s configured packaging.
           Up to 25 matching SKUs are listed at once.
         </p>
 
         {catalogue && search && (
-          <p className="text-sm text-[#665060]">
+          <p className="text-sm text-gr-muted">
             Found {catalogue.items.length} displayed matching
             product SKUs.
           </p>
@@ -254,7 +254,7 @@ async function PackagedOrdersContent({
         <>
           {canCreate && (
             <WorkspacePanel className="grid gap-5">
-              <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+              <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
                 <ClipboardList size={21} />
                 Create package-aware purchase order
               </h2>
@@ -280,7 +280,7 @@ async function PackagedOrdersContent({
           )}
 
           <WorkspacePanel className="grid gap-4">
-            <h2 className="flex items-center gap-2 font-serif text-2xl text-[#54213a]">
+            <h2 className="flex items-center gap-2 font-serif text-2xl text-gr-text">
               <PackageCheck size={21} />
               Purchase register ({orders.purchases.length})
             </h2>
@@ -294,28 +294,28 @@ async function PackagedOrdersContent({
             {orders.purchases.map((purchase) => (
               <article
                 key={purchase.id}
-                className="grid gap-4 rounded-xl border border-[#e8dcd3] bg-white p-4"
+                className="grid gap-4 rounded-xl border border-gr-border bg-gr-surface p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-semibold text-[#512238]">
+                    <h3 className="font-semibold text-gr-text">
                       {purchase.supplierName}
                     </h3>
 
-                    <p className="text-sm text-[#806d78]">
+                    <p className="text-sm text-gr-muted">
                       {purchase.locationName}
                       {' · '}
                       {purchase.status.replaceAll('_', ' ')}
                     </p>
 
-                    <p className="mt-1 text-sm text-[#806d78]">
+                    <p className="mt-1 text-sm text-gr-muted">
                       {new Date(
                         purchase.createdAt,
                       ).toLocaleDateString('en-NG')}
                     </p>
                   </div>
 
-                  <p className="font-serif text-xl text-[#54213a]">
+                  <p className="font-serif text-xl text-gr-text">
                     {formatPrice(purchase.totalMinor)}
                   </p>
                 </div>
@@ -355,19 +355,19 @@ async function PackagedOrdersContent({
                     return (
                       <div
                         key={line.id}
-                        className="rounded-xl border border-[#efe3db] bg-[#fffaf5] p-4"
+                        className="rounded-xl border border-gr-border bg-gr-surface p-4"
                       >
                         <div className="flex flex-wrap justify-between gap-3">
                           <div>
-                            <p className="font-semibold text-[#54213a]">
+                            <p className="font-semibold text-gr-text">
                               {line.productName}
                             </p>
 
-                            <p className="text-xs text-[#806d78]">
+                            <p className="text-xs text-gr-muted">
                               SKU: {line.sku}
                             </p>
 
-                            <p className="mt-2 text-sm text-[#725968]">
+                            <p className="mt-2 text-sm text-gr-muted">
                               Ordered: {line.quantity}
                               {' individual units'}
                               {' · '}
@@ -375,7 +375,7 @@ async function PackagedOrdersContent({
                             </p>
 
                             {line.packageAware && (
-                              <p className="text-sm text-[#725968]">
+                              <p className="text-sm text-gr-muted">
                                 Originally ordered as{' '}
                                 {line.enteredQuantity}{' '}
                                 {line.enteredUnit}
@@ -386,7 +386,7 @@ async function PackagedOrdersContent({
                             )}
                           </div>
 
-                          <div className="text-right text-sm text-[#725968]">
+                          <div className="text-right text-sm text-gr-muted">
                             Unit cost:{' '}
                             {formatPrice(
                               line.unitCostMinor,
@@ -412,7 +412,7 @@ async function PackagedOrdersContent({
                         )}
 
                         {!line.packageAware && (
-                          <p className="mt-3 text-xs text-[#806d78]">
+                          <p className="mt-3 text-xs text-gr-muted">
                             This order was created using
                             the original individual-unit
                             purchasing workflow. Receive it
@@ -435,7 +435,7 @@ async function PackagedOrdersContent({
                             purchase.status ===
                               'partially_received'
                           ) && (
-                            <p className="mt-3 text-xs text-[#806d78]">
+                            <p className="mt-3 text-xs text-gr-muted">
                               The remaining stock quantity is
                               smaller than one complete
                               configured package. Use the

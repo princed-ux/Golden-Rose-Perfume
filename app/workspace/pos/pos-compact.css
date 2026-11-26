@@ -41,7 +41,7 @@
   margin: 0 !important;
   padding: 0 !important;
 
-  color: #42172b;
+  color: var(--gr-theme-gold);
 
   font-family: Georgia, "Times New Roman", serif;
   font-size: 24px;
@@ -51,7 +51,7 @@
 }
 
 .pos-screen .pos-heading h1 span {
-  color: #c59b61;
+  color: var(--gr-theme-media-accent);
 }
 
 /* ---------------------------------------
@@ -81,11 +81,11 @@
   min-height: 33px;
   padding: 6px 10px;
 
-  border: 1px solid #e6d9dc;
+  border: 1px solid var(--gr-theme-border);
   border-radius: 7px;
 
-  color: #613147;
-  background: #fff;
+  color: var(--gr-theme-text);
+  background: var(--gr-theme-surface);
 
   font-size: 11px !important;
   font-weight: 750 !important;
@@ -93,8 +93,8 @@
 }
 
 .pos-screen .pos-heading-actions .pos-secondary:hover {
-  background: #faf1ec;
-  border-color: #d8bda9;
+  background: var(--gr-theme-surface-alt);
+  border-color: var(--gr-theme-border);
 }
 
 .pos-screen .pos-heading-actions svg {
@@ -375,7 +375,7 @@
 
     overflow: hidden;
 
-    background: #f8f5f4;
+    background: var(--gr-theme-surface);
   }
 
   .pos-screen.pos-focus-mode .pos-heading {

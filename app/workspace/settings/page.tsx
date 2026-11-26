@@ -112,19 +112,19 @@ const results: Record<Status, string> = {
 };
 
 const fieldClass =
-  'w-full min-h-11 rounded-xl border border-[#e7d7d1] bg-white px-3 py-2 text-sm text-[#49283a] outline-offset-2 focus-visible:outline-[#ab7b43]';
+  'w-full min-h-11 rounded-xl border border-gr-gold bg-gr-surface px-3 py-2 text-sm text-gr-gold outline-offset-2 focus-visible:outline-gr-gold';
 
 const labelClass =
-  'grid gap-1.5 text-xs font-semibold text-[#755568]';
+  'grid gap-1.5 text-xs font-semibold text-gr-muted';
 
 const cardClass =
-  'scroll-mt-24 rounded-2xl border border-[#ecdfdc] bg-[#fffdfb] p-5 shadow-[0_8px_25px_rgba(69,26,46,0.04)] sm:p-6';
+  'scroll-mt-24 rounded-2xl border border-gr-border bg-gr-surface p-5 shadow-[0_8px_25px_rgba(69,26,46,0.04)] sm:p-6';
 
 const actionClass =
-  'inline-flex min-h-10 items-center justify-center rounded-xl bg-[#54233c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#713450]';
+  'inline-flex min-h-10 items-center justify-center rounded-xl bg-gr-strong-hover px-4 py-2 text-sm font-semibold text-gr-on-strong hover:bg-gr-strong-hover';
 
 const subtleClass =
-  'inline-flex min-h-9 items-center justify-center rounded-xl border border-[#eadbd5] bg-white px-3 py-2 text-xs font-semibold text-[#623e50] hover:bg-[#fcf3ed]';
+  'inline-flex min-h-9 items-center justify-center rounded-xl border border-gr-border bg-gr-surface px-3 py-2 text-xs font-semibold text-gr-text hover:bg-gr-surface-alt';
 
 function value(form: FormData, key: string) {
   const item = form.get(key);
@@ -587,15 +587,15 @@ function SectionTitle({
 }) {
   return (
     <div className="mb-5 flex items-start gap-3">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f7ecdf] text-[#a3713e]">
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gr-surface-alt text-gr-gold">
         <Icon size={20} aria-hidden="true" />
       </span>
 
       <div>
-        <h2 className="font-serif text-2xl text-[#4f2439]">
+        <h2 className="font-serif text-2xl text-gr-text">
           {title}
         </h2>
-        <p className="mt-1 text-sm leading-6 text-[#816e79]">
+        <p className="mt-1 text-sm leading-6 text-gr-muted">
           {subtitle}
         </p>
       </div>
@@ -648,11 +648,11 @@ export default async function BusinessSettingsPage({
   ) {
     return (
       <div className={cardClass} role="alert">
-        <h1 className="font-serif text-3xl text-[#4f2439]">
+        <h1 className="font-serif text-3xl text-gr-text">
           Business Settings
         </h1>
 
-        <p className="mt-3 text-sm text-[#875d41]">
+        <p className="mt-3 text-sm text-gr-gold">
           Settings cannot be loaded. Check the Golden Rose
           database setup and SUPABASE_STAFF_ADMIN_SECRET_KEY
           on the trusted web server.
@@ -693,8 +693,8 @@ export default async function BusinessSettingsPage({
     <main className="min-w-0 space-y-6 pb-20">
       {/* HEADER */}
 
-      <header className="rounded-2xl bg-gradient-to-r from-[#47172e] via-[#60243f] to-[#8c5060] p-6 text-white shadow-lg sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[.22em] text-[#f1cf94]">
+      <header className="rounded-2xl bg-gradient-to-r from-gr-strong via-gr-strong to-gr-strong-hover p-6 text-gr-on-strong shadow-lg sm:p-8">
+        <p className="text-xs font-bold uppercase tracking-[.22em] text-gr-media-accent">
           Golden Rose · Owner controls
         </p>
 
@@ -741,7 +741,7 @@ export default async function BusinessSettingsPage({
       {notice && (
         <p
           role="status"
-          className="rounded-xl border border-[#e8d7bd] bg-[#fff8e9] px-4 py-3 text-sm font-semibold text-[#704329]"
+          className="rounded-xl border border-gr-border bg-gr-surface px-4 py-3 text-sm font-semibold text-gr-gold"
         >
           {notice}
         </p>
@@ -826,7 +826,7 @@ export default async function BusinessSettingsPage({
             <label className={labelClass}>
               Currency
               <input
-                className={fieldClass + ' bg-[#f6efeb]'}
+                className={fieldClass + ' bg-gr-surface-alt'}
                 readOnly
                 value="NGN — Nigerian naira"
               />
@@ -877,14 +877,14 @@ export default async function BusinessSettingsPage({
           {locations.map((loc) => (
             <article
               key={loc.id}
-              className="rounded-xl border border-[#ebddd6] bg-white p-4"
+              className="rounded-xl border border-gr-border bg-gr-surface p-4"
             >
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="font-semibold text-[#4f2439]">
+                  <h3 className="font-semibold text-gr-text">
                     {loc.name}
                   </h3>
-                  <p className="text-xs text-[#8b7480]">
+                  <p className="text-xs text-gr-muted">
                     {loc.code} · {loc.type} ·{' '}
                     {loc.active ? 'Active' : 'Inactive'}
                   </p>
@@ -895,8 +895,8 @@ export default async function BusinessSettingsPage({
                     'rounded-full px-3 py-1 text-xs font-semibold ' +
                     (
                       loc.isPublic && loc.active
-                        ? 'bg-green-50 text-green-800'
-                        : 'bg-amber-50 text-amber-800'
+                        ? 'bg-gr-success-bg text-gr-success'
+                        : 'bg-gr-accent-soft text-gr-gold'
                     )
                   }
                 >
@@ -983,7 +983,7 @@ export default async function BusinessSettingsPage({
                 </div>
 
                 {loc.type === 'store' && loc.active ? (
-                  <label className="flex items-center gap-2 text-sm font-medium text-[#57324a]">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gr-text">
                     <input
                       className="size-4 accent-[#5e2844]"
                       type="checkbox"
@@ -993,7 +993,7 @@ export default async function BusinessSettingsPage({
                     Mark this retail location as public
                   </label>
                 ) : (
-                  <p className="text-xs text-[#926c4f]">
+                  <p className="text-xs text-gr-gold">
                     Internal and inactive locations cannot
                     be published.
                   </p>
@@ -1012,8 +1012,8 @@ export default async function BusinessSettingsPage({
           ))}
         </div>
 
-        <div className="mt-6 rounded-xl bg-[#fcf4ea] p-4">
-          <h3 className="mb-3 font-semibold text-[#4f2439]">
+        <div className="mt-6 rounded-xl bg-gr-surface-alt p-4">
+          <h3 className="mb-3 font-semibold text-gr-text">
             Add another location
           </h3>
 
@@ -1084,17 +1084,17 @@ export default async function BusinessSettingsPage({
         <div className="space-y-3">
           {contacts.map((contact) => (
             <article
-              className="rounded-xl border border-[#ebddd6] bg-white p-4"
+              className="rounded-xl border border-gr-border bg-gr-surface p-4"
               key={contact.id}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-semibold text-[#542840]">
+                  <h3 className="font-semibold text-gr-text">
                     {contact.label}
                     {contact.isPrimary ? ' · Primary' : ''}
                   </h3>
 
-                  <p className="text-sm text-[#806a77]">
+                  <p className="text-sm text-gr-muted">
                     +{contact.number} · {contact.purpose}
                     {' · '}
                     {contact.isActive ? 'Enabled' : 'Disabled'}
@@ -1147,8 +1147,8 @@ export default async function BusinessSettingsPage({
                 </div>
               </div>
 
-              <details className="mt-3 border-t border-[#f0e4dd] pt-3">
-                <summary className="cursor-pointer text-sm font-semibold text-[#694352]">
+              <details className="mt-3 border-t border-gr-border pt-3">
+                <summary className="cursor-pointer text-sm font-semibold text-gr-text">
                   Edit this number
                 </summary>
 
@@ -1217,7 +1217,7 @@ export default async function BusinessSettingsPage({
           ))}
 
           {!contacts.length && (
-            <p className="rounded-xl bg-[#fff4e0] p-4 text-sm text-[#805434]">
+            <p className="rounded-xl bg-gr-surface-alt p-4 text-sm text-gr-gold">
               No WhatsApp numbers are saved yet.
             </p>
           )}
@@ -1225,9 +1225,9 @@ export default async function BusinessSettingsPage({
 
         <ActionForm
           action={saveWhatsApp}
-          className="mt-5 grid gap-3 rounded-xl bg-[#fcf4ea] p-4"
+          className="mt-5 grid gap-3 rounded-xl bg-gr-surface-alt p-4"
         >
-          <h3 className="font-semibold text-[#4f2439]">
+          <h3 className="font-semibold text-gr-text">
             Add WhatsApp number
           </h3>
 
@@ -1285,7 +1285,7 @@ export default async function BusinessSettingsPage({
           </div>
         </ActionForm>
 
-        <p className="mt-4 text-xs text-[#806b76]">
+        <p className="mt-4 text-xs text-gr-muted">
           {primaryNumber
             ? `Current primary contact: ${primaryNumber.label} (+${primaryNumber.number}).`
             : 'No primary number is enabled.'}
@@ -1308,15 +1308,15 @@ export default async function BusinessSettingsPage({
           {socials.map((social) => (
             <article
               key={social.id}
-              className="rounded-xl border border-[#ebddd6] bg-white p-4"
+              className="rounded-xl border border-gr-border bg-gr-surface p-4"
             >
               <div className="flex flex-wrap justify-between gap-3">
                 <div>
-                  <h3 className="font-semibold text-[#51283a]">
+                  <h3 className="font-semibold text-gr-text">
                     {social.label}
                   </h3>
 
-                  <p className="text-xs capitalize text-[#806b76]">
+                  <p className="text-xs capitalize text-gr-muted">
                     {social.platform} ·{' '}
                     {social.is_active ? 'Enabled' : 'Disabled'}
                   </p>
@@ -1325,7 +1325,7 @@ export default async function BusinessSettingsPage({
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="break-all text-sm text-[#8c5c3d] underline"
+                    className="break-all text-sm text-gr-gold underline"
                   >
                     {social.url}
                   </a>
@@ -1354,8 +1354,8 @@ export default async function BusinessSettingsPage({
                 </ActionForm>
               </div>
 
-              <details className="mt-3 border-t border-[#f0e4dd] pt-3">
-                <summary className="cursor-pointer text-sm font-semibold text-[#694352]">
+              <details className="mt-3 border-t border-gr-border pt-3">
+                <summary className="cursor-pointer text-sm font-semibold text-gr-text">
                   Edit profile
                 </summary>
 
@@ -1451,7 +1451,7 @@ export default async function BusinessSettingsPage({
 
                   <ActionButton
                     type="submit"
-                    className="text-xs font-semibold text-red-700 underline"
+                    className="text-xs font-semibold text-gr-danger underline"
                   >
                     Delete this social profile
                   </ActionButton>
@@ -1461,7 +1461,7 @@ export default async function BusinessSettingsPage({
           ))}
 
           {!socials.length && (
-            <p className="text-sm text-[#816e79]">
+            <p className="text-sm text-gr-muted">
               No social accounts have been added yet.
             </p>
           )}
@@ -1469,9 +1469,9 @@ export default async function BusinessSettingsPage({
 
         <ActionForm
           action={saveSocial}
-          className="mt-5 grid gap-3 rounded-xl bg-[#fcf4ea] p-4"
+          className="mt-5 grid gap-3 rounded-xl bg-gr-surface-alt p-4"
         >
-          <h3 className="font-semibold text-[#4f2439]">
+          <h3 className="font-semibold text-gr-text">
             Add social account
           </h3>
 
@@ -1588,7 +1588,7 @@ export default async function BusinessSettingsPage({
             />
           </label>
 
-          <div className="grid gap-2 text-sm text-[#5b3e4e]">
+          <div className="grid gap-2 text-sm text-gr-text">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -1610,7 +1610,7 @@ export default async function BusinessSettingsPage({
             </label>
           </div>
 
-          <p className="text-xs text-[#816e79]">
+          <p className="text-xs text-gr-muted">
             These preferences are stored now. The public-page
             rendering of these fields is a separate website
             connection, not yet activated by this file.
@@ -1674,7 +1674,7 @@ export default async function BusinessSettingsPage({
             </label>
           </div>
 
-          <p className="rounded-xl bg-[#fff4df] p-3 text-xs leading-5 text-[#80552f]">
+          <p className="rounded-xl bg-gr-surface-alt p-3 text-xs leading-5 text-gr-gold">
             Bank transfer checkout stays unverified until
             payment reconciliation is connected. Never release
             goods using only a transfer screenshot.
@@ -1724,7 +1724,7 @@ export default async function BusinessSettingsPage({
           </Link>
         </div>
 
-        <p className="mt-4 text-xs text-[#816e79]">
+        <p className="mt-4 text-xs text-gr-muted">
           Only signed-in active owners may view or save
           this page. Sensitive operations are executed
           on the trusted server.

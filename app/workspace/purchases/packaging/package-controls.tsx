@@ -22,14 +22,14 @@ import {
 } from './actions';
 
 const inputClass =
-  'min-h-11 w-full rounded-xl border border-[#e2d2ca] ' +
-  'bg-white px-3 py-2 text-sm text-[#452237] ' +
-  'focus-visible:outline-2 focus-visible:outline-[#b68a51]';
+  'min-h-11 w-full rounded-xl border border-gr-border ' +
+  'bg-gr-surface px-3 py-2 text-sm text-gr-text ' +
+  'focus-visible:outline-2 focus-visible:outline-gr-gold';
 
 const buttonClass =
   'inline-flex min-h-11 items-center justify-center gap-2 ' +
-  'rounded-xl bg-[#54213a] px-4 py-2.5 text-sm font-semibold ' +
-  'text-white hover:bg-[#42182d] ' +
+  'rounded-xl bg-gr-strong px-4 py-2.5 text-sm font-semibold ' +
+  'text-gr-on-strong hover:bg-gr-strong-hover ' +
   'disabled:cursor-not-allowed disabled:opacity-60';
 
 const idle = {
@@ -86,8 +86,8 @@ function Feedback({
       className={
         'flex items-start gap-2 rounded-xl border p-3 text-sm ' +
         (success
-          ? 'border-[#b6dec0] bg-[#f1fff4] text-[#28673a]'
-          : 'border-[#e8c1cc] bg-[#fff3f4] text-[#91364c]')
+          ? 'border-gr-border bg-gr-success-bg text-gr-success'
+          : 'border-gr-border bg-gr-surface text-gr-danger')
       }
     >
       {success ? (
@@ -132,7 +132,7 @@ export function PackageEditor({
   return (
     <form
       action={action}
-      className="grid gap-3 rounded-xl border border-[#eaded5] bg-[#fffaf5] p-4"
+      className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-4"
     >
       <input
         type="hidden"
@@ -140,12 +140,12 @@ export function PackageEditor({
         value={variantId}
       />
 
-      <p className="text-sm font-semibold text-[#54213a]">
+      <p className="text-sm font-semibold text-gr-text">
         Add or update a package
       </p>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="grid gap-1.5 text-sm text-[#634353]">
+        <label className="grid gap-1.5 text-sm text-gr-text">
           Package name
 
           <input
@@ -162,7 +162,7 @@ export function PackageEditor({
           />
         </label>
 
-        <label className="grid gap-1.5 text-sm text-[#634353]">
+        <label className="grid gap-1.5 text-sm text-gr-text">
           Number of individual units
 
           <input
@@ -187,7 +187,7 @@ export function PackageEditor({
           pendingText="Saving conversion…"
         />
 
-        <p className="text-xs text-[#896e7c]">
+        <p className="text-xs text-gr-muted">
           Existing stock quantities are not changed.
         </p>
       </div>

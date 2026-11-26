@@ -21,7 +21,7 @@
 .gr-bag-form label { display: grid; gap: 6px; width: 100%; font-size: 13px; }
 .gr-bag-form :is(input,select,textarea) { width: 100%; min-height: 43px; padding: 8px 11px; border: 1px solid var(--gr-theme-border); border-radius: 4px; color: var(--gr-theme-text); background: var(--gr-theme-surface); font: inherit; font-size: 16px; }
 .gr-bag-form input[name="quantity"] { max-width: 7rem; }
-.gr-bag-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 15px; min-height: 44px; border-radius: 5px; border: 1px solid #bb985c; background: #d8b575; color: #21170f !important; font-size: 13px; font-weight: 600; text-align: center; }
-.gr-bag-primary:hover { background: #e7c98e; }
+.gr-bag-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 15px; min-height: 44px; border-radius: 5px; border: 1px solid var(--gr-theme-border); background: var(--gr-theme-button); color: var(--gr-theme-on-gold) !important; font-size: 13px; font-weight: 600; text-align: center; }
+.gr-bag-primary:hover { background: var(--gr-theme-button-hover); }
 .gr-bag-primary:disabled, .gr-bag-quantity button:disabled { opacity: .55; cursor: not-allowed; }
 .gr-bag-prepared { margin-top: 18px; padding-top: 13px; border-top: 1px solid var(--gr-theme-border); }

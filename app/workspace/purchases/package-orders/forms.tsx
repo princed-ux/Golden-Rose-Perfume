@@ -59,16 +59,16 @@ const idle: PurchaseFeedback = {
 };
 
 const input =
-  'min-h-11 w-full min-w-0 rounded-xl border border-[#dfd0c8] bg-white px-3 py-2.5 text-sm text-[#432338] focus-visible:outline-2 focus-visible:outline-[#b68a51]';
+  'min-h-11 w-full min-w-0 rounded-xl border border-gr-gold bg-gr-surface px-3 py-2.5 text-sm text-gr-gold focus-visible:outline-2 focus-visible:outline-gr-gold';
 
 const primary =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#54213a] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#42182d] disabled:cursor-not-allowed disabled:opacity-60';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gr-strong-hover px-4 py-2.5 text-sm font-semibold text-gr-on-strong hover:bg-gr-strong-hover disabled:cursor-not-allowed disabled:opacity-60';
 
 const secondary =
-  'inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-[#dfd0c8] bg-white px-4 py-2 text-sm font-semibold text-[#54213a] hover:bg-[#fff6ed] disabled:opacity-50';
+  'inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-gr-border bg-gr-surface px-4 py-2 text-sm font-semibold text-gr-text hover:bg-gr-surface-alt disabled:opacity-50';
 
 const label =
-  'grid min-w-0 gap-1.5 text-sm font-semibold text-[#543446]';
+  'grid min-w-0 gap-1.5 text-sm font-semibold text-gr-text';
 
 const money = (value: number) =>
   new Intl.NumberFormat('en-NG', {
@@ -121,8 +121,8 @@ function Feedback({
       className={
         'flex items-start gap-2 rounded-xl border p-3 text-sm ' +
         (success
-          ? 'border-[#b2d6bd] bg-[#f2fff5] text-[#28633c]'
-          : 'border-[#e7c2cc] bg-[#fff3f4] text-[#8d3149]')
+          ? 'border-gr-border bg-gr-success-bg text-gr-success'
+          : 'border-gr-border bg-gr-surface text-gr-danger')
       }
     >
       {success ? (
@@ -235,17 +235,17 @@ export function PackageOrderForm({
 
   if (saved) {
     return (
-      <section className="grid gap-4 rounded-xl border border-[#bddac1] bg-[#f4fff5] p-5">
+      <section className="grid gap-4 rounded-xl border border-gr-border bg-gr-success-bg p-5">
         <Feedback result={result} />
 
-        <p className="text-sm text-[#3e6449]">
+        <p className="text-sm text-gr-success">
           The new purchase order is a draft.
           Stock has not been increased.
           Approve the order before recording delivery.
         </p>
 
         {result.id && (
-          <p className="break-all text-xs text-[#51765d]">
+          <p className="break-all text-xs text-gr-success">
             Purchase ID: {result.id}
           </p>
         )}
@@ -346,10 +346,10 @@ export function PackageOrderForm({
 
       <div className="grid gap-4">
         <div>
-          <h3 className="font-serif text-xl text-[#512238]">
+          <h3 className="font-serif text-xl text-gr-text">
             Products being purchased
           </h3>
-          <p className="mt-1 text-sm text-[#806d78]">
+          <p className="mt-1 text-sm text-gr-muted">
             Select the SKU, packaging and ordered quantity.
             Enter the purchase cost of one individual
             inventory unit, not the cost of the entire carton.
@@ -392,10 +392,10 @@ export function PackageOrderForm({
           return (
             <section
               key={row.key}
-              className="grid gap-3 rounded-xl border border-[#e9ddd5] bg-[#fffaf5] p-4"
+              className="grid gap-3 rounded-xl border border-gr-border bg-gr-surface p-4"
             >
               <div className="flex justify-between gap-3">
-                <h4 className="font-semibold text-[#552c42]">
+                <h4 className="font-semibold text-gr-text">
                   Product {index + 1}
                 </h4>
 
@@ -500,7 +500,7 @@ export function PackageOrderForm({
                 </label>
               </div>
 
-              <p className="text-xs text-[#806d78]">
+              <p className="text-xs text-gr-muted">
                 {product
                   ? `${product.name}${product.sizeMl !== null ? ` · ${product.sizeMl} mL` : ''}`
                   : 'Search for a SKU above to find configured packs and cartons.'}
@@ -524,12 +524,12 @@ export function PackageOrderForm({
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#f5eee7] p-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-gr-surface-alt p-4">
         <div>
-          <p className="text-xs font-semibold text-[#806d78]">
+          <p className="text-xs font-semibold text-gr-muted">
             Estimated purchase total
           </p>
-          <p className="font-serif text-2xl text-[#54213a]">
+          <p className="font-serif text-2xl text-gr-text">
             {money(totalPreview)}
           </p>
         </div>
@@ -612,7 +612,7 @@ export function PackageReceiptForm({
   return (
     <form
       action={action}
-      className="mt-3 grid gap-2 border-t border-[#ecded3] pt-3"
+      className="mt-3 grid gap-2 border-t border-gr-border pt-3"
     >
       <input
         type="hidden"
@@ -639,7 +639,7 @@ export function PackageReceiptForm({
         />
       </label>
 
-      <p className="text-xs text-[#806d78]">
+      <p className="text-xs text-gr-muted">
         Record only the quantity actually delivered.
         You can receive less than the outstanding amount.
       </p>

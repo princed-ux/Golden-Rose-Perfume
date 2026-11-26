@@ -14,7 +14,7 @@ export function ExportCatalogue({ q, publication }: { q: string; publication: Ca
         </a>
         <a className="catalogue-btn catalogue-btn--ghost" href={url('json')}>Export JSON</a>
       </div>
-      <span className="text-xs text-[#796570]">Import SKU and barcode columns as text in spreadsheets.</span>
+      <span className="text-xs text-gr-muted">Import SKU and barcode columns as text in spreadsheets.</span>
     </div>
   );
 }
