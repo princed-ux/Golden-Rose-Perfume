@@ -8,7 +8,10 @@ import {
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+
+import {
+  usePathname,
+} from 'next/navigation';
 
 import {
   ArrowRight,
@@ -20,6 +23,8 @@ import {
 
 import './site-header.css';
 
+import './account-access.css';
+
 /* =========================================================
    GOLDEN ROSE PERFUME — SHARED STOREFRONT HEADER
    ========================================================= */
@@ -30,21 +35,39 @@ type NavItem = {
 };
 
 const NAV_ITEMS: readonly NavItem[] = [
-  { href: '/', label: 'Discover' },
-  { href: '/shop', label: 'Shop all' },
-  { href: '/#categories', label: 'Categories' },
-  { href: '/about', label: 'Our story' },
-  { href: '/faq', label: 'Help & FAQ' },
-  { href: '/contact', label: 'Contact' },
+  {
+    href: '/',
+    label: 'Discover',
+  },
+
+  {
+    href: '/shop',
+    label: 'Shop all',
+  },
+
+  {
+    href: '/#categories',
+    label: 'Categories',
+  },
+
+  {
+    href: '/about',
+    label: 'Our story',
+  },
+
+  {
+    href: '/faq',
+    label: 'Help & FAQ',
+  },
+
+  {
+    href: '/contact',
+    label: 'Contact',
+  },
 ];
 
 /* =========================================================
    PUBLIC NAVIGATION
-
-   Receive the pathname from the parent rather than
-   independently accessing runtime URL information.
-
-   A null pathname is valid during prerendering.
    ========================================================= */
 
 function PublicNavigation({
@@ -73,8 +96,10 @@ function PublicNavigation({
           (
             href === '/'
               ? pathname === '/'
+
               : href.startsWith('/#')
                 ? false
+
                 : pathname === href ||
                   (
                     href === '/shop' &&
@@ -100,11 +125,28 @@ function PublicNavigation({
       {mobile && (
         <>
           <Link href="/account">
-            Account
+            My account
           </Link>
 
           <Link href="/cart">
             Shopping bag
+          </Link>
+
+          <div className="gr-site-mobile__account-actions">
+            <Link href="/account/login">
+              Sign in
+            </Link>
+
+            <Link href="/account/register">
+              Create account
+            </Link>
+          </div>
+
+          <Link
+            href="/staff/login"
+            className="gr-site-mobile__staff-link"
+          >
+            Staff login
           </Link>
         </>
       )}
@@ -113,12 +155,71 @@ function PublicNavigation({
 }
 
 /* =========================================================
+   SHARED STOREFRONT SEARCH
+   ========================================================= */
+
+function FragranceSearch({
+  menu = false,
+}: {
+  menu?: boolean;
+}) {
+  const inputId = menu
+    ? 'gr-site-mobile-search'
+    : 'gr-site-search';
+
+  return (
+    <form
+      action="/shop"
+      method="get"
+      className={
+        menu
+          ? 'gr-site-mobile__search'
+          : 'gr-site-search'
+      }
+      role="search"
+      aria-label={
+        menu
+          ? 'Search from the navigation menu'
+          : 'Search fragrances'
+      }
+    >
+      <Search
+        size={17}
+        strokeWidth={1.7}
+        aria-hidden="true"
+      />
+
+      <label
+        htmlFor={inputId}
+        className="gr-site-sr-only"
+      >
+        Search fragrances
+      </label>
+
+      <input
+        id={inputId}
+        type="search"
+        name="q"
+        maxLength={120}
+        autoComplete="off"
+        placeholder="Search fragrances"
+      />
+
+      <button
+        type="submit"
+        aria-label="Submit fragrance search"
+      >
+        <ArrowRight
+          size={17}
+          aria-hidden="true"
+        />
+      </button>
+    </form>
+  );
+}
+
+/* =========================================================
    HEADER PRESENTATION
-
-   This component does not access Next.js runtime URL data.
-
-   It can render as part of the static page shell while
-   the route-aware header resolves the current pathname.
    ========================================================= */
 
 function SiteHeaderContent({
@@ -156,12 +257,12 @@ function SiteHeaderContent({
         </span>
       </div>
 
-      {/* MAIN STOREFRONT HEADER */}
+      {/* MAIN HEADER */}
 
       <header className="gr-site-header">
         <div className="gr-site-header__inner">
 
-          {/* BRAND IDENTITY */}
+          {/* EXISTING BRAND IDENTITY */}
 
           <Link
             href="/"
@@ -196,60 +297,41 @@ function SiteHeaderContent({
             pathname={pathname}
           />
 
-          {/* CUSTOMER ACTIONS */}
+          {/* ACCOUNT AND SHOPPING ACTIONS */}
 
           <div className="gr-site-header__actions">
 
-            {/* DESKTOP SEARCH */}
+            {/* SEARCH REMAINS VISIBLE ON MOBILE */}
 
-            <form
-              action="/shop"
-              method="get"
-              className="gr-site-search"
-              role="search"
-              aria-label="Search fragrances"
-            >
-              <Search
-                size={17}
-                strokeWidth={1.7}
-                aria-hidden="true"
-              />
-
-              <label
-                htmlFor="gr-site-search"
-                className="gr-site-sr-only"
-              >
-                Search fragrances
-              </label>
-
-              <input
-                id="gr-site-search"
-                type="search"
-                name="q"
-                maxLength={120}
-                placeholder="Search fragrances"
-              />
-            </form>
+            <FragranceSearch />
 
             {/* CUSTOMER ACCOUNT */}
 
             <Link
               href="/account"
-              className="gr-site-header__icon"
-              aria-label="Your account"
+              className="gr-site-header__icon gr-site-header__account"
+              aria-label="Your account, sign in or register"
+              aria-current={
+                pathname === '/account' ||
+                pathname?.startsWith('/account/')
+                  ? 'page'
+                  : undefined
+              }
             >
               <UserRound
                 size={20}
                 strokeWidth={1.6}
                 aria-hidden="true"
               />
+
+              <span>Account</span>
             </Link>
 
             {/* SHOPPING BAG */}
 
             <Link
               href="/cart"
-              className="gr-site-header__icon"
+              className="gr-site-header__icon gr-site-header__bag"
               aria-label="Shopping bag"
             >
               <ShoppingBag
@@ -259,7 +341,7 @@ function SiteHeaderContent({
               />
             </Link>
 
-            {/* MOBILE NAVIGATION */}
+            {/* MOBILE MENU */}
 
             <details
               className="gr-site-mobile"
@@ -276,44 +358,7 @@ function SiteHeaderContent({
 
               <div className="gr-site-mobile__panel">
 
-                <form
-                  action="/shop"
-                  method="get"
-                  role="search"
-                  aria-label="Mobile fragrance search"
-                >
-                  <label
-                    htmlFor="gr-site-mobile-search"
-                    className="gr-site-sr-only"
-                  >
-                    Search fragrances
-                  </label>
-
-                  <div className="gr-site-mobile__search">
-                    <Search
-                      size={17}
-                      aria-hidden="true"
-                    />
-
-                    <input
-                      id="gr-site-mobile-search"
-                      type="search"
-                      name="q"
-                      maxLength={120}
-                      placeholder="Search fragrances"
-                    />
-
-                    <button
-                      type="submit"
-                      aria-label="Submit search"
-                    >
-                      <ArrowRight
-                        size={17}
-                        aria-hidden="true"
-                      />
-                    </button>
-                  </div>
-                </form>
+                <FragranceSearch menu />
 
                 <PublicNavigation
                   mobile
@@ -331,8 +376,8 @@ function SiteHeaderContent({
 /* =========================================================
    RUNTIME-AWARE HEADER
 
-   usePathname() is called only inside the component
-   protected by the Suspense boundary below.
+   Preserve the Suspense boundary for Next.js
+   Cache Components and prerendered routes.
    ========================================================= */
 
 function RouteAwareSiteHeader() {
@@ -346,15 +391,7 @@ function RouteAwareSiteHeader() {
 }
 
 /* =========================================================
-   PUBLIC HEADER ENTRY POINT
-
-   Compatible with Next.js Cache Components and
-   dynamically generated routes such as /shop/[slug].
-
-   The fallback preserves the actual header design,
-   navigation links, logo, search and shopping bag.
-
-   Only active-route highlighting waits for URL data.
+   PUBLIC HEADER ENTRY
    ========================================================= */
 
 export function SiteHeader() {
